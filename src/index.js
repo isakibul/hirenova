@@ -1,0 +1,25 @@
+require("dotenv").config();
+const http = require("http");
+const app = require("./app");
+const { connectDatabase } = require("./db");
+
+const server = http.createServer(app);
+
+const PORT = process.env.PORT || 4000;
+
+const main = async () => {
+  try {
+    await connectDatabase();
+    const timestamp = new Date().toLocaleTimeString();
+    server.listen(PORT, () => {
+      console.log(
+        `${timestamp} - Server is running on PORT ${process.env.PORT}`
+      );
+    });
+  } catch (e) {
+    console.error("Error connecting to the database");
+    console.log(e);
+  }
+};
+
+main();
