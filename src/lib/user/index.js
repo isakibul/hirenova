@@ -12,12 +12,12 @@ const findUserByUsername = async (username) => {
 
 const userExitsByEmail = async (email) => {
   const user = await findUserByEmail(email);
-  return user ? true : false;
+  return user ? user : false;
 };
 
 const userExitsByUsername = async (username) => {
   const user = await findUserByUsername(username);
-  return user ? true : false;
+  return user ? user : false;
 };
 
 const createUser = async ({ username, email, password, role }) => {

@@ -4,7 +4,8 @@ const {
   userExitsByEmail,
   userExitsByUsername,
 } = require("../user");
-const { generateHash } = require("../../utils/hashing");
+const { generateHash, hashMatched } = require("../../utils/hashing");
+const { generateToken } = require("../token/");
 
 const register = async ({ username, email, password, role }) => {
   const hasUserByEmail = await userExitsByEmail(email);
@@ -21,6 +22,31 @@ const register = async ({ username, email, password, role }) => {
   return user;
 };
 
+const login = async ({ email, password }) => {
+  console.log(email, password);
+
+  const user = await userExitsByEmail(email);
+
+  if (!user) {
+    throw badRequest("Invalid credentials");
+  }
+
+  const matched = await hashMatched(password, user.password);
+  if (!matched) {
+    throw badRequest("Invalid credentials");
+  }
+
+  const payload = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
+  return generateToken({ payload });
+};
+
 module.exports = {
   register,
+  login,
 };
