@@ -23,8 +23,6 @@ const register = async ({ username, email, password, role }) => {
 };
 
 const login = async ({ email, password }) => {
-  console.log(email, password);
-
   const user = await userExitsByEmail(email);
 
   if (!user) {

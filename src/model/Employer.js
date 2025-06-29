@@ -1,11 +1,10 @@
 const { Schema, model } = require("mongoose");
 
-const userSchema = new Schema(
+const employerSchema = model(
   {
-    username: {
+    name: {
       type: String,
       required: true,
-      unique: true,
       maxLength: 50,
       minLength: 3,
     },
@@ -21,16 +20,9 @@ const userSchema = new Schema(
       minLength: 6,
       maxLength: 100,
     },
-    status: {
-      type: String,
-      enum: ["pending", "active", "suspended"],
-      default: "pending",
-    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-const User = model("User", userSchema);
-module.exports = User;
+const Employer = model("Employer", employerSchema);
+module.exports = Employer;
