@@ -1,27 +1,25 @@
-const User = require("../../model/User");
-
-const findUserByEmail = async (email) => {
-  const user = await User.findOne({ email });
+const findUserByEmail = async (model, email) => {
+  const user = await model.findOne({ email });
   return user ? user : false;
 };
 
-const findUserByUsername = async (username) => {
-  const user = await User.findOne({ username });
+const findUserByUsername = async (model, username) => {
+  const user = await model.findOne({ username });
   return user ? user : false;
 };
 
-const userExitsByEmail = async (email) => {
-  const user = await findUserByEmail(email);
+const userExitsByEmail = async (model, email) => {
+  const user = await findUserByEmail(model, email);
   return user ? user : false;
 };
 
-const userExitsByUsername = async (username) => {
-  const user = await findUserByUsername(username);
+const userExitsByUsername = async (model, username) => {
+  const user = await findUserByUsername(model, username);
   return user ? user : false;
 };
 
-const createUser = async ({ username, email, password, role }) => {
-  const user = new User({ username, email, password, role });
+const createUser = async ({ model, username, email, password, role }) => {
+  const user = new model({ username, email, password, role });
   await user.save();
   return { ...user._doc, id: user.id };
 };

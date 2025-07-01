@@ -1,11 +1,13 @@
-const authService = require("../../../../lib/auth");
-const { generateToken } = require("../../../../lib/token");
+const { JobSeekers } = require("../../../../../model");
+const authService = require("../../../../../lib/auth");
+const { generateToken } = require("../../../../../lib/token");
 
 const register = async (req, res, next) => {
   const { username, email, password, role } = req.body;
 
   try {
     const user = await authService.register({
+      model: JobSeekers,
       username,
       email,
       password,
@@ -16,7 +18,6 @@ const register = async (req, res, next) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      role: user.role,
     };
 
     const accessToken = generateToken({ payload });

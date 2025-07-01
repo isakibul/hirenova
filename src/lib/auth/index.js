@@ -7,9 +7,9 @@ const {
 const { generateHash, hashMatched } = require("../../utils/hashing");
 const { generateToken } = require("../token/");
 
-const register = async ({ username, email, password, role }) => {
-  const hasUserByEmail = await userExitsByEmail(email);
-  const hasUserByUsername = await userExitsByUsername(username);
+const register = async ({ model, username, email, password }) => {
+  const hasUserByEmail = await userExitsByEmail(model, email);
+  const hasUserByUsername = await userExitsByUsername(model, username);
 
   if (hasUserByEmail || hasUserByUsername) {
     throw badRequest("User already exists");
@@ -17,13 +17,13 @@ const register = async ({ username, email, password, role }) => {
 
   password = await generateHash(password);
 
-  const user = await createUser({ username, email, password, role });
+  const user = await createUser({ model, username, email, password });
 
   return user;
 };
 
-const login = async ({ email, password }) => {
-  const user = await userExitsByEmail(email);
+const login = async ({ model, email, password }) => {
+  const user = await userExitsByEmail(model, email);
 
   if (!user) {
     throw badRequest("Invalid credentials");

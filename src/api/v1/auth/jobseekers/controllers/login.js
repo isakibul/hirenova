@@ -1,10 +1,12 @@
-const authService = require("../../../../lib/auth");
+const { JobSeekers } = require("../../../../../model");
+const authService = require("../../../../../lib/auth");
 
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     const accessToken = await authService.login({
+      model: JobSeekers,
       email,
       password,
     });

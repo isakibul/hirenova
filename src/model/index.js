@@ -1,5 +1,7 @@
-const User = require("./User");
+const JobSeekers = require("./JobSeekers");
+const Employer = require("./Employer");
 
 module.exports = {
-  User,
+  JobSeekers,
+  Employer,
 };

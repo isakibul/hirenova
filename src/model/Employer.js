@@ -1,8 +1,8 @@
 const { Schema, model } = require("mongoose");
 
-const employerSchema = model(
+const employerSchema = new Schema(
   {
-    name: {
+    username: {
       type: String,
       required: true,
       maxLength: 50,
