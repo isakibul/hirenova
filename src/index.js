@@ -3,10 +3,20 @@ const http = require("http");
 const app = require("./app");
 const { connectDatabase } = require("./db");
 
+/**
+ * Create HTTP server
+ */
 const server = http.createServer(app);
 
+/**
+ * Server configuration
+ */
 const PORT = process.env.PORT || 4000;
 
+/**
+ * Main function
+ * Connects to MongoDB and starts the HTTP server
+ */
 const main = async () => {
   try {
     await connectDatabase();

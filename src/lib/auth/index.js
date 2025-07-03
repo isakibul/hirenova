@@ -15,9 +15,14 @@ const register = async ({ model, username, email, password }) => {
     throw badRequest("User already exists");
   }
 
-  password = await generateHash(password);
+  const hashedPassword = await generateHash(password);
 
-  const user = await createUser({ model, username, email, password });
+  const user = await createUser({
+    model,
+    username,
+    email,
+    password: hashedPassword,
+  });
 
   return user;
 };

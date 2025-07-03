@@ -1,10 +1,24 @@
 const { Employer } = require("../../../../../model");
 const authService = require("../../../../../lib/auth");
 const { generateToken } = require("../../../../../lib/token");
+const {
+  registerSchema,
+} = require("../../../../../lib/validators/authValidator");
 
 const register = async (req, res, next) => {
-  const { username, email, password } = req.body;
   try {
+    const { error, value } = await registerSchema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        code: 400,
+        message: "Validation error",
+        error: error.details.map((e) => e.message).join(", "),
+      });
+    }
+
+    const { username, email, password } = value;
+
     const employer = await authService.register({
       model: Employer,
       username,
