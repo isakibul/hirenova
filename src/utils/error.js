@@ -13,7 +13,15 @@ const badRequest = (msg = "Bad Request") => {
   return error;
 };
 
+const notFound = (msg = "Not Found") => {
+  const error = new Error(msg);
+  error.status = 404;
+  error.statusCode = 404;
+  return error;
+};
+
 module.exports = {
   serverError,
   badRequest,
+  notFound,
 };

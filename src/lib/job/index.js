@@ -1,4 +1,5 @@
 const { Job } = require("../../model");
+const { notFound } = require("../../utils/error");
 
 const create = async ({
   title,
@@ -27,6 +28,17 @@ const create = async ({
   };
 };
 
+const deleteItem = async (id) => {
+  const job = await Job.findById(id);
+
+  if (!job) {
+    throw notFound();
+  }
+
+  return Job.findByIdAndDelete(id);
+};
+
 module.exports = {
   create,
+  deleteItem,
 };
