@@ -38,7 +38,57 @@ const deleteItem = async (id) => {
   return Job.findByIdAndDelete(id);
 };
 
+const updateItem = async (
+  id,
+  {
+    title,
+    description,
+    location,
+    jobType,
+    skillsRequired,
+    experienceRequired,
+    salary,
+  }
+) => {
+  const job = await Job.findById(id);
+
+  if (!job) {
+    const job = await create({
+      title,
+      description,
+      location,
+      jobType,
+      skillsRequired,
+      experienceRequired,
+      salary,
+    });
+    return {
+      job,
+      statusCode: 201,
+    };
+  }
+
+  const payload = {
+    title,
+    description,
+    location,
+    jobType,
+    skillsRequired,
+    experienceRequired,
+    salary,
+  };
+
+  job.overwrite(payload);
+  await job.save();
+
+  return {
+    job: { ...job._doc, id: job._id },
+    statusCode: 200,
+  };
+};
+
 module.exports = {
   create,
   deleteItem,
+  updateItem,
 };

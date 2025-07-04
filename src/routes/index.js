@@ -8,15 +8,19 @@ const {
 const { controllers: jobControllers } = require("../api/v1/job");
 
 // auth routes for jobseeker
-router.post("/api/v1/auth/jobseeker-register", userAuthControllers.register);
-router.post("/api/v1/auth/jobseeker-login", userAuthControllers.login);
+router
+  .post("/api/v1/auth/jobseeker-register", userAuthControllers.register)
+  .post("/api/v1/auth/jobseeker-login", userAuthControllers.login);
 
 // auth routes for employer
-router.post("/api/v1/auth/employer-register", employerAuthControllers.register);
-router.post("/api/v1/auth/employer-login", employerAuthControllers.login);
+router
+  .post("/api/v1/auth/employer-register", employerAuthControllers.register)
+  .post("/api/v1/auth/employer-login", employerAuthControllers.login);
 
-// routes for job
-router.post("/api/v1/jobs", jobControllers.create);
-router.delete("/api/v1/jobs/:id", jobControllers.deleteItem);
+// job routes
+router
+  .post("/api/v1/jobs", jobControllers.create)
+  .delete("/api/v1/jobs/:id", jobControllers.deleteItem)
+  .put("/api/v1/jobs/:id", jobControllers.updateItem);
 
 module.exports = router;
