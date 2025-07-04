@@ -28,6 +28,7 @@ router
   .post("/api/v1/jobs", jobControllers.create)
   .delete("/api/v1/jobs/:id", jobControllers.deleteItem)
   .put("/api/v1/jobs/:id", jobControllers.updateItem)
-  .patch("/api/v1/jobs/:id", jobControllers.updateItemByPatch);
+  .patch("/api/v1/jobs/:id", jobControllers.updateItemByPatch)
+  .get("/api/v1/job", jobControllers.findAll);
 
 module.exports = router;

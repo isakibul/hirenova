@@ -124,9 +124,25 @@ const updateItemUsingPatch = async (
   return { ...job._doc, id: job.id };
 };
 
+const findAll = async ({ page, limit, sortType, sortBy, search }) => {
+  const sortStr = `${sortType === "dsc" ? "-" : ""}${sortBy}`;
+  const filter = { title: { $regex: search, $options: "i" } };
+
+  const jobs = await Job.find(filter)
+    .sort(sortStr)
+    .skip(page * limit - limit)
+    .limit(limit);
+
+  return jobs.map((job) => ({
+    ...job._doc,
+    id: job.id,
+  }));
+};
+
 module.exports = {
   create,
   deleteItem,
   updateItem,
   updateItemUsingPatch,
+  findAll,
 };
