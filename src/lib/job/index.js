@@ -32,7 +32,7 @@ const deleteItem = async (id) => {
   const job = await Job.findById(id);
 
   if (!job) {
-    throw notFound();
+    throw notFound("Job not found");
   }
 
   return Job.findByIdAndDelete(id);
@@ -62,6 +62,7 @@ const updateItem = async (
       experienceRequired,
       salary,
     });
+
     return {
       job,
       statusCode: 201,
@@ -87,8 +88,45 @@ const updateItem = async (
   };
 };
 
+const updateItemUsingPatch = async (
+  id,
+  {
+    title,
+    description,
+    location,
+    jobType,
+    skillsRequired,
+    experienceRequired,
+    salary,
+  }
+) => {
+  const job = await Job.findById(id);
+
+  if (!job) {
+    throw notFound();
+  }
+
+  const payload = {
+    title,
+    description,
+    location,
+    jobType,
+    skillsRequired,
+    experienceRequired,
+    salary,
+  };
+
+  Object.keys(payload).forEach((key) => {
+    job[key] = payload[key] ?? job[key];
+  });
+
+  await job.save();
+  return { ...job._doc, id: job.id };
+};
+
 module.exports = {
   create,
   deleteItem,
   updateItem,
+  updateItemUsingPatch,
 };
