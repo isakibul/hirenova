@@ -7,6 +7,8 @@ const {
 } = require("../../../../utils/getPagination");
 
 const findAll = async (req, res, next) => {
+  console.log("In findAll");
+
   const page = Number(req.query.page) || defaults.page;
   const limit = Number(req.query.limit) || defaults.limit;
   const sortType = req.query.sort_type || defaults.sortType;

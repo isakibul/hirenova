@@ -20,8 +20,15 @@ const notFound = (msg = "Not Found") => {
   return error;
 };
 
+const authenticationError = (msg = "Authentication failed") => {
+  const error = new Error(msg);
+  error.status = 401;
+  return error;
+};
+
 module.exports = {
   serverError,
   badRequest,
   notFound,
+  authenticationError,
 };
