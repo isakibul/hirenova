@@ -139,10 +139,18 @@ const findAll = async ({ page, limit, sortType, sortBy, search }) => {
   }));
 };
 
+const count = ({ search = "" }) => {
+  const filter = {
+    title: { $regex: search, $options: "i" },
+  };
+  return Job.countDocuments(filter);
+};
+
 module.exports = {
   create,
   deleteItem,
   updateItem,
   updateItemUsingPatch,
   findAll,
+  count,
 };
