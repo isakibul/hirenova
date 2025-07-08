@@ -146,6 +146,18 @@ const count = ({ search = "" }) => {
   return Job.countDocuments(filter);
 };
 
+const findSingle = async ({ id, expand = "" }) => {
+  if (!id) throw new Error("Id is required");
+
+  const expandFields = expand.split(",").map((item) => item.trim());
+
+  const job = await Job.findById(id).lean();
+
+  if (!job) throw notFound();
+
+  return job;
+};
+
 module.exports = {
   create,
   deleteItem,
@@ -153,4 +165,5 @@ module.exports = {
   updateItemUsingPatch,
   findAll,
   count,
+  findSingle,
 };
