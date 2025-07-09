@@ -24,14 +24,23 @@ router
   .post("/api/v1/auth/employer-login", employerAuthControllers.login);
 
 /**
- * job routes
+ * job routes for jobseekers
  */
 router
   .get("/api/v1/job", authenticateJobseeker, jobControllers.findAll)
-  .get("/api/v1/job/:id", authenticateJobseeker, jobControllers.findSingle)
+  .get("/api/v1/job/:id", authenticateJobseeker, jobControllers.findSingle);
+
+/**
+ * job routes for employers
+ */
+router
   .post("/api/v1/jobs", authenticateEmployer, jobControllers.create)
-  .delete("/api/v1/jobs/:id", jobControllers.deleteItem)
-  .put("/api/v1/jobs/:id", jobControllers.updateItem)
-  .patch("/api/v1/jobs/:id", jobControllers.updateItemByPatch);
+  .delete("/api/v1/jobs/:id", authenticateEmployer, jobControllers.deleteItem)
+  .put("/api/v1/jobs/:id", authenticateEmployer, jobControllers.updateItem)
+  .patch(
+    "/api/v1/jobs/:id",
+    authenticateEmployer,
+    jobControllers.updateItemByPatch
+  );
 
 module.exports = router;
