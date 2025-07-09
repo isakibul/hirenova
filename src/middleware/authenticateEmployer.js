@@ -3,7 +3,7 @@ const tokenService = require("../lib/token");
 const userService = require("../lib/user");
 const { authenticationError } = require("../utils/error");
 
-const authenticate = async (req, _res, next) => {
+const authenticateEmployer = async (req, _res, next) => {
   const token = req.headers.authorization.split(" ")[2];
 
   try {
@@ -22,4 +22,4 @@ const authenticate = async (req, _res, next) => {
   }
 };
 
-module.exports = authenticate;
+module.exports = authenticateEmployer;
