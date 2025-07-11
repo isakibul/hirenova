@@ -28,6 +28,8 @@ const updateItem = async (req, res, next) => {
       salary,
     } = value;
 
+    const employerId = req.user.id;
+
     const { job, statusCode } = await jobService.updateItem(id, {
       title,
       description,
@@ -36,6 +38,7 @@ const updateItem = async (req, res, next) => {
       skillsRequired,
       experienceRequired,
       salary,
+      author: employerId,
     });
 
     const response = {

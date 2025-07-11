@@ -1,46 +1,28 @@
 const router = require("express").Router();
-const {
-  controllers: userAuthControllers,
-} = require("../api/v1/auth/jobseekers");
-const {
-  controllers: employerAuthControllers,
-} = require("../api/v1/auth/employer");
+const { controllers: authController } = require("../api/v1/auth");
 const { controllers: jobControllers } = require("../api/v1/job");
-const authenticateEmployer = require("../middleware/authenticateEmployer");
-const authenticateJobseeker = require("../middleware/authenticateJobseeker");
 
 /**
- * auth routes for jobseeker
+ * auth routes
  */
 router
-  .post("/api/v1/auth/jobseeker-register", userAuthControllers.register)
-  .post("/api/v1/auth/jobseeker-login", userAuthControllers.login);
+  .post("/api/v1/auth/register", authController.register)
+  .post("/api/v1/auth/login", authController.login);
 
 /**
- * auth routes for employer
+ * job routes for jobseeker
  */
 router
-  .post("/api/v1/auth/employer-register", employerAuthControllers.register)
-  .post("/api/v1/auth/employer-login", employerAuthControllers.login);
+  .get("/api/v1/job", jobControllers.findAll)
+  .get("/api/v1/job/:id", jobControllers.findSingle);
 
 /**
- * job routes for jobseekers
+ * job routes for employer
  */
 router
-  .get("/api/v1/job", authenticateJobseeker, jobControllers.findAll)
-  .get("/api/v1/job/:id", authenticateJobseeker, jobControllers.findSingle);
-
-/**
- * job routes for employers
- */
-router
-  .post("/api/v1/jobs", authenticateEmployer, jobControllers.create)
-  .delete("/api/v1/jobs/:id", authenticateEmployer, jobControllers.deleteItem)
-  .put("/api/v1/jobs/:id", authenticateEmployer, jobControllers.updateItem)
-  .patch(
-    "/api/v1/jobs/:id",
-    authenticateEmployer,
-    jobControllers.updateItemByPatch
-  );
+  .post("/api/v1/jobs", jobControllers.create)
+  .delete("/api/v1/jobs/:id", jobControllers.deleteItem)
+  .put("/api/v1/jobs/:id", jobControllers.updateItem)
+  .patch("/api/v1/jobs/:id", jobControllers.updateItemByPatch);
 
 module.exports = router;

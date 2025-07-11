@@ -25,7 +25,7 @@ const jobSchema = Schema({
   createdAt: { type: Date, default: Date.now() },
   author: {
     type: Schema.ObjectId,
-    ref: "Employer",
+    ref: "User",
   },
 });
 

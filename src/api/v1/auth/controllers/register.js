@@ -1,9 +1,6 @@
-const { Employer } = require("../../../../../model");
-const authService = require("../../../../../lib/auth");
-const { generateToken } = require("../../../../../lib/token");
-const {
-  registerSchema,
-} = require("../../../../../lib/validators/authValidator");
+const authService = require("../../../../lib/auth");
+const { generateToken } = require("../../../../lib/token");
+const { registerSchema } = require("../../../../lib/validators/authValidator");
 
 const register = async (req, res, next) => {
   try {
@@ -17,23 +14,27 @@ const register = async (req, res, next) => {
       });
     }
 
-    const { username, email, password } = value;
+    const { username, email, password, role } = value;
 
     const employer = await authService.register({
-      model: Employer,
       username,
       email,
       password,
+      role,
     });
+
     const payload = {
       id: employer.id,
       username: employer.username,
       email: employer.email,
+      role: employer.role,
     };
+
     const access_token = generateToken({ payload });
+
     const response = {
       code: "201",
-      message: "Employer registration successful",
+      message: "User registration successful",
       data: {
         access_token,
       },
@@ -42,6 +43,7 @@ const register = async (req, res, next) => {
         login: `${req.protocol}://${req.get("host")}/api/v1/employer/login`,
       },
     };
+
     res.status(201).json(response);
   } catch (e) {
     next(e);

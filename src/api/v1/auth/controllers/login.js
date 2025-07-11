@@ -1,10 +1,9 @@
-const { JobSeekers } = require("../../../../../model");
-const authService = require("../../../../../lib/auth");
-const { loginSchema } = require("../../../../../lib/validators/authValidator");
+const authService = require("../../../../lib/auth");
+const { loginSchema } = require("../../../../lib/validators/authValidator");
 
 const login = async (req, res, next) => {
   try {
-    const { error, value } = await loginSchema.validate(req.body);
+    const { error, value } = loginSchema.validate(req.body);
 
     if (error) {
       return res.status(400).json({
@@ -16,8 +15,7 @@ const login = async (req, res, next) => {
 
     const { email, password } = value;
 
-    const accessToken = await authService.login({
-      model: JobSeekers,
+    const access_token = await authService.login({
       email,
       password,
     });
@@ -26,7 +24,7 @@ const login = async (req, res, next) => {
       code: 200,
       message: "Login successful",
       data: {
-        access_token: accessToken,
+        accessToken: access_token,
       },
       link: {
         self: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
@@ -34,8 +32,8 @@ const login = async (req, res, next) => {
     };
 
     res.status(200).json(response);
-  } catch (error) {
-    next(error);
+  } catch (e) {
+    next(e);
   }
 };
 

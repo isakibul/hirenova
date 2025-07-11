@@ -13,6 +13,7 @@ const registerSchema = Joi.object({
       "Password must contain at least one uppercase letter, one lowercase letter, and one number"
     )
     .required(),
+  role: Joi.string().valid("jobseeker", "employer", "admin").required(),
 });
 
 const loginSchema = Joi.object({

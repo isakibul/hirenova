@@ -26,9 +26,16 @@ const authenticationError = (msg = "Authentication failed") => {
   return error;
 };
 
+const authorizationError = (msg = "Permission denied") => {
+  const error = new Error(msg);
+  error.status = 403;
+  return error;
+};
+
 module.exports = {
   serverError,
   badRequest,
   notFound,
+  authenticationError,
   authenticationError,
 };

@@ -50,6 +50,7 @@ const updateItem = async (
     skillsRequired,
     experienceRequired,
     salary,
+    author,
   }
 ) => {
   const job = await Job.findById(id);
@@ -63,6 +64,7 @@ const updateItem = async (
       skillsRequired,
       experienceRequired,
       salary,
+      author,
     });
 
     return {
@@ -79,6 +81,7 @@ const updateItem = async (
     skillsRequired,
     experienceRequired,
     salary,
+    author,
   };
 
   job.overwrite(payload);
@@ -100,6 +103,7 @@ const updateItemUsingPatch = async (
     skillsRequired,
     experienceRequired,
     salary,
+    author,
   }
 ) => {
   const job = await Job.findById(id);
@@ -116,6 +120,7 @@ const updateItemUsingPatch = async (
     skillsRequired,
     experienceRequired,
     salary,
+    author,
   };
 
   Object.keys(payload).forEach((key) => {
