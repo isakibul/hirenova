@@ -12,6 +12,8 @@ const create = async (req, res, next) => {
       salary,
     } = req.body;
 
+    const employerId = req.user.id;
+
     const job = await jobService.create({
       title,
       description,
@@ -20,6 +22,7 @@ const create = async (req, res, next) => {
       skillsRequired,
       experienceRequired,
       salary,
+      author: employerId,
     });
 
     const response = {

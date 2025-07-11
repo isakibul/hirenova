@@ -23,6 +23,10 @@ const jobSchema = Schema({
   experienceRequired: Number,
   salary: Number,
   createdAt: { type: Date, default: Date.now() },
+  author: {
+    type: Schema.ObjectId,
+    ref: "Employer",
+  },
 });
 
 const Job = model("Job", jobSchema);

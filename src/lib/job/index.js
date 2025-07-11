@@ -9,6 +9,7 @@ const create = async ({
   skillsRequired,
   experienceRequired,
   salary,
+  author,
 }) => {
   const job = await Job({
     title,
@@ -18,6 +19,7 @@ const create = async ({
     skillsRequired,
     experienceRequired,
     salary,
+    author,
   });
 
   await job.save();
