@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const { controllers: authController } = require("../api/v1/auth");
 const { controllers: jobControllers } = require("../api/v1/job");
+const authenticate = require("../middleware/authenticate");
 
 /**
  * auth routes
