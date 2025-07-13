@@ -15,15 +15,15 @@ router
  */
 router
   .get("/api/v1/job", jobControllers.findAll)
-  .get("/api/v1/job/:id", jobControllers.findSingle);
+  .get("/api/v1/job/:id", authenticate, jobControllers.findSingle);
 
 /**
  * job routes for employer
  */
 router
-  .post("/api/v1/jobs", jobControllers.create)
-  .delete("/api/v1/jobs/:id", jobControllers.deleteItem)
-  .put("/api/v1/jobs/:id", jobControllers.updateItem)
-  .patch("/api/v1/jobs/:id", jobControllers.updateItemByPatch);
+  .post("/api/v1/jobs", authenticate, jobControllers.create)
+  .delete("/api/v1/jobs/:id", authenticate, jobControllers.deleteItem)
+  .put("/api/v1/jobs/:id", authenticate, jobControllers.updateItem)
+  .patch("/api/v1/jobs/:id", authenticate, jobControllers.updateItemByPatch);
 
 module.exports = router;
