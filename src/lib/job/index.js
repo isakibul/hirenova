@@ -165,6 +165,19 @@ const findSingle = async ({ id, expand = "" }) => {
   return job;
 };
 
+const ownership = async ({ resourceId, userId }) => {
+  const job = await Job.findById(resourceId);
+
+  if (!job) throw notFound("Job not found");
+
+  if (job._doc.author.toString() === userId) {
+    return true;
+  }
+  return false;
+
+  console.log("done");
+};
+
 module.exports = {
   create,
   deleteItem,
@@ -173,4 +186,5 @@ module.exports = {
   findAll,
   count,
   findSingle,
+  ownership,
 };

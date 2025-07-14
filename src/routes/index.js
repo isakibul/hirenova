@@ -3,6 +3,7 @@ const { controllers: authController } = require("../api/v1/auth");
 const { controllers: jobControllers } = require("../api/v1/job");
 const authenticate = require("../middleware/authenticate");
 const checkUserStatus = require("../middleware/checkUserStatus");
+const ownership = require("../middleware/ownership");
 
 /**
  * auth routes
@@ -32,6 +33,7 @@ router
     "/api/v1/jobs/:id",
     authenticate,
     checkUserStatus,
+    ownership("Job"),
     jobControllers.deleteItem
   )
   .put(
