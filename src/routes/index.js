@@ -27,9 +27,24 @@ router
  * job routes for employer
  */
 router
-  .post("/api/v1/jobs", authenticate, jobControllers.create)
-  .delete("/api/v1/jobs/:id", authenticate, jobControllers.deleteItem)
-  .put("/api/v1/jobs/:id", authenticate, jobControllers.updateItem)
-  .patch("/api/v1/jobs/:id", authenticate, jobControllers.updateItemByPatch);
+  .post("/api/v1/jobs", authenticate, checkUserStatus, jobControllers.create)
+  .delete(
+    "/api/v1/jobs/:id",
+    authenticate,
+    checkUserStatus,
+    jobControllers.deleteItem
+  )
+  .put(
+    "/api/v1/jobs/:id",
+    authenticate,
+    checkUserStatus,
+    jobControllers.updateItem
+  )
+  .patch(
+    "/api/v1/jobs/:id",
+    authenticate,
+    checkUserStatus,
+    jobControllers.updateItemByPatch
+  );
 
 module.exports = router;
