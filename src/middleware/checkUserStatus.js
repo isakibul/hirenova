@@ -1,7 +1,7 @@
 const userService = require("../lib/user");
 const { authenticationError } = require("../utils/error");
 
-const checkUserStatus = async (req, res, json) => {
+const checkUserStatus = async (req, res, next) => {
   const userEmail = req.user.email;
 
   const user = await userService.findUserByEmail(userEmail);
