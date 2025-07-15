@@ -14,9 +14,7 @@ const ownership =
         return next();
       }
 
-      return next(authorizationError());
-
-      return;
+      return next(authorizationError("Operation not allowed"));
     }
   };
 

@@ -32,19 +32,21 @@ router
   .delete(
     "/api/v1/jobs/:id",
     authenticate,
-    checkUserStatus,
     ownership("Job"),
+    checkUserStatus,
     jobControllers.deleteItem
   )
   .put(
     "/api/v1/jobs/:id",
     authenticate,
+    ownership("Job"),
     checkUserStatus,
     jobControllers.updateItem
   )
   .patch(
     "/api/v1/jobs/:id",
     authenticate,
+    ownership("Job"),
     checkUserStatus,
     jobControllers.updateItemByPatch
   );

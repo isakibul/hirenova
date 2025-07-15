@@ -165,7 +165,7 @@ const findSingle = async ({ id, expand = "" }) => {
   return job;
 };
 
-const ownership = async ({ resourceId, userId }) => {
+const checkOwnership = async ({ resourceId, userId }) => {
   const job = await Job.findById(resourceId);
 
   if (!job) throw notFound("Job not found");
@@ -186,5 +186,5 @@ module.exports = {
   findAll,
   count,
   findSingle,
-  ownership,
+  checkOwnership,
 };
