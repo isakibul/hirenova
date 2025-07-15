@@ -3,7 +3,7 @@ const { authorizationError } = require("../utils/error");
 
 const ownership =
   (model = "") =>
-  async (req, res, next) => {
+  async (req, _res, next) => {
     if (model === "Job") {
       const isOwner = await jobService.checkOwnership({
         resourceId: req.params.id,

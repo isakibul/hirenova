@@ -2,6 +2,7 @@ const router = require("express").Router();
 const { controllers: authController } = require("../api/v1/auth");
 const { controllers: jobControllers } = require("../api/v1/job");
 const authenticate = require("../middleware/authenticate");
+const authorize = require("../middleware/authorize");
 const checkUserStatus = require("../middleware/checkUserStatus");
 const ownership = require("../middleware/ownership");
 
@@ -28,12 +29,19 @@ router
  * job routes for employer
  */
 router
-  .post("/api/v1/jobs", authenticate, checkUserStatus, jobControllers.create)
+  .post(
+    "/api/v1/jobs",
+    authenticate,
+    checkUserStatus,
+    authorize(["admin", "jobseeker"]),
+    jobControllers.create
+  )
   .delete(
     "/api/v1/jobs/:id",
     authenticate,
     ownership("Job"),
     checkUserStatus,
+    authorize(["admin", "jobseeker"]),
     jobControllers.deleteItem
   )
   .put(
@@ -41,6 +49,7 @@ router
     authenticate,
     ownership("Job"),
     checkUserStatus,
+    authorize(["admin", "jobseeker"]),
     jobControllers.updateItem
   )
   .patch(
@@ -48,6 +57,7 @@ router
     authenticate,
     ownership("Job"),
     checkUserStatus,
+    authorize(["admin", "jobseeker"]),
     jobControllers.updateItemByPatch
   );
 
