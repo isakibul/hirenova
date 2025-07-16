@@ -26,9 +26,14 @@ const createUser = async ({ username, email, password, role }) => {
   return { ...user._doc, id: user.id };
 };
 
+const getAllUser = async ({ page, limit, sortType, sortBy, search }) => {
+  console.log(page, limit, sortType, sortBy, search);
+};
+
 module.exports = {
   findUserByEmail,
   userExitsByEmail,
   userExitsByUsername,
   createUser,
+  getAllUser,
 };
