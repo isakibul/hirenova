@@ -63,13 +63,19 @@ router
   );
 
 /**
- * admin-only route to get all users
+ * admin-only route of users
  */
 router.get(
   "/api/v1/admin/users",
   authenticate,
   authorize(["admin"]),
   adminControllers.getAllUser
+);
+router.get(
+  "/api/v1/admin/users/:id",
+  authenticate,
+  authorize(["admin"]),
+  adminControllers.getSingleUser
 );
 
 module.exports = router;

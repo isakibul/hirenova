@@ -40,11 +40,13 @@ const findAll = async (req, res, next) => {
       page,
     });
 
-    res.status(200).json({
+    const response = {
       data,
       pagination,
       links,
-    });
+    };
+
+    res.status(200).json(response);
   } catch (e) {
     next(e);
   }

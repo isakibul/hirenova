@@ -49,10 +49,24 @@ const getAllUser = async ({ page, limit, sortType, sortBy, search }) => {
 };
 
 const count = async ({ search = "" }) => {
-  const filter = {
-    title: { $regex: search, $options: "i" },
-  };
+  const filter = search
+    ? {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      }
+    : {};
+
   return User.countDocuments(filter);
+};
+
+const getSingleUser = async (id) => {
+  const user = await User.findById(id);
+  if (!user) {
+    throw new Error("User not found");
+  }
+  return { ...user._doc, id: user._id.toString() };
 };
 
 module.exports = {
@@ -62,4 +76,5 @@ module.exports = {
   createUser,
   getAllUser,
   count,
+  getSingleUser,
 };
