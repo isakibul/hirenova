@@ -27,7 +27,32 @@ const createUser = async ({ username, email, password, role }) => {
 };
 
 const getAllUser = async ({ page, limit, sortType, sortBy, search }) => {
-  console.log(page, limit, sortType, sortBy, search);
+  const sortStr = `${sortType === "dsc" ? "-" : ""}${sortBy}`;
+  const filter = search
+    ? {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      }
+    : {};
+
+  const users = await User.find(filter)
+    .sort(sortStr)
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  return users.map((user) => ({
+    ...user._doc,
+    id: user.id,
+  }));
+};
+
+const count = async ({ search = "" }) => {
+  const filter = {
+    title: { $regex: search, $options: "i" },
+  };
+  return User.countDocuments(filter);
 };
 
 module.exports = {
@@ -36,4 +61,5 @@ module.exports = {
   userExitsByUsername,
   createUser,
   getAllUser,
+  count,
 };

@@ -16,6 +16,10 @@ const getAllUser = async (req, res, next) => {
       sortBy,
       search,
     });
+
+    console.log(user);
+
+    res.send(user);
   } catch (e) {
     next(e);
   }

@@ -34,7 +34,7 @@ router
     "/api/v1/jobs",
     authenticate,
     checkUserStatus,
-    authorize(["admin", "jobseeker"]),
+    authorize(["admin", "employer"]),
     jobControllers.create
   )
   .delete(
@@ -42,7 +42,7 @@ router
     authenticate,
     ownership("Job"),
     checkUserStatus,
-    authorize(["admin", "jobseeker"]),
+    authorize(["admin", "employer"]),
     jobControllers.deleteItem
   )
   .put(
@@ -50,7 +50,7 @@ router
     authenticate,
     ownership("Job"),
     checkUserStatus,
-    authorize(["admin", "jobseeker"]),
+    authorize(["admin", "employer"]),
     jobControllers.updateItem
   )
   .patch(
@@ -58,7 +58,7 @@ router
     authenticate,
     ownership("Job"),
     checkUserStatus,
-    authorize(["admin", "jobseeker"]),
+    authorize(["admin", "employer"]),
     jobControllers.updateItemByPatch
   );
 
