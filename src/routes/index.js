@@ -31,14 +31,14 @@ router
  */
 router
   .post(
-    "/api/v1/jobs",
+    "/api/v1/job",
     authenticate,
     checkUserStatus,
     authorize(["admin", "employer"]),
     jobControllers.create
   )
   .delete(
-    "/api/v1/jobs/:id",
+    "/api/v1/job/:id",
     authenticate,
     ownership("Job"),
     checkUserStatus,
@@ -46,7 +46,7 @@ router
     jobControllers.deleteItem
   )
   .put(
-    "/api/v1/jobs/:id",
+    "/api/v1/job/:id",
     authenticate,
     ownership("Job"),
     checkUserStatus,
@@ -54,7 +54,7 @@ router
     jobControllers.updateItem
   )
   .patch(
-    "/api/v1/jobs/:id",
+    "/api/v1/job/:id",
     authenticate,
     ownership("Job"),
     checkUserStatus,
@@ -65,20 +65,26 @@ router
 /**
  * admin-only route of users
  */
+router.post(
+  "/api/v1/admin/user",
+  authenticate,
+  authorize(["admin"]),
+  adminControllers.addUser
+);
 router.get(
-  "/api/v1/admin/users",
+  "/api/v1/admin/user",
   authenticate,
   authorize(["admin"]),
   adminControllers.getAllUser
 );
 router.get(
-  "/api/v1/admin/users/:id",
+  "/api/v1/admin/user/:id",
   authenticate,
   authorize(["admin"]),
   adminControllers.getSingleUser
 );
 router.delete(
-  "/api/v1/admin/users/:id",
+  "/api/v1/admin/user/:id",
   authenticate,
   authorize(["admin"]),
   adminControllers.removeUser
