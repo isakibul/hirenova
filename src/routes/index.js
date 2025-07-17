@@ -77,5 +77,11 @@ router.get(
   authorize(["admin"]),
   adminControllers.getSingleUser
 );
+router.delete(
+  "/api/v1/admin/users/:id",
+  authenticate,
+  authorize(["admin"]),
+  adminControllers.removeUser
+);
 
 module.exports = router;

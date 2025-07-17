@@ -1,4 +1,5 @@
 const { User } = require("../../model");
+const { notFound } = require("../../utils/error");
 
 const findUserByEmail = async (email) => {
   const user = await User.findOne({ email });
@@ -64,9 +65,17 @@ const count = async ({ search = "" }) => {
 const getSingleUser = async (id) => {
   const user = await User.findById(id);
   if (!user) {
-    throw new Error("User not found");
+    throw notFound("User not found");
   }
   return { ...user._doc, id: user._id.toString() };
+};
+
+const removeUser = async (id) => {
+  const user = await User.findByIdAndDelete(id);
+  if (!user) {
+    throw notFound("User not found");
+  }
+  return User.findByIdAndDelete(id);
 };
 
 module.exports = {
@@ -77,4 +86,5 @@ module.exports = {
   getAllUser,
   count,
   getSingleUser,
+  removeUser,
 };

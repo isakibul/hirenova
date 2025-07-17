@@ -1,14 +1,14 @@
 const userService = require("../../../../lib/user");
+const { notFound } = require("../../../../utils/error");
 
 const getSingleUser = async (req, res, next) => {
   const { id } = req.params;
-  console.log(id);
 
   try {
     const user = await userService.getSingleUser(id);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      throw notFound("User not found");
     }
 
     const { _id, password, __v, ...rest } = user;
