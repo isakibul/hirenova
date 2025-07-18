@@ -11,16 +11,16 @@ const ownership = require("../middleware/ownership");
  * auth routes
  */
 router
-  .post("/api/v1/auth/register", authController.register)
+  .post("/api/v1/auth/signup", authController.register)
   .post("/api/v1/auth/login", authController.login);
 
 /**
  * job routes for jobseeker
  */
 router
-  .get("/api/v1/job", jobControllers.findAll)
+  .get("/api/v1/jobs", jobControllers.findAll)
   .get(
-    "/api/v1/job/:id",
+    "/api/v1/jobs/:id",
     authenticate,
     checkUserStatus,
     jobControllers.findSingle
@@ -31,14 +31,14 @@ router
  */
 router
   .post(
-    "/api/v1/job",
+    "/api/v1/jobs",
     authenticate,
     checkUserStatus,
     authorize(["admin", "employer"]),
     jobControllers.create
   )
   .delete(
-    "/api/v1/job/:id",
+    "/api/v1/jobs/:id",
     authenticate,
     ownership("Job"),
     checkUserStatus,
@@ -46,7 +46,7 @@ router
     jobControllers.deleteItem
   )
   .put(
-    "/api/v1/job/:id",
+    "/api/v1/jobs/:id",
     authenticate,
     ownership("Job"),
     checkUserStatus,
@@ -54,7 +54,7 @@ router
     jobControllers.updateItem
   )
   .patch(
-    "/api/v1/job/:id",
+    "/api/v1/jobs/:id",
     authenticate,
     ownership("Job"),
     checkUserStatus,
@@ -66,25 +66,25 @@ router
  * admin-only route of users
  */
 router.post(
-  "/api/v1/admin/user",
+  "/api/v1/admin/users",
   authenticate,
   authorize(["admin"]),
   adminControllers.addUser
 );
 router.get(
-  "/api/v1/admin/user",
+  "/api/v1/admin/users",
   authenticate,
   authorize(["admin"]),
   adminControllers.getAllUser
 );
 router.get(
-  "/api/v1/admin/user/:id",
+  "/api/v1/admin/users/:id",
   authenticate,
   authorize(["admin"]),
   adminControllers.getSingleUser
 );
 router.delete(
-  "/api/v1/admin/user/:id",
+  "/api/v1/admin/users/:id",
   authenticate,
   authorize(["admin"]),
   adminControllers.removeUser
