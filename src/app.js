@@ -2,10 +2,12 @@ const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
+const morgan = require("morgan");
 
 const router = require("./routes/index");
 
 const app = express();
+app.use(morgan("dev"));
 
 /**
  * Security
@@ -16,6 +18,7 @@ app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
+    message: "Too many request, please try again after 15 minutes",
   })
 );
 
