@@ -1,4 +1,5 @@
 const { User } = require("../../model");
+const { findById } = require("../../model/User");
 const { notFound } = require("../../utils/error");
 
 const findUserByEmail = async (email) => {
@@ -9,6 +10,11 @@ const findUserByEmail = async (email) => {
 const findUserByUsername = async (username) => {
   const user = await User.findOne({ username });
   return user ? user : false;
+};
+
+const findUserById = async (id) => {
+  const user = await User.findById(id);
+  return await User.findById(id);
 };
 
 const userExitsByEmail = async (email) => {
@@ -81,6 +87,7 @@ const removeUser = async (id) => {
 module.exports = {
   findUserByEmail,
   userExitsByEmail,
+  findUserById,
   userExitsByUsername,
   createUser,
   getAllUser,

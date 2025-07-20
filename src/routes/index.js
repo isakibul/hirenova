@@ -13,7 +13,7 @@ const ownership = require("../middleware/ownership");
 router
   .post("/api/v1/auth/signup", authController.register)
   .post("/api/v1/auth/login", authController.login)
-  .get("/api/v1/auth/confirm-email/:token", authController.confirmEmail);
+  .patch("/api/v1/auth/confirm-email/:token", authController.confirmEmail);
 
 /**
  * job routes for jobseeker
@@ -66,29 +66,36 @@ router
 /**
  * admin-only route of users
  */
-router.post(
-  "/api/v1/admin/users",
-  authenticate,
-  authorize(["admin"]),
-  adminControllers.addUser
-);
-router.get(
-  "/api/v1/admin/users",
-  authenticate,
-  authorize(["admin"]),
-  adminControllers.getAllUser
-);
-router.get(
-  "/api/v1/admin/users/:id",
-  authenticate,
-  authorize(["admin"]),
-  adminControllers.getSingleUser
-);
-router.delete(
-  "/api/v1/admin/users/:id",
-  authenticate,
-  authorize(["admin"]),
-  adminControllers.removeUser
-);
+router
+  .post(
+    "/api/v1/admin/users",
+    authenticate,
+    authorize(["admin"]),
+    adminControllers.addUser
+  )
+  .get(
+    "/api/v1/admin/users",
+    authenticate,
+    authorize(["admin"]),
+    adminControllers.getAllUser
+  )
+  .get(
+    "/api/v1/admin/users/:id",
+    authenticate,
+    authorize(["admin"]),
+    adminControllers.getSingleUser
+  )
+  .patch(
+    "/api/v1/admin/users/make-admin/:id",
+    authenticate,
+    authorize(["admin"]),
+    adminControllers.makeAdmin
+  )
+  .delete(
+    "/api/v1/admin/users/:id",
+    authenticate,
+    authorize(["admin"]),
+    adminControllers.removeUser
+  );
 
 module.exports = router;

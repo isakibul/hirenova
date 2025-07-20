@@ -24,15 +24,17 @@ const confirmEmail = async (req, res, next) => {
 
     const access_token = generateToken({ payload });
 
-    return res.status(200).json({
+    const response = {
       message: "Email confirmed successfully.",
       data: {
         access_token,
       },
       links: {
-        login: `${req.protocol}://${req.get("host")}/api/v1/auth/login`,
+        self: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
       },
-    });
+    };
+
+    return res.status(200).json(response);
   } catch (e) {
     next(e);
   }
