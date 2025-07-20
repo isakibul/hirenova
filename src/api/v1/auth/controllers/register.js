@@ -1,6 +1,7 @@
 const authService = require("../../../../lib/auth");
-const { generateToken } = require("../../../../lib/token");
+const { generateToken, generateEmailToken } = require("../../../../lib/token");
 const { registerSchema } = require("../../../../lib/validators/authValidator");
+const sendConfirmationEmail = require("../../../../lib/mailer");
 
 const register = async (req, res, next) => {
   try {
@@ -23,24 +24,18 @@ const register = async (req, res, next) => {
       role,
     });
 
-    const payload = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-    };
-
-    const access_token = generateToken({ payload });
+    const emailToken = generateEmailToken({ email: user.email });
+    await sendConfirmationEmail(email, emailToken);
 
     const response = {
       code: 201,
-      message: "User registration successful",
-      data: {
-        access_token,
-      },
+      message:
+        "Registration successful. Please confirm your email to activate your account.",
       links: {
         self: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
-        login: `${req.protocol}://${req.get("host")}/api/v1/employer/login`,
+        confirm_email: `${req.protocol}://${req.get(
+          "host"
+        )}/api/v1/auth/confirm-email/${emailToken}`,
       },
     };
 

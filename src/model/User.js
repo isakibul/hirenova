@@ -31,6 +31,12 @@ const userSchema = new Schema(
       enum: ["pending", "active", "suspended"],
       default: "pending",
     },
+    emailVerificationToken: {
+      type: String,
+    },
+    emailVerificationTokenExpires: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

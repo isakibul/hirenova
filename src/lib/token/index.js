@@ -33,8 +33,18 @@ const verifyToken = ({
   }
 };
 
+const generateEmailToken = (payload) => {
+  return jwt.sign(payload, process.env.EMAIL_SECRET, { expiresIn: "1d" });
+};
+
+const verifyEmailToken = (token) => {
+  return jwt.verify(token, process.env.EMAIL_SECRET);
+};
+
 module.exports = {
   generateToken,
   decodeToken,
   verifyToken,
+  generateEmailToken,
+  verifyEmailToken,
 };
