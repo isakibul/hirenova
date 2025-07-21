@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const getConfirmationEmailHtml = require("../../utils/confirmationEmail");
+const getResetPasswordEmailHtml = require("../../utils/resetPasswordEmail");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -22,8 +23,6 @@ const sendConfirmationEmail = async (to, token) => {
 };
 
 const sendResetEmail = async (to, resetLink) => {
-  console.log(to, resetLink);
-
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -32,12 +31,13 @@ const sendResetEmail = async (to, resetLink) => {
     },
   });
 
+  const html = getResetPasswordEmailHtml(resetLink);
+
   await transporter.sendMail({
     from: `"Hirenova" <${process.env.EMAIL_USER}>`,
     to,
-    subject: "Reset Your Password",
-    html: `<p>Click the link below to reset your password:</p>
-           <a href="${resetLink}">${resetLink}</a>`,
+    subject: "Reset your password",
+    html,
   });
 };
 

@@ -1,4 +1,4 @@
-const getConfirmationEmailHtml = (confirmUrl) => `
+const getResetPasswordEmailHtml = (resetUrl) => `
   <!DOCTYPE html>
   <html>
     <head>
@@ -52,16 +52,17 @@ const getConfirmationEmailHtml = (confirmUrl) => `
     <body>
       <div class="container">
         <div class="header">
-          <h1>Confirm Your Email</h1>
+          <h1>Reset Your Password</h1>
         </div>
         <div class="content">
           <p>Hi there,</p>
-          <p>Thank you for registering with us. Please confirm your email address to activate your account.</p>
+          <p>We received a request to reset your password. If this was you, click the button below to create a new password.</p>
           <p>
-            <a href="${confirmUrl}" class="button">Confirm Email</a>
+            <a href="${resetUrl}" class="button">Reset Password</a>
           </p>
           <p>If the button doesn't work, copy and paste the following URL into your browser:</p>
-          <p style="word-break: break-all;">${confirmUrl}</p>
+          <p style="word-break: break-all;">${resetUrl}</p>
+          <p>If you didn’t request this, you can ignore this email.</p>
         </div>
         <div class="footer">
           <p>&copy; ${new Date().getFullYear()} Hirenova. All rights reserved.</p>
@@ -71,4 +72,4 @@ const getConfirmationEmailHtml = (confirmUrl) => `
   </html>
 `;
 
-module.exports = getConfirmationEmailHtml;
+module.exports = getResetPasswordEmailHtml;

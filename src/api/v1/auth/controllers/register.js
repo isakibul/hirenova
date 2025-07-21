@@ -1,5 +1,5 @@
 const authService = require("../../../../lib/auth");
-const { generateToken, generateEmailToken } = require("../../../../lib/token");
+const { generateEmailToken } = require("../../../../lib/token");
 const { registerSchema } = require("../../../../lib/validators/authValidator");
 const { sendConfirmationEmail } = require("../../../../lib/mailer");
 

@@ -1,6 +1,6 @@
 const { sendResetEmail } = require("../../../../lib/mailer");
 const userService = require("../../../../lib/user");
-const { notFound } = require("../../../../utils/error");
+const { notFound, authorizationError } = require("../../../../utils/error");
 const crypto = require("crypto");
 
 const forgotPassword = async (req, res, next) => {
@@ -11,6 +11,10 @@ const forgotPassword = async (req, res, next) => {
 
     if (!user) {
       throw notFound("User not found");
+    }
+
+    if (user.status === "blocked") {
+      throw authorizationError("Your account is blocked");
     }
 
     const token = crypto.randomBytes(32).toString("hex");
