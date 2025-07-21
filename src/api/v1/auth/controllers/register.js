@@ -41,9 +41,7 @@ const register = async (req, res, next) => {
 
     res.status(201).json(response);
   } catch (e) {
-    console.log(e);
-
-    // next(e);
+    next(e);
   }
 };
 

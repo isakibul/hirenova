@@ -22,7 +22,7 @@ const forgotPassword = async (req, res, next) => {
 
     const resetLink = `${req.protocol}://${req.get(
       "host"
-    )}/reset-password?token=${token}`;
+    )}/api/v1/auth/reset-password?token=${token}`;
 
     await sendResetEmail(user.email, resetLink);
 

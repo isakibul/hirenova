@@ -14,7 +14,8 @@ router
   .post("/api/v1/auth/signup", authController.register)
   .post("/api/v1/auth/login", authController.login)
   .patch("/api/v1/auth/confirm-email/:token", authController.confirmEmail)
-  .patch("/api/v1/auth/forgot-password", authController.forgotPassword);
+  .patch("/api/v1/auth/forgot-password", authController.forgotPassword)
+  .patch("/api/v1/auth/reset-password", authController.resetPassword);
 
 /**
  * job routes for jobseeker
