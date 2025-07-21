@@ -13,7 +13,8 @@ const ownership = require("../middleware/ownership");
 router
   .post("/api/v1/auth/signup", authController.register)
   .post("/api/v1/auth/login", authController.login)
-  .patch("/api/v1/auth/confirm-email/:token", authController.confirmEmail);
+  .patch("/api/v1/auth/confirm-email/:token", authController.confirmEmail)
+  .patch("/api/v1/auth/forgot-password", authController.forgotPassword);
 
 /**
  * job routes for jobseeker

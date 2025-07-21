@@ -1,7 +1,7 @@
 const authService = require("../../../../lib/auth");
 const { generateToken, generateEmailToken } = require("../../../../lib/token");
 const { registerSchema } = require("../../../../lib/validators/authValidator");
-const sendConfirmationEmail = require("../../../../lib/mailer");
+const { sendConfirmationEmail } = require("../../../../lib/mailer");
 
 const register = async (req, res, next) => {
   try {
@@ -41,7 +41,9 @@ const register = async (req, res, next) => {
 
     res.status(201).json(response);
   } catch (e) {
-    next(e);
+    console.log(e);
+
+    // next(e);
   }
 };
 

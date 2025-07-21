@@ -1,5 +1,4 @@
 const { User } = require("../../model");
-const { findById } = require("../../model/User");
 const { notFound } = require("../../utils/error");
 
 const findUserByEmail = async (email) => {
