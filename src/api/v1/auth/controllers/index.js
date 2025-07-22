@@ -3,6 +3,7 @@ const login = require("./login");
 const confirmEmail = require("./confirmEmail");
 const forgotPassword = require("./forgotPassword");
 const resetPassword = require("./resetPassword");
+const changePassword = require("./changePassword");
 
 module.exports = {
   login,
@@ -10,4 +11,5 @@ module.exports = {
   confirmEmail,
   forgotPassword,
   resetPassword,
+  changePassword,
 };
