@@ -19,6 +19,13 @@ const changePassword = async (req, res, next) => {
       throw badRequest("Current password is incorrect");
     }
 
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      throw badRequest(
+        "New password cannot be the same as the current password"
+      );
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 

@@ -2,6 +2,7 @@ require("dotenv").config();
 const http = require("http");
 const app = require("./app");
 const { connectDatabase } = require("./db");
+const { connectRedis, disconnectRedis } = require("./config/redisClient");
 
 /**
  * Create HTTP server
@@ -20,7 +21,9 @@ const PORT = process.env.PORT || 4000;
 const main = async () => {
   try {
     await connectDatabase();
+    await connectRedis();
     const timestamp = new Date().toLocaleTimeString();
+
     server.listen(PORT, () => {
       console.log(
         `${timestamp} - Server is running on PORT ${process.env.PORT}`
