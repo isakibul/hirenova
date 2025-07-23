@@ -20,7 +20,8 @@ router
     "/api/v1/auth/change-password",
     authenticate,
     authController.changePassword
-  );
+  )
+  .post("/api/v1/auth/logout", authenticate, authController.logout);
 
 /**
  * job routes for jobseeker
