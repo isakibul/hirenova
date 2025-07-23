@@ -25,9 +25,7 @@ const main = async () => {
     const timestamp = new Date().toLocaleTimeString();
 
     server.listen(PORT, () => {
-      console.log(
-        `${timestamp} - Server is running on PORT ${process.env.PORT}`
-      );
+      console.log(`${timestamp} - Server is running on PORT ${PORT}`);
     });
   } catch (e) {
     console.error("Error connecting to the database");
