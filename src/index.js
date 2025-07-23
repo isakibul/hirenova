@@ -2,7 +2,7 @@ require("dotenv").config();
 const http = require("http");
 const app = require("./app");
 const { connectDatabase } = require("./db");
-const { connectRedis, disconnectRedis } = require("./config/redisClient");
+const { connectRedis } = require("./config/redisClient");
 
 /**
  * Create HTTP server

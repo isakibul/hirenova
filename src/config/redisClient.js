@@ -5,7 +5,7 @@ const redisUrl = `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASS
 const client = createClient({ url: redisUrl });
 
 client.on("error", (e) => {
-  next(e);
+  console.error("Redis Client Error:", e);
 });
 
 const connectRedis = async () => {
