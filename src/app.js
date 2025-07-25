@@ -5,7 +5,7 @@ const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 const hpp = require("hpp");
 
-const router = require("./routes/index");
+const v1Routes = require("./routes/v1");
 
 const app = express();
 app.use(morgan("dev"));
@@ -46,7 +46,7 @@ app.get("/health", (_req, res, next) => {
 /**
  * Routes
  */
-app.use(router);
+app.use("/api/v1", v1Routes);
 
 /**
  * 404 - Not found handler
