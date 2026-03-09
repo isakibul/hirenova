@@ -1,7 +1,3 @@
-/**
- * Job controller exports
- * @module api/v1/job/controllers
- */
 import create from "./create";
 import deleteItem from "./deleteItem";
 import findAll from "./findAll";

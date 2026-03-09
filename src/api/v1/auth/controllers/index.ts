@@ -1,7 +1,3 @@
-/**
- * Auth controller exports
- * @module api/v1/auth/controllers
- */
 import changePassword from "./changePassword";
 import confirmEmail from "./confirmEmail";
 import forgotPassword from "./forgotPassword";
