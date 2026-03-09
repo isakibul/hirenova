@@ -1,8 +1,19 @@
+/**
+ * Password reset controller
+ * @module api/v1/auth/controllers/resetPassword
+ */
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import { User } from "../../../../model";
 import { badRequest } from "../../../../utils/error";
 
+/**
+ * Handles password reset using token from email
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const resetPassword = async (
   req: Request,
   res: Response,

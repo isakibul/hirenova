@@ -1,3 +1,7 @@
+/**
+ * Server entry point
+ * @module index
+ */
 import "dotenv/config";
 import http from "http";
 import app from "./app";
@@ -5,12 +9,14 @@ import { connectRedis } from "./config/redisClient";
 import { connectDatabase } from "./db";
 
 /**
- * Create HTTP server
+ * HTTP server instance
+ * @type {http.Server}
  */
 const server = http.createServer(app);
 
 /**
- * Server configuration
+ * Server port number
+ * @type {number | undefined}
  */
 const PORT = process.env.PORT || 4000;
 

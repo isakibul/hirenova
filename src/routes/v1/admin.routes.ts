@@ -1,3 +1,7 @@
+/**
+ * Admin routes
+ * @module routes/v1/admin.routes
+ */
 import { Router } from "express";
 import { controllers as adminControllers } from "../../api/v1/admin";
 import authenticate from "../../middleware/authenticate";

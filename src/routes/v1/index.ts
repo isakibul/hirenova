@@ -1,3 +1,7 @@
+/**
+ * API v1 routes - combines all route modules
+ * @module routes/v1
+ */
 import { Router } from "express";
 import adminRoutes from "./admin.routes";
 import authRoutes from "./auth.routes";

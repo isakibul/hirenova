@@ -1,3 +1,7 @@
+/**
+ * Job routes
+ * @module routes/v1/jobs.routes
+ */
 import { Router } from "express";
 import { controllers as jobControllers } from "../../api/v1/job";
 import authenticate from "../../middleware/authenticate";

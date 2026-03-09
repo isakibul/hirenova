@@ -1,3 +1,7 @@
+/**
+ * Authentication routes
+ * @module routes/v1/auth.routes
+ */
 import { Router } from "express";
 import { controllers as authController } from "../../api/v1/auth";
 import authenticate from "../../middleware/authenticate";

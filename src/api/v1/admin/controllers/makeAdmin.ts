@@ -1,8 +1,19 @@
+/**
+ * Make admin controller
+ * @module api/v1/admin/controllers/makeAdmin
+ */
 import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import * as userService from "../../../../lib/user";
 import { notFound } from "../../../../utils/error";
 
+/**
+ * Handles upgrading a user to admin role
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const makeAdmin = async (
   req: Request,
   res: Response,

@@ -1,8 +1,19 @@
+/**
+ * Email confirmation controller
+ * @module api/v1/auth/controllers/confirmEmail
+ */
 import { NextFunction, Request, Response } from "express";
 import { generateToken, verifyEmailToken } from "../../../../lib/token";
 import { findUserByEmail } from "../../../../lib/user";
 import { notFound } from "../../../../utils/error";
 
+/**
+ * Handles email confirmation and activates user account
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const confirmEmail = async (
   req: Request,
   res: Response,

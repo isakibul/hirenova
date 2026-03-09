@@ -1,21 +1,46 @@
 import defaults from "../config/defaults";
 import { generateQueryString } from "./qs";
 
+/**
+ * Options for pagination calculation
+ * @interface PaginationOptions
+ */
 interface PaginationOptions {
+  /** Total number of items */
   totalItems?: number;
+  /** Number of items per page */
   limit?: number;
+  /** Current page number */
   page?: number;
 }
 
+/**
+ * Pagination result object
+ * @interface Pagination
+ */
 interface Pagination {
+  /** Current page number */
   page: number;
+  /** Number of items per page */
   limit: number;
+  /** Total number of items */
   totalItems: number;
+  /** Total number of pages */
   totalPage: number;
+  /** Next page number (if available) */
   next?: number;
+  /** Previous page number (if available) */
   prev?: number;
 }
 
+/**
+ * Calculates pagination metadata for a list of items
+ * @param {PaginationOptions} options - Pagination options
+ * @param {number} [options.totalItems=defaults.totalItems] - Total number of items
+ * @param {number} [options.limit=defaults.limit] - Items per page
+ * @param {number} [options.page=defaults.page] - Current page
+ * @returns {Pagination} Pagination object with page info and next/prev links
+ */
 const getPagination = ({
   totalItems = defaults.totalItems,
   limit = defaults.limit,
@@ -39,15 +64,30 @@ const getPagination = ({
   return pagination;
 };
 
+/**
+ * Options for HATEOAS links generation
+ * @interface HATEOASOptions
+ */
 interface HATEOASOptions {
+  /** Base URL for the API */
   url?: string;
+  /** API path */
   path?: string;
+  /** Query parameters */
   query?: Record<string, any>;
+  /** Whether there's a next page */
   hasNext?: boolean;
+  /** Whether there's a previous page */
   hasPrev?: boolean;
+  /** Current page number */
   page?: number;
 }
 
+/**
+ * Generates HATEOAS links for pagination
+ * @param {HATEOASOptions} options - HATEOAS options
+ * @returns {Record<string, string>} Object containing self, next, and prev links
+ */
 const getHATEOASforAllItems = ({
   url = "/",
   path = "",
@@ -72,12 +112,25 @@ const getHATEOASforAllItems = ({
   return links;
 };
 
+/**
+ * Options for transforming items
+ * @interface TransformOptions
+ */
 interface TransformOptions {
+  /** Array of items to transform */
   items?: any[];
+  /** Array of keys to select from each item */
   selection?: string[];
+  /** Base path for generating links */
   path?: string;
 }
 
+/**
+ * Transforms array items by adding links and optionally filtering properties
+ * @param {TransformOptions} options - Transform options
+ * @returns {any[]} Transformed items with links
+ * @throws {Error} If items or selection is not an array
+ */
 const getTransformedItems = ({
   items = [],
   selection = [],

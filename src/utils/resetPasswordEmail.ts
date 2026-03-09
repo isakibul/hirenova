@@ -1,3 +1,10 @@
+/**
+ * Generates HTML content for password reset email
+ * @param {string} resetUrl - The password reset URL to include in the email
+ * @returns {string} HTML string for the password reset email
+ * @example
+ * const html = getResetPasswordEmailHtml('https://example.com/reset/abc123');
+ */
 const getResetPasswordEmailHtml = (resetUrl: string): string => `
   <!DOCTYPE html>
   <html>

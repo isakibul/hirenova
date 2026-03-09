@@ -1,7 +1,18 @@
+/**
+ * Update job controller (full replacement)
+ * @module api/v1/job/controllers/updateItem
+ */
 import { NextFunction, Request, Response } from "express";
 import * as jobService from "../../../../lib/job";
 import { jobSchema } from "../../../../lib/validators/jobValidator";
 
+/**
+ * Handles job update (full replacement) or creation if not exists
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const updateItem = async (
   req: Request,
   res: Response,

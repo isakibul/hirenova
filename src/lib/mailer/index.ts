@@ -1,7 +1,15 @@
+/**
+ * Email service module using nodemailer
+ * @module lib/mailer
+ */
 import nodemailer from "nodemailer";
 import getConfirmationEmailHtml from "../../utils/confirmationEmail";
 import getResetPasswordEmailHtml from "../../utils/resetPasswordEmail";
 
+/**
+ * Nodemailer transporter for sending emails
+ * @type {nodemailer.Transporter}
+ */
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -10,6 +18,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+/**
+ * Sends a confirmation email to the user
+ * @async
+ * @param {string} to - Recipient email address
+ * @param {string} token - Email confirmation token
+ * @returns {Promise<void>} Resolves when email is sent
+ */
 const sendConfirmationEmail = async (
   to: string,
   token: string,
@@ -25,6 +40,13 @@ const sendConfirmationEmail = async (
   });
 };
 
+/**
+ * Sends a password reset email to the user
+ * @async
+ * @param {string} to - Recipient email address
+ * @param {string} resetLink - Password reset link
+ * @returns {Promise<void>} Resolves when email is sent
+ */
 const sendResetEmail = async (to: string, resetLink: string): Promise<void> => {
   const resetTransporter = nodemailer.createTransport({
     service: "gmail",

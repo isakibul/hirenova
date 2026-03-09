@@ -1,7 +1,18 @@
+/**
+ * Get single user controller (admin)
+ * @module api/v1/admin/controllers/getSingleUser
+ */
 import { NextFunction, Request, Response } from "express";
 import * as userService from "../../../../lib/user";
 import { notFound } from "../../../../utils/error";
 
+/**
+ * Retrieves a single user by ID (admin only)
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const getSingleUser = async (
   req: Request,
   res: Response,

@@ -1,3 +1,7 @@
+/**
+ * Find all jobs controller
+ * @module api/v1/job/controllers/findAll
+ */
 import { NextFunction, Request, Response } from "express";
 import defaults from "../../../../config/defaults";
 import * as jobService from "../../../../lib/job";
@@ -7,6 +11,13 @@ import {
   getTransformedItems,
 } from "../../../../utils/getPagination";
 
+/**
+ * Retrieves all jobs with pagination, sorting, and search
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const findAll = async (
   req: Request,
   res: Response,

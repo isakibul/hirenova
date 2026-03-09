@@ -1,3 +1,7 @@
+/**
+ * Admin controller exports
+ * @module api/v1/admin/controllers
+ */
 import addUser from "./addUser";
 import getAllUser from "./getAllUser";
 import getSingleUser from "./getSingleUser";

@@ -1,6 +1,17 @@
+/**
+ * Job creation controller
+ * @module api/v1/job/controllers/create
+ */
 import { NextFunction, Request, Response } from "express";
 import * as jobService from "../../../../lib/job";
 
+/**
+ * Handles job creation by authenticated employers
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const create = async (
   req: Request,
   res: Response,

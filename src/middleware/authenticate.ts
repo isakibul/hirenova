@@ -1,9 +1,20 @@
+/**
+ * Authentication middleware - verifies JWT token and attaches user to request
+ * @module middleware/authenticate
+ */
 import { NextFunction, Request, Response } from "express";
 import * as tokenService from "../lib/token";
 import * as userService from "../lib/user";
 import { authenticationError } from "../utils/error";
 import { isTokenBlacklisted } from "../utils/tokenBlacklist";
 
+/**
+ * Express middleware to authenticate user via JWT token
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const authenticate = async (
   req: Request,
   _res: Response,

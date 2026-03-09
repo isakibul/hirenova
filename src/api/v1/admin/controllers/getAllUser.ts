@@ -1,3 +1,7 @@
+/**
+ * Get all users controller (admin)
+ * @module api/v1/admin/controllers/getAllUser
+ */
 import { NextFunction, Request, Response } from "express";
 import defaults from "../../../../config/defaults";
 import * as userService from "../../../../lib/user";
@@ -7,6 +11,13 @@ import {
   getTransformedItems,
 } from "../../../../utils/getPagination";
 
+/**
+ * Retrieves all users with pagination, sorting, and search (admin only)
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const getAllUser = async (
   req: Request,
   res: Response,

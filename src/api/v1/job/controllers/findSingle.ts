@@ -1,6 +1,17 @@
+/**
+ * Find single job controller
+ * @module api/v1/job/controllers/findSingle
+ */
 import { NextFunction, Request, Response } from "express";
 import * as jobService from "../../../../lib/job";
 
+/**
+ * Retrieves a single job by ID
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const findSingle = async (
   req: Request,
   res: Response,

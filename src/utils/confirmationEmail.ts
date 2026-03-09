@@ -1,3 +1,10 @@
+/**
+ * Generates HTML content for email confirmation
+ * @param {string} confirmUrl - The confirmation URL to include in the email
+ * @returns {string} HTML string for the confirmation email
+ * @example
+ * const html = getConfirmationEmailHtml('https://example.com/confirm/abc123');
+ */
 const getConfirmationEmailHtml = (confirmUrl: string): string => `
   <!DOCTYPE html>
   <html>

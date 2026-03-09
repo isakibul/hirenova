@@ -1,7 +1,18 @@
+/**
+ * Update job controller (partial update)
+ * @module api/v1/job/controllers/updateItemByPatch
+ */
 import { NextFunction, Request, Response } from "express";
 import * as jobService from "../../../../lib/job";
 import { jobSchema } from "../../../../lib/validators/jobValidator";
 
+/**
+ * Handles job update using PATCH method (partial update)
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const updateItemByPatch = async (
   req: Request,
   res: Response,

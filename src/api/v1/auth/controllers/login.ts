@@ -1,7 +1,18 @@
+/**
+ * User login controller
+ * @module api/v1/auth/controllers/login
+ */
 import { NextFunction, Request, Response } from "express";
 import * as authService from "../../../../lib/auth";
 import { loginSchema } from "../../../../lib/validators/authValidator";
 
+/**
+ * Handles user login
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const login = async (
   req: Request,
   res: Response,

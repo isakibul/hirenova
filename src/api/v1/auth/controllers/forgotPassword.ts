@@ -1,9 +1,20 @@
+/**
+ * Forgot password controller
+ * @module api/v1/auth/controllers/forgotPassword
+ */
 import crypto from "crypto";
 import { NextFunction, Request, Response } from "express";
 import { sendResetEmail } from "../../../../lib/mailer";
 import * as userService from "../../../../lib/user";
 import { authorizationError, notFound } from "../../../../utils/error";
 
+/**
+ * Handles password reset request by sending reset link to email
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ * @returns {Promise<void>}
+ */
 const forgotPassword = async (
   req: Request,
   res: Response,

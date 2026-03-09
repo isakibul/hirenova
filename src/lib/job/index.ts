@@ -1,17 +1,39 @@
+/**
+ * Job service module for database operations
+ * @module lib/job
+ */
 import { Job } from "../../model";
 import { notFound } from "../../utils/error";
 
+/**
+ * Parameters for creating a job
+ * @interface JobParams
+ */
 interface JobParams {
+  /** Job title */
   title: string;
+  /** Job description */
   description?: string;
+  /** Job location */
   location?: string;
+  /** Type of job */
   jobType?: string;
+  /** Required skills */
   skillsRequired?: string[];
+  /** Years of experience required */
   experienceRequired?: number;
+  /** Salary offered */
   salary?: number;
+  /** ID of the job author */
   author?: string;
 }
 
+/**
+ * Creates a new job posting
+ * @async
+ * @param {JobParams} params - Job creation parameters
+ * @returns {Promise<any>} Created job document with ID
+ */
 const create = async ({
   title,
   description,
@@ -41,6 +63,13 @@ const create = async ({
   };
 };
 
+/**
+ * Deletes a job posting
+ * @async
+ * @param {string} id - Job's unique identifier
+ * @returns {Promise<any>} Deleted job document
+ * @throws {Error} If job not found
+ */
 const deleteItem = async (id: string): Promise<any> => {
   const job = await Job.findById(id);
 
@@ -51,11 +80,24 @@ const deleteItem = async (id: string): Promise<any> => {
   return Job.findByIdAndDelete(id);
 };
 
+/**
+ * Result of job update operation
+ * @interface UpdateItemResult
+ */
 interface UpdateItemResult {
+  /** Updated job document */
   job: any;
+  /** HTTP status code (200 for update, 201 for create) */
   statusCode: number;
 }
 
+/**
+ * Updates or creates a job (full replacement)
+ * @async
+ * @param {string} id - Job's unique identifier
+ * @param {JobParams} params - Job update parameters
+ * @returns {Promise<UpdateItemResult>} Updated job and status code
+ */
 const updateItem = async (
   id: string,
   params: JobParams,
@@ -111,6 +153,14 @@ const updateItem = async (
   };
 };
 
+/**
+ * Updates a job using PATCH method (partial update)
+ * @async
+ * @param {string} id - Job's unique identifier
+ * @param {JobParams} params - Job update parameters
+ * @returns {Promise<any>} Updated job document
+ * @throws {Error} If job not found
+ */
 const updateItemUsingPatch = async (
   id: string,
   params: JobParams,
@@ -151,14 +201,29 @@ const updateItemUsingPatch = async (
   return { ...(job as any)._doc, id: job.id };
 };
 
+/**
+ * Parameters for finding all jobs
+ * @interface FindAllParams
+ */
 interface FindAllParams {
+  /** Page number for pagination */
   page: number;
+  /** Number of items per page */
   limit: number;
+  /** Sort type (asc or dsc) */
   sortType: string;
+  /** Field to sort by */
   sortBy: string;
+  /** Search query string */
   search: string;
 }
 
+/**
+ * Retrieves all jobs with pagination and search
+ * @async
+ * @param {FindAllParams} params - Query parameters
+ * @returns {Promise<any[]>} Array of job documents
+ */
 const findAll = async ({
   page,
   limit,
@@ -180,6 +245,12 @@ const findAll = async ({
   }));
 };
 
+/**
+ * Counts total number of jobs matching search criteria
+ * @async
+ * @param {{ search?: string }} params - Count parameters
+ * @returns {Promise<number>} Total count of jobs
+ */
 const count = ({ search = "" }: { search?: string }): Promise<number> => {
   const filter = {
     title: { $regex: search, $options: "i" },
@@ -187,11 +258,24 @@ const count = ({ search = "" }: { search?: string }): Promise<number> => {
   return Job.countDocuments(filter);
 };
 
+/**
+ * Parameters for finding a single job
+ * @interface FindSingleParams
+ */
 interface FindSingleParams {
+  /** Job's unique identifier */
   id: string;
+  /** Optional expansion parameter */
   expand?: string;
 }
 
+/**
+ * Retrieves a single job by ID
+ * @async
+ * @param {FindSingleParams} params - Query parameters
+ * @returns {Promise<any>} Job document
+ * @throws {Error} If ID is missing or job not found
+ */
 const findSingle = async ({
   id,
   expand = "",
@@ -205,11 +289,24 @@ const findSingle = async ({
   return job;
 };
 
+/**
+ * Parameters for checking job ownership
+ * @interface CheckOwnershipParams
+ */
 interface CheckOwnershipParams {
+  /** Job's unique identifier */
   resourceId: string;
+  /** User's unique identifier */
   userId: string;
 }
 
+/**
+ * Checks if a user owns a job posting
+ * @async
+ * @param {CheckOwnershipParams} params - Ownership check parameters
+ * @returns {Promise<boolean>} True if user owns the job, false otherwise
+ * @throws {Error} If job not found
+ */
 const checkOwnership = async ({
   resourceId,
   userId,
