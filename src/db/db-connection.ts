@@ -1,15 +1,7 @@
 import mongoose from "mongoose";
 
-/**
- * MongoDB connection string from environment variables
- * @type {string | undefined}
- */
 const dbConnectionString = process.env.DATABASE_CONNECTION_URL;
 
-/**
- * Database name from environment variables
- * @type {string | undefined}
- */
 const dbName = process.env.DB_NAME;
 
 /**
