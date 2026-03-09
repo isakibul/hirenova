@@ -8,16 +8,8 @@ import app from "./app";
 import { connectRedis } from "./config/redisClient";
 import { connectDatabase } from "./db";
 
-/**
- * HTTP server instance
- * @type {http.Server}
- */
 const server = http.createServer(app);
 
-/**
- * Server port number
- * @type {number | undefined}
- */
 const PORT = process.env.PORT || 4000;
 
 /**
