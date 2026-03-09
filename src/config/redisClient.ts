@@ -1,21 +1,9 @@
-import { createClient, RedisClientType } from "redis";
+import { createClient } from "redis";
 
-/**
- * Redis connection URL constructed from environment variables
- * @type {string}
- */
 const redisUrl = `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
 
-/**
- * Redis client instance
- * @type {RedisClientType}
- */
 const client = createClient({ url: redisUrl });
 
-/**
- * Event listener for Redis client errors
- * @param {Error} e - The error object
- */
 client.on("error", (e: Error) => {
   console.error("Redis Client Error:", e);
 });

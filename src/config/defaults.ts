@@ -3,17 +3,11 @@
  * @interface Defaults
  */
 interface Defaults {
-  /** Default total items count */
   totalItems: number;
-  /** Default items per page limit */
   limit: number;
-  /** Default page number */
   page: number;
-  /** Default sort type (asc/dsc) */
   sortType: string;
-  /** Default sort field */
   sortBy: string;
-  /** Default search query */
   search: string;
 }
 
