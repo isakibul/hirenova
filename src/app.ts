@@ -1,7 +1,3 @@
-/**
- * Express application setup
- * @module app
- */
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
@@ -11,10 +7,6 @@ import morgan from "morgan";
 
 import v1Routes from "./routes/v1";
 
-/**
- * Express application instance
- * @type {express.Application}
- */
 const app = express();
 app.use(morgan("dev"));
 
