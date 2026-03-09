@@ -4,7 +4,6 @@
  * @extends Error
  */
 interface AppError extends Error {
-  /** HTTP status code for the error */
   status?: number;
 }
 

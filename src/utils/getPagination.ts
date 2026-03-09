@@ -6,11 +6,8 @@ import { generateQueryString } from "./qs";
  * @interface PaginationOptions
  */
 interface PaginationOptions {
-  /** Total number of items */
   totalItems?: number;
-  /** Number of items per page */
   limit?: number;
-  /** Current page number */
   page?: number;
 }
 
@@ -19,17 +16,11 @@ interface PaginationOptions {
  * @interface Pagination
  */
 interface Pagination {
-  /** Current page number */
   page: number;
-  /** Number of items per page */
   limit: number;
-  /** Total number of items */
   totalItems: number;
-  /** Total number of pages */
   totalPage: number;
-  /** Next page number (if available) */
   next?: number;
-  /** Previous page number (if available) */
   prev?: number;
 }
 
@@ -69,17 +60,11 @@ const getPagination = ({
  * @interface HATEOASOptions
  */
 interface HATEOASOptions {
-  /** Base URL for the API */
   url?: string;
-  /** API path */
   path?: string;
-  /** Query parameters */
   query?: Record<string, any>;
-  /** Whether there's a next page */
   hasNext?: boolean;
-  /** Whether there's a previous page */
   hasPrev?: boolean;
-  /** Current page number */
   page?: number;
 }
 
@@ -117,11 +102,8 @@ const getHATEOASforAllItems = ({
  * @interface TransformOptions
  */
 interface TransformOptions {
-  /** Array of items to transform */
   items?: any[];
-  /** Array of keys to select from each item */
   selection?: string[];
-  /** Base path for generating links */
   path?: string;
 }
 
