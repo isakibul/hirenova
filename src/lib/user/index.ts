@@ -66,13 +66,9 @@ const userExitsByUsername = async (
  * @interface CreateUserParams
  */
 interface CreateUserParams {
-  /** User's username */
   username: string;
-  /** User's email address */
   email: string;
-  /** User's password (hashed) */
   password: string;
-  /** User's role */
   role: string;
 }
 
@@ -98,15 +94,10 @@ const createUser = async ({
  * @interface GetAllUserParams
  */
 interface GetAllUserParams {
-  /** Page number for pagination */
   page: number;
-  /** Number of items per page */
   limit: number;
-  /** Sort type (asc or dsc) */
   sortType: string;
-  /** Field to sort by */
   sortBy: string;
-  /** Search query string */
   search: string;
 }
 

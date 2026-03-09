@@ -6,13 +6,9 @@ import { serverError } from "../../utils/error";
  * @interface GenerateTokenOptions
  */
 interface GenerateTokenOptions {
-  /** Data to encode in the token */
   payload: Record<string, any>;
-  /** Signing algorithm (default: HS256) */
   algorithm?: Algorithm;
-  /** Secret key for signing (default: ACCESS_TOKEN_SECRET env) */
   secret?: string;
-  /** Token expiration time (default: 300h) */
   expiresIn?: SignOptions["expiresIn"];
 }
 
@@ -30,11 +26,8 @@ interface DecodeTokenOptions {
  * @interface VerifyTokenOptions
  */
 interface VerifyTokenOptions {
-  /** The JWT token to verify */
   token: string;
-  /** Signing algorithm (default: HS256) */
   algorithm?: Algorithm;
-  /** Secret key for verification (default: ACCESS_TOKEN_SECRET env) */
   secret?: string;
 }
 

@@ -12,13 +12,9 @@ import { createUser, userExitsByEmail, userExitsByUsername } from "../user";
  * @interface RegisterParams
  */
 interface RegisterParams {
-  /** User's username */
   username: string;
-  /** User's email address */
   email: string;
-  /** User's password */
   password: string;
-  /** User's role */
   role: string;
 }
 
@@ -59,9 +55,7 @@ const register = async ({
  * @interface LoginParams
  */
 interface LoginParams {
-  /** User's email address */
   email: string;
-  /** User's password */
   password: string;
 }
 

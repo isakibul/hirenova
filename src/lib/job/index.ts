@@ -10,21 +10,13 @@ import { notFound } from "../../utils/error";
  * @interface JobParams
  */
 interface JobParams {
-  /** Job title */
   title: string;
-  /** Job description */
   description?: string;
-  /** Job location */
   location?: string;
-  /** Type of job */
   jobType?: string;
-  /** Required skills */
   skillsRequired?: string[];
-  /** Years of experience required */
   experienceRequired?: number;
-  /** Salary offered */
   salary?: number;
-  /** ID of the job author */
   author?: string;
 }
 
@@ -85,9 +77,7 @@ const deleteItem = async (id: string): Promise<any> => {
  * @interface UpdateItemResult
  */
 interface UpdateItemResult {
-  /** Updated job document */
   job: any;
-  /** HTTP status code (200 for update, 201 for create) */
   statusCode: number;
 }
 
@@ -206,15 +196,10 @@ const updateItemUsingPatch = async (
  * @interface FindAllParams
  */
 interface FindAllParams {
-  /** Page number for pagination */
   page: number;
-  /** Number of items per page */
   limit: number;
-  /** Sort type (asc or dsc) */
   sortType: string;
-  /** Field to sort by */
   sortBy: string;
-  /** Search query string */
   search: string;
 }
 
@@ -263,9 +248,7 @@ const count = ({ search = "" }: { search?: string }): Promise<number> => {
  * @interface FindSingleParams
  */
 interface FindSingleParams {
-  /** Job's unique identifier */
   id: string;
-  /** Optional expansion parameter */
   expand?: string;
 }
 
@@ -294,9 +277,7 @@ const findSingle = async ({
  * @interface CheckOwnershipParams
  */
 interface CheckOwnershipParams {
-  /** Job's unique identifier */
   resourceId: string;
-  /** User's unique identifier */
   userId: string;
 }
 
