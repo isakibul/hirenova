@@ -11,11 +11,15 @@ import ownership from "../../middleware/ownership";
 
 const router = Router();
 
-// jobseeker
+/**
+ * Jobseeker routes
+ */
 router.get("/", jobControllers.findAll);
 router.get("/:id", authenticate, checkUserStatus, jobControllers.findSingle);
 
-// employer
+/**
+ * Employer routes
+ */
 router.post(
   "/",
   authenticate,
