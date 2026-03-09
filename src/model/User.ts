@@ -6,27 +6,16 @@ import { Document, Schema, model } from "mongoose";
  * @extends Document
  */
 export interface IUser extends Document {
-  /** User's username (3-50 characters) */
   username: string;
-  /** User's email address (unique) */
   email: string;
-  /** User's hashed password (min 6 characters) */
   password: string;
-  /** User's role: jobseeker, employer, or admin */
   role: "jobseeker" | "employer" | "admin";
-  /** Account status: pending, active, or suspended */
   status: "pending" | "active" | "suspended";
-  /** Token for email verification */
   emailVerificationToken?: string;
-  /** Expiration time for email verification token */
   emailVerificationTokenExpires?: Date;
-  /** Token for password reset */
   resetPasswordToken?: string;
-  /** Expiration time for password reset token */
   resetPasswordTokenExpires?: Date;
-  /** Creation timestamp */
   createdAt?: Date;
-  /** Last update timestamp */
   updatedAt?: Date;
 }
 
