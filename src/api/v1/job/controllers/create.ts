@@ -1,0 +1,48 @@
+import { NextFunction, Request, Response } from "express";
+import * as jobService from "../../../../lib/job";
+
+const create = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const {
+      title,
+      description,
+      location,
+      jobType,
+      skillsRequired,
+      experienceRequired,
+      salary,
+    } = req.body;
+
+    const employerId = req.user!.id;
+
+    const job = await jobService.create({
+      title,
+      description,
+      location,
+      jobType,
+      skillsRequired,
+      experienceRequired,
+      salary,
+      author: employerId,
+    });
+
+    const response = {
+      code: 201,
+      message: "Job created successfully",
+      data: { ...job },
+      links: {
+        self: `/api/jobs/${job._id}`,
+      },
+    };
+
+    res.status(201).json(response);
+  } catch (e) {
+    next(e);
+  }
+};
+
+export default create;
