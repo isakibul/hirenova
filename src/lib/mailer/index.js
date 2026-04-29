@@ -2,12 +2,11 @@ const nodemailer = require("nodemailer");
 const getConfirmationEmailHtml = require("../../utils/confirmationEmail");
 const getResetPasswordEmailHtml = require("../../utils/resetPasswordEmail");
 
+// MailHog transporter (DEV ONLY)
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: false,
 });
 
 const sendConfirmationEmail = async (to, token) => {
@@ -15,7 +14,7 @@ const sendConfirmationEmail = async (to, token) => {
   const html = getConfirmationEmailHtml(confirmUrl);
 
   await transporter.sendMail({
-    from: `"Hirenova" <${process.env.EMAIL_USER}>`,
+    from: `"Hirenova" <no-reply@hirenova.com>`,
     to,
     subject: "Confirm your email address",
     html,
@@ -23,18 +22,10 @@ const sendConfirmationEmail = async (to, token) => {
 };
 
 const sendResetEmail = async (to, resetLink) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
   const html = getResetPasswordEmailHtml(resetLink);
 
   await transporter.sendMail({
-    from: `"Hirenova" <${process.env.EMAIL_USER}>`,
+    from: `"Hirenova" <no-reply@hirenova.com>`,
     to,
     subject: "Reset your password",
     html,

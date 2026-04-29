@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  # MongoDB
+  mongodb:
+    image: mongo:7
+    container_name: hirenova-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # MongoDB UI (IMPORTANT)
+  mongo-express:
+    image: mongo-express
+    container_name: hirenova-mongo-ui
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+
+  # Redis
+  redis:
+    image: redis:7
+    container_name: hirenova-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # Redis UI (Redis Commander)
+  redis-commander:
+    image: rediscommander/redis-commander
+    container_name: hirenova-redis-ui
+    restart: always
+    ports:
+      - "8082:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379
+
+  # MailHog (Email testing UI included)
+  mailhog:
+    image: mailhog/mailhog
+    container_name: hirenova-mailhog
+    restart: always
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+
+volumes:
+  mongo_data:
