@@ -4,7 +4,7 @@ const authenticate = require("../../middleware/authenticate");
 
 router.post("/signup", authController.register);
 router.post("/login", authController.login);
-router.patch("/confirm-email/:token", authController.confirmEmail);
+router.get("/confirm-email/:token", authController.confirmEmail);
 router.patch("/forgot-password", authController.forgotPassword);
 router.patch("/reset-password", authController.resetPassword);
 router.patch("/change-password", authenticate, authController.changePassword);

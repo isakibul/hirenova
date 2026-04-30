@@ -12,7 +12,7 @@ const create = async (req, res, next) => {
       salary,
     } = req.body;
 
-    const employerId = req.user.id;
+    const employerId = req.user?.id || req.body.author;
 
     const job = await jobService.create({
       title,

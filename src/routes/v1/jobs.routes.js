@@ -7,16 +7,10 @@ const ownership = require("../../middleware/ownership");
 
 // jobseeker
 router.get("/", jobControllers.findAll);
-router.get("/:id", authenticate, checkUserStatus, jobControllers.findSingle);
+router.get("/:id", jobControllers.findSingle);
 
-// employer
-router.post(
-  "/",
-  authenticate,
-  checkUserStatus,
-  authorize(["admin", "employer"]),
-  jobControllers.create
-);
+// employer - open
+router.post("/", jobControllers.create);
 
 router.delete(
   "/:id",

@@ -5,12 +5,13 @@ const { isTokenBlacklisted } = require("../utils/tokenBlacklist");
 
 const authenticate = async (req, _res, next) => {
   try {
-    const token = req.headers.authorization.split(" ")[2];
+    const token = req.headers.authorization.split(" ")[1];
+    // console.log(token);
 
     const isBlacklisted = await isTokenBlacklisted(token);
     if (isBlacklisted) {
       throw authenticationError(
-        "Token has been invalidated. Please log in again."
+        "Token has been invalidated. Please log in again.",
       );
     }
 

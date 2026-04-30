@@ -11,7 +11,7 @@ services:
     volumes:
       - mongo_data:/data/db
 
-  # MongoDB UI (IMPORTANT)
+  # MongoDB UI (Mongo Express)
   mongo-express:
     image: mongo-express
     container_name: hirenova-mongo-ui
@@ -45,8 +45,8 @@ services:
     container_name: hirenova-mailhog
     restart: always
     ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   mongo_data:
