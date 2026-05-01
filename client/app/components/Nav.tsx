@@ -1,27 +1,34 @@
 import Link from "next/link";
+import ThemeToggle from "./theme/ThemeToggle";
 
 export default function Nav() {
   return (
-    <header className="flex items-center justify-between border-b border-white/10 px-8 py-6">
-      <Link href="/" className="text-2xl font-bold tracking-tight">
-        Hire<span className="text-blue-500">Nova</span>
+    <header className="site-border site-nav sticky top-0 z-20 flex items-center justify-between border-b px-5 md:px-[10vw] py-3">
+      <Link href="/" className="text-lg font-semibold tracking-tight">
+        Hire<span className="site-accent">Nova</span>
       </Link>
 
-      <nav className="hidden gap-6 text-sm text-gray-300 md:flex">
-        <a href="#features" className="hover:text-white">
+      <nav className="hidden gap-5 text-[13px] md:flex">
+        <Link href="/features" className="site-link">
           Features
-        </a>
-        <a href="#how" className="hover:text-white">
+        </Link>
+        <Link href="/how-it-works" className="site-link">
           How it Works
-        </a>
-        <a href="#jobs" className="hover:text-white">
+        </Link>
+        <Link href="/jobs" className="site-link">
           Jobs
-        </a>
+        </Link>
       </nav>
 
-      <button className="rounded-lg bg-blue-600 px-4 py-2 transition hover:bg-blue-700">
-        Get Started
-      </button>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/signup"
+          className="site-button rounded-md px-3 py-1.5 text-[13px] font-medium transition"
+        >
+          Get Started
+        </Link>
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

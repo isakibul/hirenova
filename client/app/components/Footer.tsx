@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="border-t border-white/10 px-8 py-10 text-center text-sm text-gray-500">
+    <footer className="site-border site-muted border-t px-5 md:px-[10vw] py-5 text-center text-xs">
       © {new Date().getFullYear()} HireNova. All rights reserved.
     </footer>
   );
