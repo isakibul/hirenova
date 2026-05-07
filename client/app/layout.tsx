@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import Script from "next/script";
+import AuthProvider from "./components/auth/AuthProvider";
 import Footer from "./components/Footer";
 import Nav from "./components/Nav";
 import ThemeProvider from "./components/theme/ThemeProvider";
@@ -55,11 +56,13 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: themeScript }}
         />
         <ThemeProvider>
-          <div className="site-shell flex min-h-screen flex-col">
-            <Nav />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          <AuthProvider>
+            <div className="site-shell flex min-h-screen flex-col">
+              <Nav />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

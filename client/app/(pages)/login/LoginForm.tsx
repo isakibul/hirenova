@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
@@ -8,15 +9,6 @@ type LoginState = {
   email: string;
   password: string;
 };
-
-type ApiResponse = {
-  message?: string;
-  error?: string;
-};
-
-function getMessage(body: ApiResponse, fallback: string) {
-  return body.error ?? body.message ?? fallback;
-}
 
 export default function LoginForm() {
   const router = useRouter();
@@ -33,18 +25,14 @@ export default function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
+      const result = await signIn("credentials", {
+        email: form.email,
+        password: form.password,
+        redirect: false,
       });
 
-      const body = (await response.json()) as ApiResponse;
-
-      if (!response.ok) {
-        setError(getMessage(body, "Unable to login"));
+      if (!result?.ok) {
+        setError(result?.error ?? "Unable to login");
         return;
       }
 

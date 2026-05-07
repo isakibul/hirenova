@@ -2,7 +2,9 @@ const nodemailer = require("nodemailer");
 const getConfirmationEmailHtml = require("../../utils/confirmationEmail");
 const getResetPasswordEmailHtml = require("../../utils/resetPasswordEmail");
 
-// MailHog transporter (DEV ONLY)
+/**
+ * MailHog transporter - Dev Only
+ */
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,

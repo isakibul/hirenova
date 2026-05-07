@@ -9,12 +9,14 @@ const API_BASE_URL =
 
 export async function postToBackend<T>(
   path: string,
-  payload: unknown
+  payload: unknown,
+  init?: { headers?: Record<string, string> }
 ): Promise<BackendResult<T>> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...init?.headers,
     },
     body: JSON.stringify(payload),
     cache: "no-store",
