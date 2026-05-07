@@ -25,7 +25,17 @@ const findAll = async (req, res, next) => {
     const data = getTransformedItems({
       items: jobs,
       path: "./job",
-      selection: ["id", "title", "updatedAt", "createdAt"],
+      selection: [
+        "id",
+        "title",
+        "location",
+        "jobType",
+        "salary",
+        "experienceRequired",
+        "skillsRequired",
+        "updatedAt",
+        "createdAt",
+      ],
     });
 
     const totalItems = await jobService.count({ search });
