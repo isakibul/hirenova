@@ -43,6 +43,31 @@ const userSchema = new Schema(
     resetPasswordTokenExpires: {
       type: Date,
     },
+    skills: [String],
+    resumeUrl: {
+      type: String,
+      maxLength: 500,
+    },
+    experience: {
+      type: Number,
+      min: 0,
+    },
+    preferredLocation: {
+      type: String,
+      maxLength: 100,
+    },
+    companyName: {
+      type: String,
+      maxLength: 120,
+    },
+    companyWebsite: {
+      type: String,
+      maxLength: 500,
+    },
+    companySize: {
+      type: String,
+      maxLength: 50,
+    },
   },
   {
     timestamps: true,

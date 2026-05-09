@@ -36,6 +36,9 @@ export default function SignupForm({ initialEmail = "", }) {
     const [submitAttempted, setSubmitAttempted] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [createdEmail, setCreatedEmail] = useState("");
+    const [resendNotice, setResendNotice] = useState("");
+    const [isResending, setIsResending] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const validationErrors = validateSignupForm(form);
     const visibleErrors = getVisibleErrors(validationErrors, touched, submitAttempted);
@@ -46,6 +49,7 @@ export default function SignupForm({ initialEmail = "", }) {
         }));
         setError("");
         setSuccess("");
+        setResendNotice("");
     }
     function markTouched(field) {
         setTouched((current) => ({
@@ -76,6 +80,7 @@ export default function SignupForm({ initialEmail = "", }) {
                 setError(getMessage(body, "Unable to create account"));
                 return;
             }
+            setCreatedEmail(form.email.trim().toLowerCase());
             setSuccess(getMessage(body, "Account created. Please confirm your email."));
             setForm(initialState);
             setTouched({});
@@ -86,6 +91,34 @@ export default function SignupForm({ initialEmail = "", }) {
         }
         finally {
             setIsSubmitting(false);
+        }
+    }
+    async function resendConfirmation() {
+        if (!createdEmail) {
+            return;
+        }
+        setIsResending(true);
+        setError("");
+        setResendNotice("");
+        try {
+            const response = await fetch("/api/auth/resend-confirmation", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: createdEmail }),
+            });
+            const body = await response.json();
+            if (!response.ok) {
+                throw new Error(getMessage(body, "Unable to resend confirmation email."));
+            }
+            setResendNotice(getMessage(body, "Confirmation email sent."));
+        }
+        catch (caughtError) {
+            setError(caughtError instanceof Error ? caughtError.message : "Unable to resend confirmation email.");
+        }
+        finally {
+            setIsResending(false);
         }
     }
     return (<form onSubmit={handleSubmit} noValidate className="site-border site-card site-elevated rounded-lg border p-4">
@@ -120,6 +153,14 @@ export default function SignupForm({ initialEmail = "", }) {
       {success ? (<p className="site-success mt-4 rounded-md border px-3 py-2 text-xs">
           {success}
         </p>) : null}
+      {createdEmail ? (<div className="mt-3">
+          <button type="button" onClick={resendConfirmation} disabled={isResending} className="site-border site-field w-full rounded-md border px-3 py-2 text-xs font-semibold disabled:opacity-70">
+            {isResending ? "Sending..." : "Resend verification email"}
+          </button>
+          {resendNotice ? (<p className="site-success mt-2 rounded-md border px-3 py-2 text-xs">
+              {resendNotice}
+            </p>) : null}
+        </div>) : null}
 
       <button type="submit" disabled={isSubmitting} className="site-button mt-5 w-full rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed">
         {isSubmitting ? "Creating account..." : "Create Account"}

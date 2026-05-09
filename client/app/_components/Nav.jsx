@@ -36,6 +36,11 @@ export default function Nav() {
     const roleMenuItems = userRole === "admin"
         ? [
             {
+                label: "Dashboard",
+                href: "/dashboard",
+                icon: "chart",
+            },
+            {
                 label: "Manage Jobs",
                 href: "/manage-jobs",
                 icon: "briefcase",
@@ -49,6 +54,11 @@ export default function Nav() {
         : userRole === "employer"
             ? [
                 {
+                    label: "Dashboard",
+                    href: "/dashboard",
+                    icon: "chart",
+                },
+                {
                     label: "Manage Jobs",
                     href: "/manage-jobs",
                     icon: "briefcase",
@@ -60,6 +70,16 @@ export default function Nav() {
                     label: "My Jobs",
                     href: "/my-jobs",
                     icon: "briefcase",
+                },
+                {
+                    label: "Applications",
+                    href: "/applications",
+                    icon: "file",
+                },
+                {
+                    label: "Saved Jobs",
+                    href: "/saved-jobs",
+                    icon: "bell",
                 },
             ]
             : [];

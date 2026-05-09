@@ -47,6 +47,7 @@ export default function ThemeProvider({ children }) {
     const currentTheme = theme ?? "light";
     const value = useMemo(() => ({
         theme: currentTheme,
+        setTheme: (nextTheme) => setTheme(nextTheme),
         toggleTheme: () => setTheme((previousTheme) => {
             const activeTheme = previousTheme ?? getPreferredTheme();
             return activeTheme === "dark" ? "light" : "dark";

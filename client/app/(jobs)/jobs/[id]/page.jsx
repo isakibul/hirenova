@@ -1,6 +1,7 @@
 import Icon from "@components/Icon";
 import { getFromBackend } from "@lib/backend";
 import { notFound } from "next/navigation";
+import JobActions from "./JobActions";
 function formatDate(value) {
     if (!value) {
         return "Not available";
@@ -130,9 +131,7 @@ export default async function JobDetailsPage({ params }) {
                 Review the role details and prepare your profile before
                 applying.
               </p>
-              <button className="site-button mt-4 w-full rounded-md px-4 py-2 text-sm font-medium">
-                Apply Now
-              </button>
+              <JobActions jobId={id}/>
             </div>
           </aside>
         </div>

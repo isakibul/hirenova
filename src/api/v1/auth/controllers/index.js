@@ -7,6 +7,8 @@ const changePassword = require("./changePassword");
 const getProfile = require("./getProfile");
 const updateProfile = require("./updateProfile");
 const logout = require("./logout");
+const resendConfirmation = require("./resendConfirmation");
+const deactivateAccount = require("./deactivateAccount");
 
 module.exports = {
   login,
@@ -18,4 +20,6 @@ module.exports = {
   getProfile,
   updateProfile,
   logout,
+  resendConfirmation,
+  deactivateAccount,
 };

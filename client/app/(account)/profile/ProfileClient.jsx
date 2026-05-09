@@ -46,6 +46,35 @@ function validateProfileForm(form) {
         email: emailError(form.email),
     };
 }
+function getProfileForm(data = {}) {
+    return {
+        username: data.username ?? "",
+        email: data.email ?? "",
+        skills: data.skills?.join(", ") ?? "",
+        resumeUrl: data.resumeUrl ?? "",
+        experience: typeof data.experience === "number" ? String(data.experience) : "",
+        preferredLocation: data.preferredLocation ?? "",
+        companyName: data.companyName ?? "",
+        companyWebsite: data.companyWebsite ?? "",
+        companySize: data.companySize ?? "",
+    };
+}
+function buildProfilePayload(form) {
+    return {
+        username: form.username.trim(),
+        email: form.email.trim().toLowerCase(),
+        skills: form.skills
+            .split(",")
+            .map((skill) => skill.trim())
+            .filter(Boolean),
+        resumeUrl: form.resumeUrl.trim(),
+        experience: form.experience === "" ? undefined : Number(form.experience),
+        preferredLocation: form.preferredLocation.trim(),
+        companyName: form.companyName.trim(),
+        companyWebsite: form.companyWebsite.trim(),
+        companySize: form.companySize.trim(),
+    };
+}
 function validatePasswordForm(form) {
     return {
         currentPassword: form.currentPassword ? "" : "Current password is required.",
@@ -62,6 +91,13 @@ export default function ProfileClient() {
     const [profileForm, setProfileForm] = useState({
         username: "",
         email: "",
+        skills: "",
+        resumeUrl: "",
+        experience: "",
+        preferredLocation: "",
+        companyName: "",
+        companyWebsite: "",
+        companySize: "",
     });
     const [passwordForm, setPasswordForm] = useState(emptyPasswordForm);
     const [profileTouched, setProfileTouched] = useState({});
@@ -69,6 +105,7 @@ export default function ProfileClient() {
     const [profileSubmitAttempted, setProfileSubmitAttempted] = useState(false);
     const [passwordSubmitAttempted, setPasswordSubmitAttempted] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isSavingPassword, setIsSavingPassword] = useState(false);
     const [notice, setNotice] = useState(null);
@@ -87,12 +124,10 @@ export default function ProfileClient() {
                 throw new Error(getMessage(body, "Unable to load profile."));
             }
             setProfile(body.data);
-            setProfileForm({
-                username: body.data.username ?? "",
-                email: body.data.email ?? "",
-            });
+            setProfileForm(getProfileForm(body.data));
             setProfileTouched({});
             setProfileSubmitAttempted(false);
+            setIsEditingProfile(false);
         }
         catch (caughtError) {
             setProfile(null);
@@ -127,22 +162,17 @@ export default function ProfileClient() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    username: profileForm.username.trim(),
-                    email: profileForm.email.trim().toLowerCase(),
-                }),
+                body: JSON.stringify(buildProfilePayload(profileForm)),
             });
             const body = (await response.json());
             if (!response.ok || !body.data) {
                 throw new Error(getMessage(body, "Unable to update profile."));
             }
             setProfile(body.data);
-            setProfileForm({
-                username: body.data.username ?? "",
-                email: body.data.email ?? "",
-            });
+            setProfileForm(getProfileForm(body.data));
             setProfileTouched({});
             setProfileSubmitAttempted(false);
+            setIsEditingProfile(false);
             setNotice("Profile updated.");
         }
         catch (caughtError) {
@@ -153,6 +183,19 @@ export default function ProfileClient() {
         finally {
             setIsSavingProfile(false);
         }
+    }
+    function startProfileEdit() {
+        setIsEditingProfile(true);
+        setNotice(null);
+        setError(null);
+    }
+    function cancelProfileEdit() {
+        setProfileForm(getProfileForm(profile ?? {}));
+        setProfileTouched({});
+        setProfileSubmitAttempted(false);
+        setIsEditingProfile(false);
+        setNotice(null);
+        setError(null);
     }
     async function handlePasswordSubmit(event) {
         event.preventDefault();
@@ -241,11 +284,16 @@ export default function ProfileClient() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_414px]">
           <div className="site-border site-card rounded-lg border">
-            <div className="border-b border-[var(--site-border)] px-4 py-3">
-              <h2 className="font-semibold">Profile Details</h2>
-              <p className="site-muted mt-1 text-xs">
-                These details come from the authenticated backend profile.
-              </p>
+            <div className="flex items-start justify-between gap-3 border-b border-[var(--site-border)] px-4 py-3">
+              <div>
+                <h2 className="font-semibold">Profile Details</h2>
+                <p className="site-muted mt-1 text-xs">
+                  These details come from the authenticated backend profile.
+                </p>
+              </div>
+              <button type="button" onClick={isEditingProfile ? cancelProfileEdit : startProfileEdit} disabled={isLoading || isSavingProfile} className="site-border site-field inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border disabled:opacity-60" aria-label={isEditingProfile ? "Cancel profile editing" : "Edit profile"}>
+                <Icon name={isEditingProfile ? "x" : "edit"}/>
+              </button>
             </div>
 
             {isLoading ? (<div className="site-muted p-6 text-sm">Loading profile...</div>) : (<form onSubmit={handleProfileSubmit} noValidate className="space-y-4 p-4">
@@ -255,7 +303,7 @@ export default function ProfileClient() {
                     <input value={profileForm.username} onChange={(event) => setProfileForm((current) => ({
                 ...current,
                 username: event.target.value,
-            }))} onBlur={() => setProfileTouched((current) => ({ ...current, username: true }))} aria-invalid={Boolean(visibleProfileErrors.username)} aria-describedby={visibleProfileErrors.username ? "profile-username-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={3} maxLength={50} autoComplete="username" required placeholder="yourname"/>
+            }))} onBlur={() => setProfileTouched((current) => ({ ...current, username: true }))} disabled={!isEditingProfile} aria-invalid={Boolean(visibleProfileErrors.username)} aria-describedby={visibleProfileErrors.username ? "profile-username-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" minLength={3} maxLength={50} autoComplete="username" required placeholder="yourname"/>
                     <FieldError id="profile-username-error" message={visibleProfileErrors.username}/>
                   </label>
 
@@ -264,10 +312,65 @@ export default function ProfileClient() {
                     <input type="email" value={profileForm.email} onChange={(event) => setProfileForm((current) => ({
                 ...current,
                 email: event.target.value,
-            }))} onBlur={() => setProfileTouched((current) => ({ ...current, email: true }))} aria-invalid={Boolean(visibleProfileErrors.email)} aria-describedby={visibleProfileErrors.email ? "profile-email-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" autoComplete="email" required placeholder="you@example.com"/>
+            }))} onBlur={() => setProfileTouched((current) => ({ ...current, email: true }))} disabled={!isEditingProfile} aria-invalid={Boolean(visibleProfileErrors.email)} aria-describedby={visibleProfileErrors.email ? "profile-email-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" autoComplete="email" required placeholder="you@example.com"/>
                     <FieldError id="profile-email-error" message={visibleProfileErrors.email}/>
                   </label>
                 </div>
+
+                {profile?.role === "jobseeker" ? (<div className="grid gap-4 border-t border-[var(--site-border)] pt-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="text-sm font-medium">Skills</span>
+                      <input value={profileForm.skills} onChange={(event) => setProfileForm((current) => ({
+                ...current,
+                skills: event.target.value,
+            }))} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="React, Node.js, Design"/>
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium">Resume URL</span>
+                      <input value={profileForm.resumeUrl} onChange={(event) => setProfileForm((current) => ({
+                ...current,
+                resumeUrl: event.target.value,
+            }))} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="https://..."/>
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium">Experience</span>
+                      <input type="number" min={0} value={profileForm.experience} onChange={(event) => setProfileForm((current) => ({
+                ...current,
+                experience: event.target.value,
+            }))} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="3"/>
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium">Preferred Location</span>
+                      <input value={profileForm.preferredLocation} onChange={(event) => setProfileForm((current) => ({
+                ...current,
+                preferredLocation: event.target.value,
+            }))} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="Remote or Dhaka"/>
+                    </label>
+                  </div>) : null}
+
+                {profile?.role === "employer" ? (<div className="grid gap-4 border-t border-[var(--site-border)] pt-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="text-sm font-medium">Company Name</span>
+                      <input value={profileForm.companyName} onChange={(event) => setProfileForm((current) => ({
+                ...current,
+                companyName: event.target.value,
+            }))} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="Acme Inc."/>
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium">Company Website</span>
+                      <input value={profileForm.companyWebsite} onChange={(event) => setProfileForm((current) => ({
+                ...current,
+                companyWebsite: event.target.value,
+            }))} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="https://..."/>
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium">Company Size</span>
+                      <input value={profileForm.companySize} onChange={(event) => setProfileForm((current) => ({
+                ...current,
+                companySize: event.target.value,
+            }))} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="11-50"/>
+                    </label>
+                  </div>) : null}
 
                 <dl className="grid gap-4 border-t border-[var(--site-border)] pt-4 sm:grid-cols-2">
                   <div>
@@ -284,10 +387,16 @@ export default function ProfileClient() {
                   </div>
                 </dl>
 
-                <button type="submit" disabled={isSavingProfile} className="site-button inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-70">
-                  <Icon name="check"/>
-                  {isSavingProfile ? "Saving..." : "Save Profile"}
-                </button>
+                {isEditingProfile ? (<div className="flex flex-col gap-2 sm:flex-row">
+                    <button type="submit" disabled={isSavingProfile} className="site-button inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-70">
+                      <Icon name="check"/>
+                      {isSavingProfile ? "Saving..." : "Save Profile"}
+                    </button>
+                    <button type="button" onClick={cancelProfileEdit} disabled={isSavingProfile} className="site-border site-field inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-70">
+                      <Icon name="x"/>
+                      Cancel
+                    </button>
+                  </div>) : null}
               </form>)}
           </div>
 

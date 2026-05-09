@@ -6,6 +6,13 @@ const profileSchema = Joi.object({
   email: Joi.string()
     .email({ tlds: { allow: false } })
     .required(),
+  skills: Joi.array().items(Joi.string().max(80)).optional(),
+  resumeUrl: Joi.string().uri().max(500).allow("").optional(),
+  experience: Joi.number().min(0).optional(),
+  preferredLocation: Joi.string().max(100).allow("").optional(),
+  companyName: Joi.string().max(120).allow("").optional(),
+  companyWebsite: Joi.string().uri().max(500).allow("").optional(),
+  companySize: Joi.string().max(50).allow("").optional(),
 });
 
 function sanitizeUser(user) {
@@ -34,6 +41,13 @@ const updateProfile = async (req, res, next) => {
     const user = await updateUserProfile(req.user.id, {
       username: value.username,
       email: value.email.toLowerCase(),
+      skills: value.skills,
+      resumeUrl: value.resumeUrl,
+      experience: value.experience,
+      preferredLocation: value.preferredLocation,
+      companyName: value.companyName,
+      companyWebsite: value.companyWebsite,
+      companySize: value.companySize,
     });
 
     res.status(200).json({

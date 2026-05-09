@@ -25,6 +25,13 @@ router.get(
 );
 
 router.patch(
+  "/users/:id",
+  authenticate,
+  authorize(["admin"]),
+  adminControllers.updateUser
+);
+
+router.patch(
   "/users/make-admin/:id",
   authenticate,
   authorize(["admin"]),

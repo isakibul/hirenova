@@ -517,6 +517,9 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
                               <Link href={`/jobs/${jobId}`} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold">
                                 View
                               </Link>
+                              <Link href={`/manage-jobs/${jobId}/applications`} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold">
+                                Applicants
+                              </Link>
                               <button type="button" onClick={() => handleEdit(job)} disabled={loadingJobId === jobId} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
                                 {loadingJobId === jobId ? "Loading" : "Edit"}
                               </button>

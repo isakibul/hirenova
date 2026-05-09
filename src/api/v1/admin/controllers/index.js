@@ -3,6 +3,7 @@ const getAllUser = require("./getAllUser");
 const getSingleUser = require("./getSingleUser");
 const removeUser = require("./removeUser");
 const makeAdmin = require("./makeAdmin");
+const updateUser = require("./updateUser");
 
 module.exports = {
   addUser,
@@ -10,4 +11,5 @@ module.exports = {
   getSingleUser,
   removeUser,
   makeAdmin,
+  updateUser,
 };

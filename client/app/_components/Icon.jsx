@@ -28,6 +28,10 @@ const paths = {
       <path d="M9 13h6"/>
       <path d="M9 17h4"/>
     </>),
+    edit: (<>
+      <path d="M12 20h9"/>
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+    </>),
     help: (<>
       <circle cx="12" cy="12" r="9"/>
       <path d="M9.5 9a2.5 2.5 0 0 1 4.5 1.5c0 2-2 2-2 3.5"/>

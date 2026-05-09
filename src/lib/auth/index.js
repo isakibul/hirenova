@@ -34,6 +34,10 @@ const login = async ({ email, password }) => {
     throw badRequest("Invalid credentials");
   }
 
+  if (user.status !== "active") {
+    throw badRequest(`Your account is ${user.status}`);
+  }
+
   const matched = await hashMatched(password, user.password);
   if (!matched) {
     throw badRequest("Invalid credentials");

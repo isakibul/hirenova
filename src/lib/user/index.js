@@ -80,7 +80,20 @@ const getSingleUser = async (id) => {
   return { ...user._doc, id: user._id.toString() };
 };
 
-const updateProfile = async (id, { username, email }) => {
+const updateProfile = async (
+  id,
+  {
+    username,
+    email,
+    skills,
+    resumeUrl,
+    experience,
+    preferredLocation,
+    companyName,
+    companyWebsite,
+    companySize,
+  }
+) => {
   const user = await User.findById(id);
 
   if (!user) {
@@ -113,9 +126,28 @@ const updateProfile = async (id, { username, email }) => {
     user.email = email;
   }
 
+  if (Array.isArray(skills)) user.skills = skills;
+  if (resumeUrl !== undefined) user.resumeUrl = resumeUrl;
+  if (experience !== undefined) user.experience = experience;
+  if (preferredLocation !== undefined) user.preferredLocation = preferredLocation;
+  if (companyName !== undefined) user.companyName = companyName;
+  if (companyWebsite !== undefined) user.companyWebsite = companyWebsite;
+  if (companySize !== undefined) user.companySize = companySize;
+
   await user.save();
 
   return { ...user._doc, id: user._id.toString() };
+};
+
+const updateUserByAdmin = async (id, payload) => {
+  const user = await updateProfile(id, payload);
+  const target = await User.findById(user.id);
+
+  if (payload.role) target.role = payload.role;
+  if (payload.status) target.status = payload.status;
+
+  await target.save();
+  return { ...target._doc, id: target._id.toString() };
 };
 
 const removeUser = async (id) => {
@@ -136,5 +168,6 @@ module.exports = {
   count,
   getSingleUser,
   updateProfile,
+  updateUserByAdmin,
   removeUser,
 };
