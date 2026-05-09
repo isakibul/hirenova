@@ -32,16 +32,28 @@ const createUser = async ({ username, email, password, role }) => {
   return { ...user._doc, id: user.id };
 };
 
-const getAllUser = async ({ page, limit, sortType, sortBy, search }) => {
+const allowedRoles = ["jobseeker", "employer", "admin"];
+
+const getUserFilter = ({ search = "", role = "" }) => {
+  const filter = {};
+
+  if (search) {
+    filter.$or = [
+      { username: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  if (allowedRoles.includes(role)) {
+    filter.role = role;
+  }
+
+  return filter;
+};
+
+const getAllUser = async ({ page, limit, sortType, sortBy, search, role }) => {
   const sortStr = `${sortType === "dsc" ? "-" : ""}${sortBy}`;
-  const filter = search
-    ? {
-        $or: [
-          { username: { $regex: search, $options: "i" } },
-          { email: { $regex: search, $options: "i" } },
-        ],
-      }
-    : {};
+  const filter = getUserFilter({ search, role });
 
   const users = await User.find(filter)
     .sort(sortStr)
@@ -54,15 +66,8 @@ const getAllUser = async ({ page, limit, sortType, sortBy, search }) => {
   }));
 };
 
-const count = async ({ search = "" }) => {
-  const filter = search
-    ? {
-        $or: [
-          { username: { $regex: search, $options: "i" } },
-          { email: { $regex: search, $options: "i" } },
-        ],
-      }
-    : {};
+const count = async ({ search = "", role = "" }) => {
+  const filter = getUserFilter({ search, role });
 
   return User.countDocuments(filter);
 };

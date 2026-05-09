@@ -131,12 +131,164 @@ const updateItemUsingPatch = async (
   return { ...job._doc, id: job.id };
 };
 
-const findAll = async ({ page, limit, sortType, sortBy, search }) => {
-  const sortStr = `${sortType === "dsc" ? "-" : ""}${sortBy}`;
-  const filter = { title: { $regex: search, $options: "i" } };
+const allowedJobTypes = ["full-time", "part-time", "remote", "contract"];
+const allowedSortFields = [
+  "createdAt",
+  "updatedAt",
+  "title",
+  "salary",
+  "experienceRequired",
+  "experienceMin",
+  "experienceMax",
+];
+
+const escapeRegExp = (value) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const getNumberFilter = ({ min, max }) => {
+  const filter = {};
+
+  if (min !== undefined && min !== "") {
+    const minValue = Number(min);
+
+    if (Number.isFinite(minValue)) {
+      filter.$gte = minValue;
+    }
+  }
+
+  if (max !== undefined && max !== "") {
+    const maxValue = Number(max);
+
+    if (Number.isFinite(maxValue)) {
+      filter.$lte = maxValue;
+    }
+  }
+
+  return Object.keys(filter).length ? filter : undefined;
+};
+
+const getJobFilter = ({
+  search = "",
+  location = "",
+  jobType = "",
+  skills = "",
+  minSalary,
+  maxSalary,
+  minExperience,
+  maxExperience,
+}) => {
+  const filter = {};
+  const trimmedSearch = search.trim();
+  const trimmedLocation = location.trim();
+  const jobTypes = String(jobType)
+    .split(",")
+    .map((type) => type.trim())
+    .filter((type) => allowedJobTypes.includes(type));
+  const skillList = String(skills)
+    .split(",")
+    .map((skill) => skill.trim())
+    .filter(Boolean);
+  const salaryFilter = getNumberFilter({ min: minSalary, max: maxSalary });
+  const hasMinExperience = minExperience !== undefined && minExperience !== "";
+  const hasMaxExperience = maxExperience !== undefined && maxExperience !== "";
+  const minExperienceValue = Number(minExperience);
+  const maxExperienceValue = Number(maxExperience);
+
+  if (trimmedSearch) {
+    const searchRegex = { $regex: escapeRegExp(trimmedSearch), $options: "i" };
+
+    filter.$or = [
+      { title: searchRegex },
+      { description: searchRegex },
+      { location: searchRegex },
+      { skillsRequired: searchRegex },
+    ];
+  }
+
+  if (trimmedLocation) {
+    filter.location = { $regex: escapeRegExp(trimmedLocation), $options: "i" };
+  }
+
+  if (jobTypes.length) {
+    filter.jobType = { $in: jobTypes };
+  }
+
+  if (skillList.length) {
+    filter.skillsRequired = {
+      $all: skillList.map((skill) => new RegExp(escapeRegExp(skill), "i")),
+    };
+  }
+
+  if (salaryFilter) {
+    filter.salary = salaryFilter;
+  }
+
+  if (
+    (hasMinExperience && Number.isFinite(minExperienceValue)) ||
+    (hasMaxExperience && Number.isFinite(maxExperienceValue))
+  ) {
+    const experienceConditions = [];
+
+    if (hasMinExperience && Number.isFinite(minExperienceValue)) {
+      experienceConditions.push({
+        $or: [
+          { experienceMax: { $gte: minExperienceValue } },
+          {
+            experienceMax: { $exists: false },
+            experienceRequired: { $gte: minExperienceValue },
+          },
+        ],
+      });
+    }
+
+    if (hasMaxExperience && Number.isFinite(maxExperienceValue)) {
+      experienceConditions.push({
+        $or: [
+          { experienceMin: { $lte: maxExperienceValue } },
+          {
+            experienceMin: { $exists: false },
+            experienceRequired: { $lte: maxExperienceValue },
+          },
+        ],
+      });
+    }
+
+    if (experienceConditions.length) {
+      filter.$and = [...(filter.$and ?? []), ...experienceConditions];
+    }
+  }
+
+  return filter;
+};
+
+const findAll = async ({
+  page,
+  limit,
+  sortType,
+  sortBy,
+  search,
+  location,
+  jobType,
+  skills,
+  minSalary,
+  maxSalary,
+  minExperience,
+  maxExperience,
+}) => {
+  const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
+  const filter = getJobFilter({
+    search,
+    location,
+    jobType,
+    skills,
+    minSalary,
+    maxSalary,
+    minExperience,
+    maxExperience,
+  });
 
   const jobs = await Job.find(filter)
-    .sort(sortStr)
+    .sort(`${sortType === "dsc" ? "-" : ""}${safeSortBy}`)
     .skip(page * limit - limit)
     .limit(limit);
 
@@ -146,10 +298,27 @@ const findAll = async ({ page, limit, sortType, sortBy, search }) => {
   }));
 };
 
-const count = ({ search = "" }) => {
-  const filter = {
-    title: { $regex: search, $options: "i" },
-  };
+const count = ({
+  search = "",
+  location = "",
+  jobType = "",
+  skills = "",
+  minSalary,
+  maxSalary,
+  minExperience,
+  maxExperience,
+}) => {
+  const filter = getJobFilter({
+    search,
+    location,
+    jobType,
+    skills,
+    minSalary,
+    maxSalary,
+    minExperience,
+    maxExperience,
+  });
+
   return Job.countDocuments(filter);
 };
 

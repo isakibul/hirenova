@@ -12,6 +12,13 @@ const findAll = async (req, res, next) => {
   const sortType = req.query.sort_type || defaults.sortType;
   const sortBy = req.query.sort_by || defaults.sortBy;
   const search = req.query.search || "";
+  const location = req.query.location || "";
+  const jobType = req.query.job_type || "";
+  const skills = req.query.skills || "";
+  const minSalary = req.query.min_salary;
+  const maxSalary = req.query.max_salary;
+  const minExperience = req.query.min_experience;
+  const maxExperience = req.query.max_experience;
 
   try {
     const jobs = await jobService.findAll({
@@ -20,6 +27,13 @@ const findAll = async (req, res, next) => {
       sortType,
       sortBy,
       search,
+      location,
+      jobType,
+      skills,
+      minSalary,
+      maxSalary,
+      minExperience,
+      maxExperience,
     });
 
     const data = getTransformedItems({
@@ -32,13 +46,24 @@ const findAll = async (req, res, next) => {
         "jobType",
         "salary",
         "experienceRequired",
+        "experienceMin",
+        "experienceMax",
         "skillsRequired",
         "updatedAt",
         "createdAt",
       ],
     });
 
-    const totalItems = await jobService.count({ search });
+    const totalItems = await jobService.count({
+      search,
+      location,
+      jobType,
+      skills,
+      minSalary,
+      maxSalary,
+      minExperience,
+      maxExperience,
+    });
     const pagination = getPagination({ totalItems, limit, page });
 
     const links = getHATEOASforAllItems({

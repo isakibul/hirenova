@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@/*": ["./*"],
+      "@components/*": ["app/_components/*"],
+      "@lib/*": ["app/_lib/*"]
+    }
+  },
+  "include": ["app/**/*.js", "app/**/*.jsx", "next.config.js"]
+}

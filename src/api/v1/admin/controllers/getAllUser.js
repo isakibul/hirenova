@@ -12,6 +12,7 @@ const getAllUser = async (req, res, next) => {
   const sortType = req.query.sort_type || defaults.sortType;
   const sortBy = req.query.sort_by || defaults.sortBy;
   const search = req.query.search || "";
+  const role = req.query.role || "";
 
   try {
     const user = await userService.getAllUser({
@@ -20,6 +21,7 @@ const getAllUser = async (req, res, next) => {
       sortType,
       sortBy,
       search,
+      role,
     });
 
     const data = getTransformedItems({
@@ -28,7 +30,7 @@ const getAllUser = async (req, res, next) => {
       selection: ["id", "username", "email", "role", "status", "createdAt"],
     });
 
-    const totalItems = await userService.count({ search });
+    const totalItems = await userService.count({ search, role });
 
     const pagination = getPagination({ totalItems, limit, page });
 

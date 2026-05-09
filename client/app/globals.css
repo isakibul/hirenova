@@ -5,8 +5,8 @@
   --foreground: #000000;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-space-grotesk);
-  --font-mono: var(--font-space-grotesk);
+  --font-sans: "Space Grotesk", "Inter", "Segoe UI", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --site-bg: #ffffff;
   --site-fg: #000000;
   --site-muted: #475569;
@@ -75,7 +75,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-space-grotesk), sans-serif;
+  font-family: var(--font-sans);
 }
 
 .site-shell {
@@ -131,6 +131,15 @@ body {
   border-color: var(--site-accent);
 }
 
+.site-field[aria-invalid="true"] {
+  border-color: var(--site-danger-border);
+}
+
+.site-field[aria-invalid="true"]:focus {
+  border-color: var(--site-danger-border);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--site-danger-border) 26%, transparent);
+}
+
 .site-field::placeholder {
   color: var(--site-muted);
 }
@@ -173,4 +182,79 @@ body {
 
 .site-divider {
   background: var(--site-border);
+}
+
+.range-filter-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 0.1875rem;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: var(--site-border);
+}
+
+.range-filter-selected {
+  position: absolute;
+  top: 50%;
+  height: 0.1875rem;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: var(--site-accent);
+}
+
+.range-filter-input {
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1.5rem;
+  width: 100%;
+  transform: translateY(-50%);
+  appearance: none;
+  background: transparent;
+}
+
+.range-filter-input::-webkit-slider-runnable-track {
+  height: 0.1875rem;
+  background: transparent;
+}
+
+.range-filter-input::-moz-range-track {
+  height: 0.1875rem;
+  background: transparent;
+}
+
+.range-filter-input::-webkit-slider-thumb {
+  pointer-events: auto;
+  height: 0.875rem;
+  width: 0.875rem;
+  appearance: none;
+  border: 2px solid var(--site-accent);
+  border-radius: 999px;
+  background: var(--site-card);
+  box-shadow: 0 1px 4px rgb(15 23 42 / 0.2);
+  cursor: grab;
+}
+
+.range-filter-input::-moz-range-thumb {
+  pointer-events: auto;
+  height: 0.875rem;
+  width: 0.875rem;
+  border: 2px solid var(--site-accent);
+  border-radius: 999px;
+  background: var(--site-card);
+  box-shadow: 0 1px 4px rgb(15 23 42 / 0.2);
+  cursor: grab;
+}
+
+.range-filter-input:focus-visible::-webkit-slider-thumb {
+  outline: 3px solid color-mix(in srgb, var(--site-accent) 28%, transparent);
+  outline-offset: 2px;
+}
+
+.range-filter-input:focus-visible::-moz-range-thumb {
+  outline: 3px solid color-mix(in srgb, var(--site-accent) 28%, transparent);
+  outline-offset: 2px;
 }
