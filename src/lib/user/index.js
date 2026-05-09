@@ -1,5 +1,5 @@
 const { User } = require("../../model");
-const { notFound } = require("../../utils/error");
+const { badRequest, notFound } = require("../../utils/error");
 
 const findUserByEmail = async (email) => {
   const user = await User.findOne({ email });
@@ -75,6 +75,44 @@ const getSingleUser = async (id) => {
   return { ...user._doc, id: user._id.toString() };
 };
 
+const updateProfile = async (id, { username, email }) => {
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw notFound("User not found");
+  }
+
+  if (username && username !== user.username) {
+    const existingUser = await User.findOne({
+      username,
+      _id: { $ne: id },
+    });
+
+    if (existingUser) {
+      throw badRequest("Username is already in use");
+    }
+
+    user.username = username;
+  }
+
+  if (email && email !== user.email) {
+    const existingUser = await User.findOne({
+      email,
+      _id: { $ne: id },
+    });
+
+    if (existingUser) {
+      throw badRequest("Email is already in use");
+    }
+
+    user.email = email;
+  }
+
+  await user.save();
+
+  return { ...user._doc, id: user._id.toString() };
+};
+
 const removeUser = async (id) => {
   const user = await User.findByIdAndDelete(id);
   if (!user) {
@@ -92,5 +130,6 @@ module.exports = {
   getAllUser,
   count,
   getSingleUser,
+  updateProfile,
   removeUser,
 };

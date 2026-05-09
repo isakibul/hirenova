@@ -4,6 +4,8 @@ const confirmEmail = require("./confirmEmail");
 const forgotPassword = require("./forgotPassword");
 const resetPassword = require("./resetPassword");
 const changePassword = require("./changePassword");
+const getProfile = require("./getProfile");
+const updateProfile = require("./updateProfile");
 const logout = require("./logout");
 
 module.exports = {
@@ -13,5 +15,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
+  getProfile,
+  updateProfile,
   logout,
 };
