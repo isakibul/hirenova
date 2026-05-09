@@ -1,5 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
 import { getVisibleErrors, hasValidationErrors, maxLengthError, minLengthError, optionalNumberError, touchAll, } from "@lib/formValidation";
 import Link from "next/link";
@@ -19,6 +20,16 @@ const jobTypes = [
     { value: "part-time", label: "Part Time" },
     { value: "remote", label: "Remote" },
     { value: "contract", label: "Contract" },
+];
+const jobSortOptions = [
+    { value: "updatedAt", label: "Updated Date" },
+    { value: "createdAt", label: "Created Date" },
+    { value: "title", label: "Title" },
+    { value: "salary", label: "Salary" },
+];
+const jobTypeOptions = [
+    { value: "", label: "Select type" },
+    ...jobTypes,
 ];
 function getMessage(response) {
     if (response.errors?.length) {
@@ -406,15 +417,10 @@ export default function ManageJobsClient() {
                   </span>
                   <input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} className="site-field h-10 w-full rounded-md border py-2 pl-9 pr-3 text-sm focus:outline-none" placeholder="Search by job title"/>
                 </label>
-                <select value={sortBy} onChange={(event) => {
+                <SelectField value={sortBy} onChange={(nextValue) => {
             setPage(1);
-            setSortBy(event.target.value);
-        }} className="site-field h-10 rounded-md border px-3 text-sm focus:outline-none">
-                  <option value="updatedAt">Updated Date</option>
-                  <option value="createdAt">Created Date</option>
-                  <option value="title">Title</option>
-                  <option value="salary">Salary</option>
-                </select>
+            setSortBy(nextValue);
+        }} options={jobSortOptions} className="site-field h-10 rounded-md border px-3 text-sm focus:outline-none"/>
                 <button className="site-button h-10 rounded-md px-3 text-sm font-semibold transition">
                   Search
                 </button>
@@ -572,12 +578,7 @@ export default function ManageJobsClient() {
 
                   <label className="block">
                     <span className="text-sm font-medium">Job Type</span>
-                    <select value={form.jobType} onChange={(event) => updateFormField("jobType", event.target.value)} onBlur={() => markFormTouched("jobType")} aria-invalid={Boolean(visibleErrors.jobType)} aria-describedby={visibleErrors.jobType ? "job-type-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none">
-                      <option value="">Select type</option>
-                      {jobTypes.map((type) => (<option key={type.value} value={type.value}>
-                          {type.label}
-                        </option>))}
-                    </select>
+                    <SelectField value={form.jobType} onChange={(nextValue) => updateFormField("jobType", nextValue)} onBlur={() => markFormTouched("jobType")} options={jobTypeOptions} className="site-field mt-1 min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" ariaInvalid={Boolean(visibleErrors.jobType)} ariaDescribedBy={visibleErrors.jobType ? "job-type-error" : undefined}/>
                     <FieldError id="job-type-error" message={visibleErrors.jobType}/>
                   </label>
                 </div>

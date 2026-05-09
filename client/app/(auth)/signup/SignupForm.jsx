@@ -1,5 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import SelectField from "@components/forms/SelectField";
 import { emailError, getVisibleErrors, hasValidationErrors, passwordError, touchAll, usernameError, } from "@lib/formValidation";
 import Link from "next/link";
 import { useState } from "react";
@@ -9,6 +10,10 @@ const initialState = {
     password: "",
     role: "jobseeker",
 };
+const accountTypeOptions = [
+    { value: "jobseeker", label: "Job seeker" },
+    { value: "employer", label: "Employer" },
+];
 function getMessage(body, fallback) {
     return body.error ?? body.message ?? fallback;
 }
@@ -104,10 +109,7 @@ export default function SignupForm({ initialEmail = "", }) {
 
       <label className="site-soft mt-4 block text-xs font-medium">
         Account type
-        <select value={form.role} onChange={(event) => updateField("role", event.target.value)} onBlur={() => markTouched("role")} aria-invalid={Boolean(visibleErrors.role)} aria-describedby={visibleErrors.role ? "signup-role-error" : undefined} className="site-field mt-1.5 w-full rounded-md border px-3 py-2 text-sm focus:outline-none">
-          <option value="jobseeker">Job seeker</option>
-          <option value="employer">Employer</option>
-        </select>
+        <SelectField value={form.role} onChange={(nextValue) => updateField("role", nextValue)} onBlur={() => markTouched("role")} options={accountTypeOptions} className="site-field mt-1.5 min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" ariaInvalid={Boolean(visibleErrors.role)} ariaDescribedBy={visibleErrors.role ? "signup-role-error" : undefined}/>
         <FieldError id="signup-role-error" message={visibleErrors.role}/>
       </label>
 

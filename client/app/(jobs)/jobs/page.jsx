@@ -1,4 +1,5 @@
 import Icon from "@components/Icon";
+import SelectField from "@components/forms/SelectField";
 import { getFromBackend } from "@lib/backend";
 import Link from "next/link";
 import ClearFiltersButton from "./ClearFiltersButton";
@@ -17,6 +18,11 @@ const sortOptions = [
   { value: "salary:asc", label: "Lowest Salary" },
   { value: "experienceMin:asc", label: "Entry Friendly" },
   { value: "title:asc", label: "Title A-Z" },
+];
+const limitOptions = [
+  { value: "10", label: "10 Jobs" },
+  { value: "20", label: "20 Jobs" },
+  { value: "30", label: "30 Jobs" },
 ];
 function getParam(params, key) {
   const value = params[key];
@@ -196,17 +202,12 @@ export default async function JobsPage({ searchParams }) {
               placeholder="Location or remote"
             />
 
-            <select
+            <SelectField
               name="sort"
               defaultValue={sortValue}
+              options={sortOptions}
               className="site-field h-10 rounded-md border px-3 text-sm focus:outline-none"
-            >
-              {sortOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            />
 
             <button className="site-button h-10 rounded-md px-3 text-sm font-semibold transition">
               Search
@@ -270,15 +271,12 @@ export default async function JobsPage({ searchParams }) {
 
               <label className="block">
                 <span className="text-sm font-semibold">Per Page</span>
-                <select
+                <SelectField
                   name="limit"
                   defaultValue={String(limit)}
+                  options={limitOptions}
                   className="site-field mt-3 h-10 w-full rounded-md border px-3 text-sm focus:outline-none"
-                >
-                  <option value="10">10 Jobs</option>
-                  <option value="20">20 Jobs</option>
-                  <option value="30">30 Jobs</option>
-                </select>
+                />
               </label>
 
               <input type="hidden" name="page" value="1" />

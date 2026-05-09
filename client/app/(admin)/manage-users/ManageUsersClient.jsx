@@ -1,5 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
 import { emailError, getVisibleErrors, hasValidationErrors, passwordError, touchAll, usernameError, } from "@lib/formValidation";
 import { useCallback, useEffect, useState } from "react";
@@ -19,6 +20,13 @@ const roleTabs = [
     { value: "jobseeker", label: "Job Seeker" },
     { value: "employer", label: "Employer" },
     { value: "admin", label: "Admin" },
+];
+const userSortOptions = [
+    { value: "createdAt", label: "Created Date" },
+    { value: "updatedAt", label: "Updated Date" },
+    { value: "username", label: "Username" },
+    { value: "email", label: "Email" },
+    { value: "role", label: "Role" },
 ];
 function getMessage(response) {
     if (response.errors?.length) {
@@ -363,16 +371,10 @@ export default function ManageUsersClient({ currentUserId, }) {
                   </span>
                   <input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} className="site-field h-10 w-full rounded-md border py-2 pl-9 pr-3 text-sm focus:outline-none" placeholder="Search username or email"/>
                 </label>
-                <select value={sortBy} onChange={(event) => {
+                <SelectField value={sortBy} onChange={(nextValue) => {
             setPage(1);
-            setSortBy(event.target.value);
-        }} className="site-field h-10 rounded-md border px-3 text-sm focus:outline-none">
-                  <option value="createdAt">Created Date</option>
-                  <option value="updatedAt">Updated Date</option>
-                  <option value="username">Username</option>
-                  <option value="email">Email</option>
-                  <option value="role">Role</option>
-                </select>
+            setSortBy(nextValue);
+        }} options={userSortOptions} className="site-field h-10 rounded-md border px-3 text-sm focus:outline-none"/>
                 <button className="site-button h-10 rounded-md px-3 text-sm font-semibold transition">
                   Search
                 </button>
@@ -543,11 +545,7 @@ export default function ManageUsersClient({ currentUserId, }) {
 
                 <label className="block">
                   <span className="text-sm font-medium">Role</span>
-                  <select value={form.role} onChange={(event) => updateFormField("role", event.target.value)} onBlur={() => markFormTouched("role")} aria-invalid={Boolean(visibleErrors.role)} aria-describedby={visibleErrors.role ? "user-role-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none">
-                    {roles.map((role) => (<option key={role.value} value={role.value}>
-                        {role.label}
-                      </option>))}
-                  </select>
+                  <SelectField value={form.role} onChange={(nextValue) => updateFormField("role", nextValue)} onBlur={() => markFormTouched("role")} options={roles} className="site-field mt-1 min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" ariaInvalid={Boolean(visibleErrors.role)} ariaDescribedBy={visibleErrors.role ? "user-role-error" : undefined}/>
                   <FieldError id="user-role-error" message={visibleErrors.role}/>
                 </label>
 

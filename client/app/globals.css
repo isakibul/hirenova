@@ -131,11 +131,13 @@ body {
   border-color: var(--site-accent);
 }
 
-.site-field[aria-invalid="true"] {
+.site-field[aria-invalid="true"],
+.site-field[data-invalid="true"] {
   border-color: var(--site-danger-border);
 }
 
-.site-field[aria-invalid="true"]:focus {
+.site-field[aria-invalid="true"]:focus,
+.site-field[data-invalid="true"]:focus {
   border-color: var(--site-danger-border);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--site-danger-border) 26%, transparent);
 }

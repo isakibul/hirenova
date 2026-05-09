@@ -24,9 +24,12 @@ const forgotPassword = async (req, res, next) => {
     user.resetPasswordTokenExpires = new Date(expires);
     await user.save();
 
-    const resetLink = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/auth/reset-password?token=${token}`;
+    const clientUrl = process.env.CLIENT_URL?.replace(/\/$/, "");
+    const resetLink = clientUrl
+      ? `${clientUrl}/reset-password?token=${token}`
+      : `${req.protocol}://${req.get(
+          "host"
+        )}/api/v1/auth/reset-password?token=${token}`;
 
     await sendResetEmail(user.email, resetLink);
 
