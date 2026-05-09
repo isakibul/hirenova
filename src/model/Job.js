@@ -21,6 +21,8 @@ const jobSchema = Schema({
   },
   skillsRequired: [String],
   experienceRequired: Number,
+  experienceMin: Number,
+  experienceMax: Number,
   salary: Number,
   createdAt: { type: Date, default: Date.now() },
   author: {

@@ -1,3 +1,4 @@
+const { isValidObjectId } = require("mongoose");
 const { Job } = require("../../model");
 const { notFound } = require("../../utils/error");
 
@@ -8,6 +9,8 @@ const create = async ({
   jobType,
   skillsRequired,
   experienceRequired,
+  experienceMin,
+  experienceMax,
   salary,
   author,
 }) => {
@@ -18,6 +21,8 @@ const create = async ({
     jobType,
     skillsRequired,
     experienceRequired,
+    experienceMin,
+    experienceMax,
     salary,
     author,
   });
@@ -49,6 +54,8 @@ const updateItem = async (
     jobType,
     skillsRequired,
     experienceRequired,
+    experienceMin,
+    experienceMax,
     salary,
     author,
   }
@@ -63,6 +70,8 @@ const updateItem = async (
       jobType,
       skillsRequired,
       experienceRequired,
+      experienceMin,
+      experienceMax,
       salary,
       author,
     });
@@ -80,6 +89,8 @@ const updateItem = async (
     jobType,
     skillsRequired,
     experienceRequired,
+    experienceMin,
+    experienceMax,
     salary,
     author,
   };
@@ -102,6 +113,8 @@ const updateItemUsingPatch = async (
     jobType,
     skillsRequired,
     experienceRequired,
+    experienceMin,
+    experienceMax,
     salary,
     author,
   }
@@ -119,6 +132,8 @@ const updateItemUsingPatch = async (
     jobType,
     skillsRequired,
     experienceRequired,
+    experienceMin,
+    experienceMax,
     salary,
     author,
   };
@@ -176,6 +191,7 @@ const getJobFilter = ({
   maxSalary,
   minExperience,
   maxExperience,
+  author,
 }) => {
   const filter = {};
   const trimmedSearch = search.trim();
@@ -258,6 +274,10 @@ const getJobFilter = ({
     }
   }
 
+  if (author && isValidObjectId(author)) {
+    filter.author = author;
+  }
+
   return filter;
 };
 
@@ -274,6 +294,7 @@ const findAll = async ({
   maxSalary,
   minExperience,
   maxExperience,
+  author,
 }) => {
   const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
   const filter = getJobFilter({
@@ -285,6 +306,7 @@ const findAll = async ({
     maxSalary,
     minExperience,
     maxExperience,
+    author,
   });
 
   const jobs = await Job.find(filter)
@@ -307,6 +329,7 @@ const count = ({
   maxSalary,
   minExperience,
   maxExperience,
+  author,
 }) => {
   const filter = getJobFilter({
     search,
@@ -317,6 +340,7 @@ const count = ({
     maxSalary,
     minExperience,
     maxExperience,
+    author,
   });
 
   return Job.countDocuments(filter);

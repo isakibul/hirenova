@@ -26,6 +26,17 @@ export function getBackendApiUrl() {
   return requireUrlEnv("BACKEND_API_URL", "http://localhost:4000/api/v1");
 }
 
+export function getBackendBaseUrl() {
+  const apiUrl = new URL(getBackendApiUrl());
+  const normalizedPathname = apiUrl.pathname.replace(/\/api\/v1\/?$/, "");
+
+  apiUrl.pathname = normalizedPathname || "/";
+  apiUrl.search = "";
+  apiUrl.hash = "";
+
+  return apiUrl.toString().replace(/\/$/, "");
+}
+
 export function getNextAuthSecret() {
   return process.env.NEXTAUTH_SECRET?.trim()
     || (process.env.NODE_ENV !== "production"

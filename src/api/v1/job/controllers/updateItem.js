@@ -25,6 +25,8 @@ const updateItem = async (req, res, next) => {
       jobType,
       skillsRequired,
       experienceRequired,
+      experienceMin,
+      experienceMax,
       salary,
     } = value;
 
@@ -37,6 +39,8 @@ const updateItem = async (req, res, next) => {
       jobType,
       skillsRequired,
       experienceRequired,
+      experienceMin,
+      experienceMax,
       salary,
       author: employerId,
     });

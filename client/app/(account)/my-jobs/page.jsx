@@ -10,6 +10,9 @@ export default async function MyJobsPage() {
     if (session.user.role === "admin") {
         redirect("/manage-jobs");
     }
+    if (session.user.role === "employer") {
+        redirect("/manage-jobs");
+    }
     return (<section className="px-5 py-12 md:px-[10vw]">
       <div className="mx-auto max-w-4xl">
         <h1 className="text-3xl font-semibold tracking-tight">My Jobs</h1>

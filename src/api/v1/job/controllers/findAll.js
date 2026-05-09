@@ -19,6 +19,7 @@ const findAll = async (req, res, next) => {
   const maxSalary = req.query.max_salary;
   const minExperience = req.query.min_experience;
   const maxExperience = req.query.max_experience;
+  const author = req.query.author;
 
   try {
     const jobs = await jobService.findAll({
@@ -34,6 +35,7 @@ const findAll = async (req, res, next) => {
       maxSalary,
       minExperience,
       maxExperience,
+      author,
     });
 
     const data = getTransformedItems({
@@ -63,6 +65,7 @@ const findAll = async (req, res, next) => {
       maxSalary,
       minExperience,
       maxExperience,
+      author,
     });
     const pagination = getPagination({ totalItems, limit, page });
 

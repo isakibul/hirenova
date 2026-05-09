@@ -23,6 +23,8 @@ const create = async (req, res, next) => {
       jobType,
       skillsRequired,
       experienceRequired,
+      experienceMin,
+      experienceMax,
       salary,
     } = value;
 
@@ -35,6 +37,8 @@ const create = async (req, res, next) => {
       jobType,
       skillsRequired,
       experienceRequired,
+      experienceMin,
+      experienceMax,
       salary,
       author: employerId,
     });

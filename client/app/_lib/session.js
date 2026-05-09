@@ -31,6 +31,16 @@ export async function getAdminSession() {
   return session;
 }
 
+export async function getJobManagerSession() {
+  const session = await getCurrentSession();
+
+  if (!session || !["admin", "employer"].includes(session.user.role)) {
+    return null;
+  }
+
+  return session;
+}
+
 export function unauthorizedJson(message) {
   return NextResponse.json({ message }, { status: 401 });
 }

@@ -25,7 +25,13 @@ const register = async (req, res, next) => {
     });
 
     const emailToken = generateEmailToken({ email: user.email });
-    await sendConfirmationEmail(email, emailToken);
+    const clientUrl = process.env.CLIENT_URL?.replace(/\/$/, "");
+    const confirmEmailLink = clientUrl
+      ? `${clientUrl}/confirm-email?token=${emailToken}`
+      : `${req.protocol}://${req.get(
+          "host"
+        )}/api/v1/auth/confirm-email/${emailToken}`;
+    await sendConfirmationEmail(email, confirmEmailLink);
 
     const response = {
       code: 201,
@@ -33,9 +39,7 @@ const register = async (req, res, next) => {
         "Registration successful. Please confirm your email to activate your account.",
       links: {
         self: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
-        confirm_email: `${req.protocol}://${req.get(
-          "host"
-        )}/api/v1/auth/confirm-email/${emailToken}`,
+        confirm_email: confirmEmailLink,
       },
     };
 

@@ -7,8 +7,8 @@ export default async function ManageJobsPage() {
     if (!session?.user) {
         redirect("/login");
     }
-    if (session.user.role !== "admin") {
+    if (!["admin", "employer"].includes(session.user.role)) {
         redirect("/my-jobs");
     }
-    return <ManageJobsClient />;
+    return <ManageJobsClient currentRole={session.user.role}/>;
 }

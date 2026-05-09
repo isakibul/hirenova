@@ -11,8 +11,7 @@ const transporter = nodemailer.createTransport({
   secure: false,
 });
 
-const sendConfirmationEmail = async (to, token) => {
-  const confirmUrl = `${process.env.CLIENT_URL}/api/v1/auth/confirm-email/${token}`;
+const sendConfirmationEmail = async (to, confirmUrl) => {
   const html = getConfirmationEmailHtml(confirmUrl);
 
   await transporter.sendMail({

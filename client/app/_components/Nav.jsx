@@ -46,7 +46,15 @@ export default function Nav() {
                 icon: "user",
             },
         ]
-        : userRole === "jobseeker" || userRole === "employer"
+        : userRole === "employer"
+            ? [
+                {
+                    label: "Manage Jobs",
+                    href: "/manage-jobs",
+                    icon: "briefcase",
+                },
+            ]
+            : userRole === "jobseeker"
             ? [
                 {
                     label: "My Jobs",

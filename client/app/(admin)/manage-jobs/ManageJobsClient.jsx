@@ -152,7 +152,7 @@ function getFormFromJob(job) {
         salary: typeof job.salary === "number" ? String(job.salary) : "",
     };
 }
-export default function ManageJobsClient() {
+export default function ManageJobsClient({ currentRole = "admin" }) {
     const [jobs, setJobs] = useState([]);
     const [pagination, setPagination] = useState();
     const [searchInput, setSearchInput] = useState("");
@@ -364,18 +364,21 @@ export default function ManageJobsClient() {
     }
     const totalItems = pagination?.totalItems ?? jobs.length;
     const totalPages = pagination?.totalPage ?? 1;
+    const isAdmin = currentRole === "admin";
     return (<section className="px-5 py-8 md:px-[6vw] lg:px-[8vw]">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">
-              Admin
+              {isAdmin ? "Admin" : "Employer"}
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
               Manage Jobs
             </h1>
             <p className="site-muted mt-2 max-w-2xl text-sm leading-6">
-              Create, review, update, and remove job listings any times.
+              {isAdmin
+            ? "Create, review, update, and remove job listings."
+            : "Create, review, update, and remove your job listings."}
             </p>
           </div>
           <button type="button" onClick={resetForm} className="site-button inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition">
