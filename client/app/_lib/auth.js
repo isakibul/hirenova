@@ -1,5 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import { postToBackend } from "./backend";
+import { getAccessToken, getUserFromAccessToken } from "./backendToken";
 import { getNextAuthSecret, getNextAuthUrl } from "./env";
 
 const nextAuthUrl = getNextAuthUrl();
@@ -7,22 +8,6 @@ if (!process.env.NEXTAUTH_URL && nextAuthUrl) {
     process.env.NEXTAUTH_URL = nextAuthUrl;
 }
 
-function decodeBackendToken(token) {
-    const [, payload] = token.split(".");
-    if (!payload) {
-        return {};
-    }
-    try {
-        const normalizedPayload = payload
-            .replace(/-/g, "+")
-            .replace(/_/g, "/")
-            .padEnd(Math.ceil(payload.length / 4) * 4, "=");
-        return JSON.parse(Buffer.from(normalizedPayload, "base64").toString("utf8"));
-    }
-    catch {
-        return {};
-    }
-}
 function getAuthError(body) {
     return body.error ?? body.message ?? "Invalid email or password";
 }
@@ -51,18 +36,11 @@ export const authOptions = {
                 if (!result.ok) {
                     throw new Error(getAuthError(result.body));
                 }
-                const accessToken = result.body.data?.accessToken;
+                const accessToken = getAccessToken(result.body);
                 if (!accessToken) {
                     throw new Error("Login succeeded, but no access token was returned");
                 }
-                const tokenPayload = decodeBackendToken(accessToken);
-                return {
-                    id: tokenPayload.id ?? tokenPayload.sub ?? email,
-                    name: tokenPayload.name ?? tokenPayload.username ?? email,
-                    email: tokenPayload.email ?? email,
-                    role: tokenPayload.role,
-                    accessToken,
-                };
+                return getUserFromAccessToken(accessToken, email);
             },
         }),
     ],

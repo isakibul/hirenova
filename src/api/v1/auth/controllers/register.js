@@ -2,6 +2,7 @@ const authService = require("../../../../lib/auth");
 const { generateEmailToken } = require("../../../../lib/token");
 const { registerSchema } = require("../../../../lib/validators/authValidator");
 const { sendConfirmationEmail } = require("../../../../lib/mailer");
+const { getClientLink } = require("../../../../utils/clientUrl");
 
 const register = async (req, res, next) => {
   try {
@@ -25,12 +26,9 @@ const register = async (req, res, next) => {
     });
 
     const emailToken = generateEmailToken({ email: user.email });
-    const clientUrl = process.env.CLIENT_URL?.replace(/\/$/, "");
-    const confirmEmailLink = clientUrl
-      ? `${clientUrl}/confirm-email?token=${emailToken}`
-      : `${req.protocol}://${req.get(
-          "host"
-        )}/api/v1/auth/confirm-email/${emailToken}`;
+    const confirmEmailLink = getClientLink(
+      `/confirm-email?token=${encodeURIComponent(emailToken)}`
+    );
     await sendConfirmationEmail(email, confirmEmailLink);
 
     const response = {

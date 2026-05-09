@@ -23,6 +23,9 @@ Required variables:
 - `NEXTAUTH_URL`: frontend origin, for example `http://localhost:3000`.
 - `NEXTAUTH_SECRET`: strong random secret used to sign NextAuth tokens.
 
+The backend also needs `CLIENT_URL` set to the same frontend origin. Email
+confirmation links are sent to `/confirm-email?token=...` on that URL.
+
 ## Development
 
 ```bash

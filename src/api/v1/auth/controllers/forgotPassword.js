@@ -1,6 +1,7 @@
 const { sendResetEmail } = require("../../../../lib/mailer");
 const userService = require("../../../../lib/user");
 const { notFound, authorizationError } = require("../../../../utils/error");
+const { getClientLink } = require("../../../../utils/clientUrl");
 const crypto = require("crypto");
 
 const forgotPassword = async (req, res, next) => {
@@ -24,12 +25,9 @@ const forgotPassword = async (req, res, next) => {
     user.resetPasswordTokenExpires = new Date(expires);
     await user.save();
 
-    const clientUrl = process.env.CLIENT_URL?.replace(/\/$/, "");
-    const resetLink = clientUrl
-      ? `${clientUrl}/reset-password?token=${token}`
-      : `${req.protocol}://${req.get(
-          "host"
-        )}/api/v1/auth/reset-password?token=${token}`;
+    const resetLink = getClientLink(
+      `/reset-password?token=${encodeURIComponent(token)}`
+    );
 
     await sendResetEmail(user.email, resetLink);
 
