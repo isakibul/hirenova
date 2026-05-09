@@ -12,6 +12,8 @@ const create = async ({
   experienceMin,
   experienceMax,
   salary,
+  status,
+  expiresAt,
   author,
 }) => {
   const job = await Job({
@@ -24,6 +26,9 @@ const create = async ({
     experienceMin,
     experienceMax,
     salary,
+    status,
+    expiresAt,
+    closedAt: status === "closed" ? new Date() : undefined,
     author,
   });
 
@@ -57,6 +62,8 @@ const updateItem = async (
     experienceMin,
     experienceMax,
     salary,
+    status,
+    expiresAt,
     author,
   }
 ) => {
@@ -73,6 +80,8 @@ const updateItem = async (
       experienceMin,
       experienceMax,
       salary,
+      status,
+      expiresAt,
       author,
     });
 
@@ -92,6 +101,9 @@ const updateItem = async (
     experienceMin,
     experienceMax,
     salary,
+    status,
+    expiresAt,
+    closedAt: status === "closed" ? new Date() : undefined,
     author,
   };
 
@@ -116,6 +128,8 @@ const updateItemUsingPatch = async (
     experienceMin,
     experienceMax,
     salary,
+    status,
+    expiresAt,
     author,
   }
 ) => {
@@ -135,12 +149,20 @@ const updateItemUsingPatch = async (
     experienceMin,
     experienceMax,
     salary,
+    status,
+    expiresAt,
     author,
   };
 
   Object.keys(payload).forEach((key) => {
-    job[key] = payload[key] ?? job[key];
+    if (payload[key] !== undefined) {
+      job[key] = payload[key];
+    }
   });
+
+  if (status !== undefined) {
+    job.closedAt = status === "closed" ? new Date() : undefined;
+  }
 
   await job.save();
   return { ...job._doc, id: job.id };
@@ -155,6 +177,8 @@ const allowedSortFields = [
   "experienceRequired",
   "experienceMin",
   "experienceMax",
+  "expiresAt",
+  "status",
 ];
 
 const escapeRegExp = (value) =>
@@ -192,6 +216,8 @@ const getJobFilter = ({
   minExperience,
   maxExperience,
   author,
+  status = "",
+  includeClosed = false,
 }) => {
   const filter = {};
   const trimmedSearch = search.trim();
@@ -209,6 +235,39 @@ const getJobFilter = ({
   const hasMaxExperience = maxExperience !== undefined && maxExperience !== "";
   const minExperienceValue = Number(minExperience);
   const maxExperienceValue = Number(maxExperience);
+
+  if (!includeClosed) {
+    filter.$and = [
+      ...(filter.$and ?? []),
+      {
+        $or: [
+          { status: "open" },
+          { status: { $exists: false } },
+          { status: null },
+        ],
+      },
+      {
+        $or: [
+          { expiresAt: { $exists: false } },
+          { expiresAt: null },
+          { expiresAt: { $gt: new Date() } },
+        ],
+      },
+    ];
+  } else if (status === "open") {
+    filter.$and = [
+      ...(filter.$and ?? []),
+      {
+        $or: [
+          { status: "open" },
+          { status: { $exists: false } },
+          { status: null },
+        ],
+      },
+    ];
+  } else if (["open", "closed"].includes(status)) {
+    filter.status = status;
+  }
 
   if (trimmedSearch) {
     const searchRegex = { $regex: escapeRegExp(trimmedSearch), $options: "i" };
@@ -295,6 +354,8 @@ const findAll = async ({
   minExperience,
   maxExperience,
   author,
+  status,
+  includeClosed,
 }) => {
   const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
   const filter = getJobFilter({
@@ -307,6 +368,8 @@ const findAll = async ({
     minExperience,
     maxExperience,
     author,
+    status,
+    includeClosed,
   });
 
   const jobs = await Job.find(filter)
@@ -330,6 +393,8 @@ const count = ({
   minExperience,
   maxExperience,
   author,
+  status,
+  includeClosed,
 }) => {
   const filter = getJobFilter({
     search,
@@ -341,6 +406,8 @@ const count = ({
     minExperience,
     maxExperience,
     author,
+    status,
+    includeClosed,
   });
 
   return Job.countDocuments(filter);
@@ -356,6 +423,25 @@ const findSingle = async ({ id, expand = "" }) => {
   if (!job) throw notFound();
 
   return job;
+};
+
+const updateStatus = async ({ id, status, expiresAt }) => {
+  const job = await Job.findById(id);
+
+  if (!job) {
+    throw notFound("Job not found");
+  }
+
+  job.status = status;
+  job.closedAt = status === "closed" ? new Date() : undefined;
+
+  if (expiresAt !== undefined) {
+    job.expiresAt = expiresAt;
+  }
+
+  await job.save();
+
+  return { ...job._doc, id: job.id };
 };
 
 const checkOwnership = async ({ resourceId, userId }) => {
@@ -379,5 +465,6 @@ module.exports = {
   findAll,
   count,
   findSingle,
+  updateStatus,
   checkOwnership,
 };

@@ -20,6 +20,8 @@ const findAll = async (req, res, next) => {
   const minExperience = req.query.min_experience;
   const maxExperience = req.query.max_experience;
   const author = req.query.author;
+  const status = req.query.status || "";
+  const includeClosed = req.query.include_closed === "true";
 
   try {
     const jobs = await jobService.findAll({
@@ -36,6 +38,8 @@ const findAll = async (req, res, next) => {
       minExperience,
       maxExperience,
       author,
+      status,
+      includeClosed,
     });
 
     const data = getTransformedItems({
@@ -51,6 +55,9 @@ const findAll = async (req, res, next) => {
         "experienceMin",
         "experienceMax",
         "skillsRequired",
+        "status",
+        "expiresAt",
+        "closedAt",
         "updatedAt",
         "createdAt",
       ],
@@ -66,6 +73,8 @@ const findAll = async (req, res, next) => {
       minExperience,
       maxExperience,
       author,
+      status,
+      includeClosed,
     });
     const pagination = getPagination({ totalItems, limit, page });
 

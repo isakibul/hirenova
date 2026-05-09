@@ -12,6 +12,13 @@ const jobSchema = Joi.object({
   experienceMin: Joi.number().min(0).optional(),
   experienceMax: Joi.number().min(0).optional(),
   salary: Joi.number().min(0).optional(),
+  status: Joi.string().valid("open", "closed").optional(),
+  expiresAt: Joi.date().iso().allow(null).optional(),
 });
 
-module.exports = { jobSchema };
+const jobStatusSchema = Joi.object({
+  status: Joi.string().valid("open", "closed").required(),
+  expiresAt: Joi.date().iso().allow(null).optional(),
+});
+
+module.exports = { jobSchema, jobStatusSchema };

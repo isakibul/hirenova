@@ -28,6 +28,8 @@ const updateItemByPatch = async (req, res, next) => {
       experienceMin,
       experienceMax,
       salary,
+      status,
+      expiresAt,
     } = value;
 
     const employerId = req.user.id;
@@ -42,12 +44,14 @@ const updateItemByPatch = async (req, res, next) => {
       experienceMin,
       experienceMax,
       salary,
+      status,
+      expiresAt,
       author: employerId,
     });
 
     const response = {
       code: 200,
-      message: "Article updated successfully",
+      message: "Job updated successfully",
       data: job,
       links: {
         self: `${req.protocol}://${req.get("host")}${req.originalUrl}`,

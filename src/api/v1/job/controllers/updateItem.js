@@ -28,6 +28,8 @@ const updateItem = async (req, res, next) => {
       experienceMin,
       experienceMax,
       salary,
+      status,
+      expiresAt,
     } = value;
 
     const employerId = req.user.id;
@@ -42,6 +44,8 @@ const updateItem = async (req, res, next) => {
       experienceMin,
       experienceMax,
       salary,
+      status,
+      expiresAt,
       author: employerId,
     });
 

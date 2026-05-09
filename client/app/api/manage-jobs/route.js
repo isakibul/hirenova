@@ -20,6 +20,8 @@ export async function GET(request) {
             sort_by: searchParams.get("sort_by") ?? "updatedAt",
             sort_type: searchParams.get("sort_type") ?? "dsc",
             author: isEmployer ? session.user.id : undefined,
+            status: searchParams.get("status") ?? undefined,
+            include_closed: "true",
         },
     });
     return NextResponse.json(result.body, { status: result.status });

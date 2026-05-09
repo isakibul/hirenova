@@ -14,6 +14,7 @@ const emptyForm = {
     experienceMin: "",
     experienceMax: "",
     salary: "",
+    expiresAt: "",
 };
 const jobTypes = [
     { value: "full-time", label: "Full Time" },
@@ -30,6 +31,11 @@ const jobSortOptions = [
 const jobTypeOptions = [
     { value: "", label: "Select type" },
     ...jobTypes,
+];
+const statusFilterOptions = [
+    { value: "all", label: "All statuses" },
+    { value: "open", label: "Open" },
+    { value: "closed", label: "Closed" },
 ];
 function getMessage(response) {
     if (response.errors?.length) {
@@ -56,6 +62,16 @@ function formatSalary(value) {
         currency: "USD",
         maximumFractionDigits: 0,
     }).format(value);
+}
+function formatJobStatus(job) {
+    if (job.expiresAt && new Date(job.expiresAt) <= new Date()) {
+        return "Expired";
+    }
+    return job.status === "closed" ? "Closed" : "Open";
+}
+function getStatusClass(job) {
+    const status = formatJobStatus(job);
+    return status === "Open" ? "site-success" : "site-danger";
 }
 function formatJobType(value) {
     if (!value) {
@@ -104,6 +120,10 @@ function validateJobForm(form) {
         experienceMax: optionalNumberError(form.experienceMax, "Maximum experience", { min: 0 }),
         salary: optionalNumberError(form.salary, "Salary", { min: 0 }),
         skillsRequired: maxLengthError(form.skillsRequired, "Skills", 500),
+        expiresAt: form.expiresAt &&
+            Number.isNaN(new Date(form.expiresAt).getTime())
+            ? "Choose a valid expiry date."
+            : "",
     };
     if (!errors.experienceMin &&
         !errors.experienceMax &&
@@ -132,7 +152,18 @@ function buildPayload(form) {
             ? undefined
             : Number(form.experienceMax),
         salary: form.salary.trim() === "" ? undefined : Number(form.salary),
+        expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
     };
+}
+function getDateInputValue(value) {
+    if (!value) {
+        return "";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+    return date.toISOString().slice(0, 10);
 }
 function getFormFromJob(job) {
     return {
@@ -150,6 +181,7 @@ function getFormFromJob(job) {
             ? String(job.experienceMax)
             : "",
         salary: typeof job.salary === "number" ? String(job.salary) : "",
+        expiresAt: getDateInputValue(job.expiresAt),
     };
 }
 export default function ManageJobsClient({ currentRole = "admin" }) {
@@ -160,6 +192,7 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
     const [page, setPage] = useState(1);
     const [sortBy, setSortBy] = useState("updatedAt");
     const [sortType, setSortType] = useState("dsc");
+    const [statusFilter, setStatusFilter] = useState("all");
     const [form, setForm] = useState(emptyForm);
     const [formTouched, setFormTouched] = useState({});
     const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -168,6 +201,7 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingJobId, setLoadingJobId] = useState(null);
+    const [statusUpdatingJobId, setStatusUpdatingJobId] = useState(null);
     const [deletingJobId, setDeletingJobId] = useState(null);
     const [jobPendingDelete, setJobPendingDelete] = useState(null);
     const [notice, setNotice] = useState(null);
@@ -199,6 +233,9 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
         if (search) {
             params.set("search", search);
         }
+        if (statusFilter !== "all") {
+            params.set("status", statusFilter);
+        }
         try {
             const response = await fetch(`/api/manage-jobs?${params.toString()}`);
             const body = (await response.json());
@@ -218,7 +255,7 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
         finally {
             setIsLoading(false);
         }
-    }, [page, search, sortBy, sortType]);
+    }, [page, search, sortBy, sortType, statusFilter]);
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
             void loadJobs();
@@ -321,6 +358,39 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
     function handleDelete(job) {
         setJobPendingDelete(job);
     }
+    async function updateJobStatus(job) {
+        const jobId = getJobId(job);
+        if (!jobId) {
+            return;
+        }
+        const nextStatus = job.status === "closed" ? "open" : "closed";
+        setStatusUpdatingJobId(jobId);
+        setNotice(null);
+        setError(null);
+        try {
+            const response = await fetch(`/api/manage-jobs/${jobId}/status`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ status: nextStatus }),
+            });
+            const body = await response.json();
+            if (!response.ok) {
+                throw new Error(getMessage(body));
+            }
+            setNotice(nextStatus === "closed" ? "Job closed." : "Job reopened.");
+            await loadJobs();
+        }
+        catch (caughtError) {
+            setError(caughtError instanceof Error
+                ? caughtError.message
+                : "Unable to update job status.");
+        }
+        finally {
+            setStatusUpdatingJobId(null);
+        }
+    }
     async function confirmDelete() {
         if (!jobPendingDelete) {
             return;
@@ -413,7 +483,7 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
         <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_415px]">
           <div className="site-border site-card overflow-hidden rounded-lg border xl:w-[calc(100%+4px)]">
             <div className="site-panel border-b border-[var(--site-border)] p-4">
-              <form onSubmit={handleSearch} className="grid gap-3 lg:grid-cols-[1fr_170px_140px]">
+              <form onSubmit={handleSearch} className="grid gap-3 lg:grid-cols-[1fr_170px_150px_140px]">
                 <label className="relative">
                   <span className="site-muted pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
                     <Icon name="search"/>
@@ -424,6 +494,10 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
             setPage(1);
             setSortBy(nextValue);
         }} options={jobSortOptions} className="site-field h-10 rounded-md border px-3 text-sm focus:outline-none"/>
+                <SelectField value={statusFilter} onChange={(nextValue) => {
+            setPage(1);
+            setStatusFilter(nextValue);
+        }} options={statusFilterOptions} className="site-field h-10 rounded-md border px-3 text-sm focus:outline-none"/>
                 <button className="site-button h-10 rounded-md px-3 text-sm font-semibold transition">
                   Search
                 </button>
@@ -435,12 +509,13 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
         }} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold">
                   {sortType === "dsc" ? "Descending" : "Ascending"}
                 </button>
-                {search ? (<button type="button" onClick={() => {
+                {search || statusFilter !== "all" ? (<button type="button" onClick={() => {
                 setSearch("");
                 setSearchInput("");
+                setStatusFilter("all");
                 setPage(1);
             }} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold">
-                    Clear Search
+                    Clear Filters
                   </button>) : null}
               </div>
             </div>
@@ -457,9 +532,9 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
                       Salary
                     </th>
                     <th className="w-[140px] whitespace-nowrap px-4 py-3 font-semibold">
-                      Updated
+                      Status
                     </th>
-                    <th className="w-[240px] whitespace-nowrap px-4 py-3 text-right font-semibold">
+                    <th className="w-[300px] whitespace-nowrap px-4 py-3 text-right font-semibold">
                       Actions
                     </th>
                   </tr>
@@ -509,8 +584,13 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
                           <td className="whitespace-nowrap px-4 py-4 align-top">
                             {formatSalary(job.salary)}
                           </td>
-                          <td className="site-muted whitespace-nowrap px-4 py-4 align-top text-xs">
-                            {formatDate(job.updatedAt ?? job.createdAt)}
+                          <td className="whitespace-nowrap px-4 py-4 align-top text-xs">
+                            <span className={`inline-flex rounded-md border px-2 py-1 font-semibold ${getStatusClass(job)}`}>
+                              {formatJobStatus(job)}
+                            </span>
+                            {job.expiresAt ? (<p className="site-muted mt-1">
+                                Expires {formatDate(job.expiresAt)}
+                              </p>) : null}
                           </td>
                           <td className="px-4 py-4 align-top">
                             <div className="flex justify-end gap-2">
@@ -522,6 +602,13 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
                               </Link>
                               <button type="button" onClick={() => handleEdit(job)} disabled={loadingJobId === jobId} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
                                 {loadingJobId === jobId ? "Loading" : "Edit"}
+                              </button>
+                              <button type="button" onClick={() => updateJobStatus(job)} disabled={statusUpdatingJobId === jobId} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
+                                {statusUpdatingJobId === jobId
+                    ? "Saving"
+                    : job.status === "closed"
+                        ? "Reopen"
+                        : "Close"}
                               </button>
                               <button type="button" onClick={() => handleDelete(job)} disabled={deletingJobId === jobId} className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
                                 {deletingJobId === jobId
@@ -606,6 +693,12 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
                     <FieldError id="job-salary-error" message={visibleErrors.salary}/>
                   </label>
                 </div>
+
+                <label className="block">
+                  <span className="text-sm font-medium">Expiry Date</span>
+                  <input value={form.expiresAt} onChange={(event) => updateFormField("expiresAt", event.target.value)} onBlur={() => markFormTouched("expiresAt")} aria-invalid={Boolean(visibleErrors.expiresAt)} aria-describedby={visibleErrors.expiresAt ? "job-expires-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" type="date"/>
+                  <FieldError id="job-expires-error" message={visibleErrors.expiresAt}/>
+                </label>
 
                 <label className="block">
                   <span className="text-sm font-medium">Skills Required</span>

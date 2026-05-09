@@ -9,7 +9,6 @@ const ownership = require("../../middleware/ownership");
 
 // jobseeker
 router.get("/", jobControllers.findAll);
-router.get("/:id", jobControllers.findSingle);
 
 router.post(
   "/:id/apply",
@@ -41,6 +40,8 @@ router.delete(
   savedJobControllers.remove
 );
 
+router.get("/:id", jobControllers.findSingle);
+
 // employer/admin
 router.post(
   "/",
@@ -57,6 +58,15 @@ router.delete(
   checkUserStatus,
   authorize(["admin", "employer"]),
   jobControllers.deleteItem
+);
+
+router.patch(
+  "/:id/status",
+  authenticate,
+  ownership("Job"),
+  checkUserStatus,
+  authorize(["admin", "employer"]),
+  jobControllers.updateStatus
 );
 
 router.put(

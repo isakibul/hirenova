@@ -26,6 +26,8 @@ const create = async (req, res, next) => {
       experienceMin,
       experienceMax,
       salary,
+      status,
+      expiresAt,
     } = value;
 
     const employerId = req.user.id;
@@ -40,6 +42,8 @@ const create = async (req, res, next) => {
       experienceMin,
       experienceMax,
       salary,
+      status,
+      expiresAt,
       author: employerId,
     });
 

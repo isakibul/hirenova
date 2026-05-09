@@ -47,6 +47,12 @@ function formatExperience(job) {
     }
     return "Not specified";
 }
+function getJobStatus(job) {
+    if (job.expiresAt && new Date(job.expiresAt) <= new Date()) {
+        return "Expired";
+    }
+    return job.status === "closed" ? "Closed" : "Open Role";
+}
 function getErrorMessage(response) {
     return response.error ?? response.message ?? "Unable to load this job.";
 }
@@ -75,6 +81,8 @@ export default async function JobDetailsPage({ params }) {
     const skills = job.skillsRequired ?? [];
     const postedDate = formatDate(job.createdAt);
     const updatedDate = formatDate(job.updatedAt);
+    const jobStatus = getJobStatus(job);
+    const isClosed = jobStatus !== "Open Role";
     return (<section className="px-5 py-12 md:px-[10vw]">
       <div className="mx-auto max-w-5xl">
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -91,9 +99,9 @@ export default async function JobDetailsPage({ params }) {
                   Posted {postedDate} · Updated {updatedDate}
                 </p>
               </div>
-              <span className="site-badge inline-flex w-fit shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-xs font-semibold">
+              <span className={`inline-flex w-fit shrink-0 items-center gap-2 whitespace-nowrap rounded-md border px-3 py-2 text-xs font-semibold ${isClosed ? "site-danger" : "site-success"}`}>
                 <Icon name="briefcase"/>
-                Open Role
+                {jobStatus}
               </span>
             </div>
 
@@ -102,6 +110,7 @@ export default async function JobDetailsPage({ params }) {
               <DetailItem label="Job Type" value={formatJobType(job.jobType)}/>
               <DetailItem label="Salary" value={formatSalary(job.salary)}/>
               <DetailItem label="Experience" value={formatExperience(job)}/>
+              <DetailItem label="Expires" value={job.expiresAt ? formatDate(job.expiresAt) : "No expiry set"}/>
             </div>
 
             <div className="site-border mt-6 border-t pt-6">
@@ -131,7 +140,7 @@ export default async function JobDetailsPage({ params }) {
                 Review the role details and prepare your profile before
                 applying.
               </p>
-              <JobActions jobId={id}/>
+              <JobActions jobId={id} isClosed={isClosed}/>
             </div>
           </aside>
         </div>

@@ -24,6 +24,13 @@ const jobSchema = Schema({
   experienceMin: Number,
   experienceMax: Number,
   salary: Number,
+  status: {
+    type: String,
+    enum: ["open", "closed"],
+    default: "open",
+  },
+  expiresAt: Date,
+  closedAt: Date,
   createdAt: { type: Date, default: Date.now() },
   author: {
     type: Schema.ObjectId,

@@ -23,6 +23,14 @@ const applyToJob = async ({ jobId, applicantId, coverLetter = "" }) => {
     throw notFound("Job not found");
   }
 
+  if (job.status && job.status !== "open") {
+    throw badRequest("This job is closed");
+  }
+
+  if (job.expiresAt && job.expiresAt <= new Date()) {
+    throw badRequest("This job has expired");
+  }
+
   if (job.author?.toString() === applicantId) {
     throw badRequest("You cannot apply to your own job");
   }

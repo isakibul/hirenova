@@ -8,7 +8,7 @@ function getMessage(body, fallback) {
     return body?.error ?? body?.message ?? fallback;
 }
 
-export default function JobActions({ jobId }) {
+export default function JobActions({ jobId, isClosed }) {
     const { data: session, status } = useSession();
     const role = session?.user?.role;
     const [coverLetter, setCoverLetter] = useState("");
@@ -68,6 +68,12 @@ export default function JobActions({ jobId }) {
 
     if (status === "loading") {
         return <p className="site-muted mt-4 text-sm">Loading actions...</p>;
+    }
+
+    if (isClosed) {
+        return (<div className="site-danger mt-4 rounded-md border px-3 py-2 text-sm">
+          This job is no longer accepting applications.
+        </div>);
     }
 
     if (!session) {
