@@ -88,3 +88,98 @@ export async function getFromBackend<T>(
     };
   }
 }
+
+export async function putToBackend<T>(
+  path: string,
+  payload: unknown,
+  init?: { headers?: Record<string, string> }
+): Promise<BackendResult<T>> {
+  try {
+    const response = await backendApi.put<T>(path, payload, {
+      headers: init?.headers,
+    });
+
+    return {
+      body: response.data,
+      status: response.status,
+      ok: response.status >= 200 && response.status < 300,
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        body: (error.response.data ?? getUnexpectedBody<T>()) as T,
+        status: error.response.status,
+        ok: false,
+      };
+    }
+
+    return {
+      body: getUnexpectedBody<T>(),
+      status: 500,
+      ok: false,
+    };
+  }
+}
+
+export async function patchToBackend<T>(
+  path: string,
+  payload: unknown,
+  init?: { headers?: Record<string, string> }
+): Promise<BackendResult<T>> {
+  try {
+    const response = await backendApi.patch<T>(path, payload, {
+      headers: init?.headers,
+    });
+
+    return {
+      body: response.data,
+      status: response.status,
+      ok: response.status >= 200 && response.status < 300,
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        body: (error.response.data ?? getUnexpectedBody<T>()) as T,
+        status: error.response.status,
+        ok: false,
+      };
+    }
+
+    return {
+      body: getUnexpectedBody<T>(),
+      status: 500,
+      ok: false,
+    };
+  }
+}
+
+export async function deleteFromBackend<T>(
+  path: string,
+  init?: { headers?: Record<string, string> }
+): Promise<BackendResult<T>> {
+  try {
+    const response = await backendApi.delete<T>(path, {
+      headers: init?.headers,
+    });
+
+    return {
+      body: response.data,
+      status: response.status,
+      ok: response.status >= 200 && response.status < 300,
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        body: (error.response.data ?? getUnexpectedBody<T>()) as T,
+        status: error.response.status,
+        ok: false,
+      };
+    }
+
+    return {
+      body: getUnexpectedBody<T>(),
+      status: 500,
+      ok: false,
+    };
+  }
+}

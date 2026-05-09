@@ -1,7 +1,21 @@
 const jobService = require("../../../../lib/job");
+const { jobSchema } = require("../../../../lib/validators/jobValidator");
 
 const create = async (req, res, next) => {
   try {
+    const { error, value } = jobSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true,
+    });
+
+    if (error) {
+      return res.status(400).json({
+        code: 400,
+        message: "Validation Error",
+        errors: error.details.map((err) => err.message),
+      });
+    }
+
     const {
       title,
       description,
@@ -10,9 +24,9 @@ const create = async (req, res, next) => {
       skillsRequired,
       experienceRequired,
       salary,
-    } = req.body;
+    } = value;
 
-    const employerId = req.user?.id || req.body.author;
+    const employerId = req.user.id;
 
     const job = await jobService.create({
       title,

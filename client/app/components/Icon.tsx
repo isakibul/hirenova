@@ -1,4 +1,4 @@
-type IconName =
+export type IconName =
   | "bell"
   | "briefcase"
   | "chart"
@@ -8,11 +8,14 @@ type IconName =
   | "help"
   | "logOut"
   | "moon"
+  | "plus"
   | "search"
   | "settings"
   | "spark"
   | "sun"
   | "target"
+  | "trash"
+  | "x"
   | "user";
 
 const paths: Record<IconName, React.ReactNode> = {
@@ -76,6 +79,12 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M20 15.5A8 8 0 0 1 8.5 4 7 7 0 1 0 20 15.5z" />
     </>
   ),
+  plus: (
+    <>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </>
+  ),
   search: (
     <>
       <circle cx="11" cy="11" r="6" />
@@ -118,6 +127,21 @@ const paths: Record<IconName, React.ReactNode> = {
       <circle cx="12" cy="12" r="8" />
       <circle cx="12" cy="12" r="4" />
       <circle cx="12" cy="12" r="1" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M4 7h16" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M6 7l1 14h10l1-14" />
+      <path d="M9 7V4h6v3" />
+    </>
+  ),
+  x: (
+    <>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
     </>
   ),
   user: (

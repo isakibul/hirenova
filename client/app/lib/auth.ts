@@ -51,6 +51,11 @@ function getAuthError(body: LoginResponse) {
 }
 
 export const authOptions: NextAuthOptions = {
+  secret:
+    process.env.NEXTAUTH_SECRET ??
+    (process.env.NODE_ENV === "development"
+      ? "hirenova-local-development-secret"
+      : undefined),
   pages: {
     signIn: "/login",
   },

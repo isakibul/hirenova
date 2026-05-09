@@ -41,7 +41,8 @@ const login = async ({ email, password }) => {
 
   const payload = {
     id: user.id,
-    name: user.name,
+    name: user.username,
+    username: user.username,
     email: user.email,
     role: user.role,
   };

@@ -4,28 +4,17 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
+import type { IconName } from "./Icon";
 import ThemeToggle from "./theme/ThemeToggle";
 
 type UserRole = "jobseeker" | "employer" | "admin";
-
-const roleMeta: Record<
-  UserRole,
-  {
-    label: string;
-  }
-> = {
-  jobseeker: {
-    label: "Job Seeker",
-  },
-  employer: {
-    label: "Employer",
-  },
-  admin: {
-    label: "Admin",
-  },
+type MenuItem = {
+  label: string;
+  href: string;
+  icon: IconName;
 };
 
-const accountMenuItems = [
+const accountMenuItems: MenuItem[] = [
   {
     label: "Profile",
     href: "/profile",
@@ -41,16 +30,14 @@ const accountMenuItems = [
     href: "/help",
     icon: "help",
   },
-] as const;
+];
 
-function getRoleMeta(role?: string) {
+function getUserRole(role?: string): UserRole | undefined {
   if (role === "jobseeker" || role === "employer" || role === "admin") {
-    return roleMeta[role];
+    return role;
   }
 
-  return {
-    label: "Member",
-  };
+  return undefined;
 }
 
 export default function Nav() {
@@ -58,9 +45,35 @@ export default function Nav() {
   const isAuthenticated = status === "authenticated";
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
-  const activeRole = getRoleMeta(session?.user?.role);
+  const userRole = getUserRole(session?.user?.role);
+  const roleMenuItems: MenuItem[] =
+    userRole === "admin"
+      ? [
+          {
+            label: "Manage Jobs",
+            href: "/manage-jobs",
+            icon: "briefcase",
+          },
+          {
+            label: "Manage Users",
+            href: "/manage-users",
+            icon: "user",
+          },
+        ]
+      : userRole === "jobseeker" || userRole === "employer"
+        ? [
+            {
+              label: "My Jobs",
+              href: "/my-jobs",
+              icon: "briefcase",
+            },
+          ]
+        : [];
+  const userEmail = session?.user?.email;
   const displayName =
-    session?.user?.name || session?.user?.email || activeRole.label;
+    session?.user?.name && session.user.name !== userEmail
+      ? session.user.name
+      : (userEmail ?? "Profile");
 
   useEffect(() => {
     if (!isProfileOpen) {
@@ -137,19 +150,33 @@ export default function Nav() {
                       <p className="truncate text-sm font-semibold">
                         {displayName}
                       </p>
-                      {session.user?.email ? (
+                      {userEmail && displayName !== userEmail ? (
                         <p className="site-muted mt-0.5 truncate text-xs">
-                          {session.user.email}
+                          {userEmail}
                         </p>
                       ) : null}
                     </div>
                   </div>
-                  <p className="site-badge mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-medium">
-                    {activeRole.label}
-                  </p>
                 </div>
 
                 <div className="py-1">
+                  {roleMenuItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsProfileOpen(false)}
+                      className="mx-2 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition hover:bg-[var(--site-panel)]"
+                      role="menuitem"
+                    >
+                      <span className="site-border site-panel flex h-8 w-8 items-center justify-center rounded-md border">
+                        <Icon name={item.icon} />
+                      </span>
+                      {item.label}
+                    </Link>
+                  ))}
+                  {roleMenuItems.length > 0 ? (
+                    <div className="mx-4 my-1 h-px bg-[var(--site-border)]" />
+                  ) : null}
                   {accountMenuItems.map((item) => (
                     <Link
                       key={item.href}

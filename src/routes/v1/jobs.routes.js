@@ -9,8 +9,14 @@ const ownership = require("../../middleware/ownership");
 router.get("/", jobControllers.findAll);
 router.get("/:id", jobControllers.findSingle);
 
-// employer - open
-router.post("/", jobControllers.create);
+// employer/admin
+router.post(
+  "/",
+  authenticate,
+  checkUserStatus,
+  authorize(["admin", "employer"]),
+  jobControllers.create
+);
 
 router.delete(
   "/:id",

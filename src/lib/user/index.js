@@ -37,7 +37,7 @@ const getAllUser = async ({ page, limit, sortType, sortBy, search }) => {
   const filter = search
     ? {
         $or: [
-          { name: { $regex: search, $options: "i" } },
+          { username: { $regex: search, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
         ],
       }
@@ -58,7 +58,7 @@ const count = async ({ search = "" }) => {
   const filter = search
     ? {
         $or: [
-          { name: { $regex: search, $options: "i" } },
+          { username: { $regex: search, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
         ],
       }
