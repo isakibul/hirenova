@@ -290,7 +290,7 @@ export default async function JobsPage({ searchParams }) {
             </aside>
 
             <div className="site-border site-card min-w-0 rounded-lg border p-4">
-              <div className="flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-2 border-b border-gray-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="font-semibold">
                     {totalItems} {totalItems === 1 ? "Job" : "Jobs"} Found
@@ -384,7 +384,7 @@ export default async function JobsPage({ searchParams }) {
               </div>
 
               {totalPages > 1 ? (
-                <div className="site-panel mt-4 flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="site-panel mt-4 flex flex-col gap-3 rounded-lg border border-gray-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="site-muted text-xs">
                     Page {page} of {totalPages}
                   </p>

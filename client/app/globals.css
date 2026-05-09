@@ -32,13 +32,6 @@
   --site-success-text: #047857;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;
-    --foreground: #ffffff;
-  }
-}
-
 :root[data-theme="dark"] {
   --background: #000000;
   --foreground: #ffffff;
