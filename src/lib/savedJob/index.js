@@ -1,5 +1,6 @@
 const { SavedJob, Job } = require("../../model");
 const { badRequest, notFound } = require("../../utils/error");
+const notificationService = require("../notification");
 
 const populateSavedJob = (query) =>
   query.populate("job", "title location jobType salary skillsRequired createdAt updatedAt");
@@ -19,6 +20,18 @@ const saveJob = async ({ jobId, userId }) => {
 
   const savedJob = new SavedJob({ job: jobId, user: userId });
   await savedJob.save();
+
+  await notificationService.createNotification({
+    recipient: userId,
+    type: "job_saved",
+    title: "Job saved",
+    message: `${job.title} was added to your saved jobs.`,
+    link: "/saved-jobs",
+    metadata: {
+      job: job.id,
+      savedJob: savedJob.id,
+    },
+  });
 
   return { ...savedJob._doc, id: savedJob.id };
 };

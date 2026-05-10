@@ -3,6 +3,7 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
+import NotificationsMenu from "./NotificationsMenu";
 import ThemeToggle from "./theme/ThemeToggle";
 const accountMenuItems = [
     {
@@ -127,6 +128,7 @@ export default function Nav() {
       </nav>
 
       <div className="flex items-center gap-3">
+        <NotificationsMenu enabled={isAuthenticated} />
         {isAuthenticated ? (<div className="relative" ref={profileMenuRef}>
             <button type="button" onClick={() => setIsProfileOpen((current) => !current)} className="site-border site-panel inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-[var(--site-accent)]" aria-label="Open profile menu" aria-expanded={isProfileOpen} aria-haspopup="menu">
               <Icon name="user"/>
@@ -163,6 +165,7 @@ export default function Nav() {
                       </span>
                       {item.label}
                     </Link>))}
+                  <ThemeToggle variant="menu"/>
                 </div>
 
                 <div className="border-t border-[var(--site-border)] pt-1">
@@ -177,7 +180,6 @@ export default function Nav() {
           </div>) : (<Link href="/signup" className="site-button rounded-md px-3 py-1.5 text-[13px] font-medium transition">
             {status === "loading" ? "..." : "Get Started"}
           </Link>)}
-        <ThemeToggle />
       </div>
     </header>);
 }

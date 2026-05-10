@@ -1,5 +1,6 @@
-const { Application, Job } = require("../../model");
+const { Application, Job, User } = require("../../model");
 const { badRequest, notFound, authorizationError } = require("../../utils/error");
+const notificationService = require("../notification");
 
 const populateApplication = (query) =>
   query
@@ -52,6 +53,25 @@ const applyToJob = async ({ jobId, applicantId, coverLetter = "" }) => {
 
   await application.save();
 
+  if (job.author) {
+    const applicant = await User.findById(applicantId).select("username email");
+    const applicantName =
+      applicant?.username || applicant?.email || "A candidate";
+
+    await notificationService.createNotification({
+      recipient: job.author,
+      type: "application_submitted",
+      title: "New application received",
+      message: `${applicantName} applied to ${job.title}.`,
+      link: `/manage-jobs/${job.id}/applications`,
+      metadata: {
+        job: job.id,
+        application: application.id,
+        applicant: applicantId,
+      },
+    });
+  }
+
   return getApplication(application.id);
 };
 
@@ -100,8 +120,24 @@ const updateStatus = async ({ applicationId, status, user }) => {
     throw authorizationError("Operation not allowed");
   }
 
+  const previousStatus = application.status;
   application.status = status;
   await application.save();
+
+  if (previousStatus !== status && application.applicant) {
+    await notificationService.createNotification({
+      recipient: application.applicant,
+      type: "application_status",
+      title: "Application status updated",
+      message: `Your application for ${application.job.title} is now ${status}.`,
+      link: `/applications`,
+      metadata: {
+        job: application.job.id,
+        application: application.id,
+        status,
+      },
+    });
+  }
 
   return getApplication(application.id);
 };

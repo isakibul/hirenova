@@ -1,6 +1,7 @@
 const { isValidObjectId } = require("mongoose");
-const { Job } = require("../../model");
+const { Application, Job } = require("../../model");
 const { notFound } = require("../../utils/error");
+const notificationService = require("../notification");
 
 const create = async ({
   title,
@@ -432,6 +433,7 @@ const updateStatus = async ({ id, status, expiresAt }) => {
     throw notFound("Job not found");
   }
 
+  const previousStatus = job.status;
   job.status = status;
   job.closedAt = status === "closed" ? new Date() : undefined;
 
@@ -440,6 +442,32 @@ const updateStatus = async ({ id, status, expiresAt }) => {
   }
 
   await job.save();
+
+  if (previousStatus !== "closed" && status === "closed") {
+    const applications = await Application.find({ job: job.id }).select(
+      "applicant"
+    );
+    const recipientIds = [
+      ...new Set(
+        applications
+          .map((application) => application.applicant?.toString())
+          .filter(Boolean)
+      ),
+    ];
+
+    await notificationService.createManyNotifications(
+      recipientIds.map((recipient) => ({
+        recipient,
+        type: "job_closed",
+        title: "Job closed",
+        message: `${job.title} is no longer accepting applications.`,
+        link: `/jobs/${job.id}`,
+        metadata: {
+          job: job.id,
+        },
+      }))
+    );
+  }
 
   return { ...job._doc, id: job.id };
 };

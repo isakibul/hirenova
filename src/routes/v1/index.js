@@ -6,6 +6,7 @@ const adminRoutes = require("./admin.routes");
 const applicationRoutes = require("./applications.routes");
 const savedJobRoutes = require("./savedJobs.routes");
 const dashboardRoutes = require("./dashboard.routes");
+const notificationRoutes = require("./notifications.routes");
 
 router.use("/auth", authRoutes);
 router.use("/jobs", jobRoutes);
@@ -13,5 +14,6 @@ router.use("/admin", adminRoutes);
 router.use("/applications", applicationRoutes);
 router.use("/saved-jobs", savedJobRoutes);
 router.use("/dashboard", dashboardRoutes);
+router.use("/notifications", notificationRoutes);
 
 module.exports = router;

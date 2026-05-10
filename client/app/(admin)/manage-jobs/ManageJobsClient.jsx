@@ -480,8 +480,8 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
             {error ?? notice}
           </div>)}
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_415px]">
-          <div className="site-border site-card overflow-hidden rounded-lg border xl:w-[calc(100%+4px)]">
+        <div className="mt-6 grid gap-6 2xl:grid-cols-[minmax(0,1fr)_415px]">
+          <div className="site-border site-card min-w-0 overflow-hidden rounded-lg border">
             <div className="site-panel border-b border-[var(--site-border)] p-4">
               <form onSubmit={handleSearch} className="grid gap-3 lg:grid-cols-[1fr_170px_150px_140px]">
                 <label className="relative">
@@ -521,7 +521,7 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px] table-fixed border-collapse text-left text-sm">
+              <table className="w-full min-w-[1120px] table-fixed border-collapse text-left text-sm">
                 <thead className="site-panel text-xs uppercase tracking-wide">
                   <tr>
                     <th className="w-[42%] px-4 py-3 font-semibold">Job</th>
@@ -534,7 +534,7 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
                     <th className="w-[140px] whitespace-nowrap px-4 py-3 font-semibold">
                       Status
                     </th>
-                    <th className="w-[300px] whitespace-nowrap px-4 py-3 text-right font-semibold">
+                    <th className="w-[380px] whitespace-nowrap px-4 py-3 text-right font-semibold">
                       Actions
                     </th>
                   </tr>
