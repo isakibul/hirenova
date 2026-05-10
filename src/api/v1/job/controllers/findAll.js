@@ -21,6 +21,7 @@ const findAll = async (req, res, next) => {
   const maxExperience = req.query.max_experience;
   const author = req.query.author;
   const status = req.query.status || "";
+  const approvalStatus = req.query.approval_status || "";
   const includeClosed = req.query.include_closed === "true";
 
   try {
@@ -39,6 +40,7 @@ const findAll = async (req, res, next) => {
       maxExperience,
       author,
       status,
+      approvalStatus,
       includeClosed,
     });
 
@@ -56,6 +58,9 @@ const findAll = async (req, res, next) => {
         "experienceMax",
         "skillsRequired",
         "status",
+        "approvalStatus",
+        "rejectionNote",
+        "reviewedAt",
         "expiresAt",
         "closedAt",
         "updatedAt",
@@ -74,6 +79,7 @@ const findAll = async (req, res, next) => {
       maxExperience,
       author,
       status,
+      approvalStatus,
       includeClosed,
     });
     const pagination = getPagination({ totalItems, limit, page });

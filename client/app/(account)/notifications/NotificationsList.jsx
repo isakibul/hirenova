@@ -24,6 +24,9 @@ function getTypeLabel(type) {
     application_status: "Status",
     job_saved: "Saved job",
     job_closed: "Job",
+    job_pending_review: "Review",
+    job_approved: "Approved",
+    job_declined: "Declined",
     system: "System",
   };
 

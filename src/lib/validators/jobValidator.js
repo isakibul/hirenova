@@ -13,6 +13,8 @@ const jobSchema = Joi.object({
   experienceMax: Joi.number().min(0).optional(),
   salary: Joi.number().min(0).optional(),
   status: Joi.string().valid("open", "closed").optional(),
+  approvalStatus: Joi.string().valid("pending", "approved", "declined").optional(),
+  rejectionNote: Joi.string().max(1000).allow("").optional(),
   expiresAt: Joi.date().iso().allow(null).optional(),
 });
 
@@ -21,4 +23,13 @@ const jobStatusSchema = Joi.object({
   expiresAt: Joi.date().iso().allow(null).optional(),
 });
 
-module.exports = { jobSchema, jobStatusSchema };
+const jobApprovalSchema = Joi.object({
+  approvalStatus: Joi.string().valid("approved", "declined").required(),
+  rejectionNote: Joi.when("approvalStatus", {
+    is: "declined",
+    then: Joi.string().trim().max(1000).required(),
+    otherwise: Joi.string().trim().max(1000).allow("").optional(),
+  }),
+});
+
+module.exports = { jobSchema, jobStatusSchema, jobApprovalSchema };

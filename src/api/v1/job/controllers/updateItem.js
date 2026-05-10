@@ -47,6 +47,7 @@ const updateItem = async (req, res, next) => {
       status,
       expiresAt,
       author: employerId,
+      authorRole: req.user.role,
     });
 
     const response = {

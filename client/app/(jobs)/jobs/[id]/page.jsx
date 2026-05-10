@@ -48,6 +48,12 @@ function formatExperience(job) {
     return "Not specified";
 }
 function getJobStatus(job) {
+    if (job.approvalStatus === "pending") {
+        return "Under Review";
+    }
+    if (job.approvalStatus === "declined") {
+        return "Declined";
+    }
     if (job.expiresAt && new Date(job.expiresAt) <= new Date()) {
         return "Expired";
     }

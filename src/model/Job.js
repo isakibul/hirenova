@@ -29,6 +29,21 @@ const jobSchema = Schema({
     enum: ["open", "closed"],
     default: "open",
   },
+  approvalStatus: {
+    type: String,
+    enum: ["pending", "approved", "declined"],
+    default: "pending",
+    index: true,
+  },
+  rejectionNote: {
+    type: String,
+    maxLength: 1000,
+  },
+  reviewedAt: Date,
+  reviewedBy: {
+    type: Schema.ObjectId,
+    ref: "User",
+  },
   expiresAt: Date,
   closedAt: Date,
   createdAt: { type: Date, default: Date.now() },

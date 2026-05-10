@@ -37,6 +37,12 @@ const statusFilterOptions = [
     { value: "open", label: "Open" },
     { value: "closed", label: "Closed" },
 ];
+const approvalFilterOptions = [
+    { value: "all", label: "All approvals" },
+    { value: "pending", label: "Pending" },
+    { value: "approved", label: "Approved" },
+    { value: "declined", label: "Declined" },
+];
 function getMessage(response) {
     if (response.errors?.length) {
         return response.errors.join(" ");
@@ -72,6 +78,24 @@ function formatJobStatus(job) {
 function getStatusClass(job) {
     const status = formatJobStatus(job);
     return status === "Open" ? "site-success" : "site-danger";
+}
+function formatApprovalStatus(value) {
+    if (value === "declined") {
+        return "Declined";
+    }
+    if (value === "pending") {
+        return "Pending";
+    }
+    return "Approved";
+}
+function getApprovalClass(value) {
+    if (value === "declined") {
+        return "site-danger";
+    }
+    if (value === "pending") {
+        return "site-badge";
+    }
+    return "site-success";
 }
 function formatJobType(value) {
     if (!value) {
@@ -184,7 +208,7 @@ function getFormFromJob(job) {
         expiresAt: getDateInputValue(job.expiresAt),
     };
 }
-export default function ManageJobsClient({ currentRole = "admin" }) {
+export default function ManageJobsClient({ currentRole = "admin", initialApprovalFilter = "all" }) {
     const [jobs, setJobs] = useState([]);
     const [pagination, setPagination] = useState();
     const [searchInput, setSearchInput] = useState("");
@@ -193,6 +217,9 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
     const [sortBy, setSortBy] = useState("updatedAt");
     const [sortType, setSortType] = useState("dsc");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [approvalFilter, setApprovalFilter] = useState(approvalFilterOptions.some((option) => option.value === initialApprovalFilter)
+        ? initialApprovalFilter
+        : "all");
     const [form, setForm] = useState(emptyForm);
     const [formTouched, setFormTouched] = useState({});
     const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -202,8 +229,11 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingJobId, setLoadingJobId] = useState(null);
     const [statusUpdatingJobId, setStatusUpdatingJobId] = useState(null);
+    const [reviewingJobId, setReviewingJobId] = useState(null);
     const [deletingJobId, setDeletingJobId] = useState(null);
     const [jobPendingDelete, setJobPendingDelete] = useState(null);
+    const [jobPendingDecline, setJobPendingDecline] = useState(null);
+    const [rejectionNote, setRejectionNote] = useState("");
     const [notice, setNotice] = useState(null);
     const [error, setError] = useState(null);
     const selectedJob = useMemo(() => jobs.find((job) => getJobId(job) === editingJobId), [editingJobId, jobs]);
@@ -236,6 +266,9 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
         if (statusFilter !== "all") {
             params.set("status", statusFilter);
         }
+        if (approvalFilter !== "all") {
+            params.set("approval_status", approvalFilter);
+        }
         try {
             const response = await fetch(`/api/manage-jobs?${params.toString()}`);
             const body = (await response.json());
@@ -255,7 +288,7 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
         finally {
             setIsLoading(false);
         }
-    }, [page, search, sortBy, sortType, statusFilter]);
+    }, [approvalFilter, page, search, sortBy, sortType, statusFilter]);
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
             void loadJobs();
@@ -274,6 +307,19 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [deletingJobId, jobPendingDelete]);
+    useEffect(() => {
+        if (!jobPendingDecline || reviewingJobId) {
+            return;
+        }
+        function handleKeyDown(event) {
+            if (event.key === "Escape") {
+                setJobPendingDecline(null);
+                setRejectionNote("");
+            }
+        }
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [jobPendingDecline, reviewingJobId]);
     function resetForm() {
         setForm(emptyForm);
         setFormTouched({});
@@ -339,7 +385,13 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
             if (!response.ok) {
                 throw new Error(getMessage(body));
             }
-            setNotice(editingJobId ? "Job updated." : "Job created.");
+            setNotice(editingJobId
+                ? isAdmin
+                    ? "Job updated."
+                    : "Job updated and sent for admin review."
+                : isAdmin
+                    ? "Job created."
+                    : "Job submitted for admin approval.");
             setForm(emptyForm);
             setFormTouched({});
             setSubmitAttempted(false);
@@ -390,6 +442,60 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
         finally {
             setStatusUpdatingJobId(null);
         }
+    }
+    async function reviewJob(job, approvalStatus, note = "") {
+        const jobId = getJobId(job);
+        if (!jobId) {
+            return;
+        }
+        setReviewingJobId(jobId);
+        setNotice(null);
+        setError(null);
+        try {
+            const response = await fetch(`/api/manage-jobs/${jobId}/approval`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    approvalStatus,
+                    rejectionNote: note,
+                }),
+            });
+            const body = await response.json();
+            if (!response.ok) {
+                throw new Error(getMessage(body));
+            }
+            setNotice(approvalStatus === "approved" ? "Job approved." : "Job declined.");
+            setJobPendingDecline(null);
+            setRejectionNote("");
+            await loadJobs();
+        }
+        catch (caughtError) {
+            setError(caughtError instanceof Error
+                ? caughtError.message
+                : "Unable to review job.");
+        }
+        finally {
+            setReviewingJobId(null);
+        }
+    }
+    function handleDecline(job) {
+        setJobPendingDecline(job);
+        setRejectionNote(job.rejectionNote ?? "");
+        setNotice(null);
+        setError(null);
+    }
+    async function confirmDecline(event) {
+        event.preventDefault();
+        if (!jobPendingDecline) {
+            return;
+        }
+        if (!rejectionNote.trim()) {
+            setError("Write a note so the employer knows what to fix.");
+            return;
+        }
+        await reviewJob(jobPendingDecline, "declined", rejectionNote.trim());
     }
     async function confirmDelete() {
         if (!jobPendingDelete) {
@@ -483,7 +589,7 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
         <div className="mt-6 grid gap-6 2xl:grid-cols-[minmax(0,1fr)_415px]">
           <div className="site-border site-card min-w-0 overflow-hidden rounded-lg border">
             <div className="site-panel border-b border-[var(--site-border)] p-4">
-              <form onSubmit={handleSearch} className="grid gap-3 lg:grid-cols-[1fr_170px_150px_140px]">
+              <form onSubmit={handleSearch} className="grid gap-3 lg:grid-cols-[1fr_160px_150px_160px_120px]">
                 <label className="relative">
                   <span className="site-muted pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
                     <Icon name="search"/>
@@ -498,6 +604,10 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
             setPage(1);
             setStatusFilter(nextValue);
         }} options={statusFilterOptions} className="site-field h-10 rounded-md border px-3 text-sm focus:outline-none"/>
+                <SelectField value={approvalFilter} onChange={(nextValue) => {
+            setPage(1);
+            setApprovalFilter(nextValue);
+        }} options={approvalFilterOptions} className="site-field h-10 rounded-md border px-3 text-sm focus:outline-none"/>
                 <button className="site-button h-10 rounded-md px-3 text-sm font-semibold transition">
                   Search
                 </button>
@@ -509,10 +619,11 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
         }} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold">
                   {sortType === "dsc" ? "Descending" : "Ascending"}
                 </button>
-                {search || statusFilter !== "all" ? (<button type="button" onClick={() => {
+                {search || statusFilter !== "all" || approvalFilter !== "all" ? (<button type="button" onClick={() => {
                 setSearch("");
                 setSearchInput("");
                 setStatusFilter("all");
+                setApprovalFilter("all");
                 setPage(1);
             }} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold">
                     Clear Filters
@@ -521,10 +632,10 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1120px] table-fixed border-collapse text-left text-sm">
+              <table className="w-full min-w-[1580px] table-fixed border-collapse text-left text-sm">
                 <thead className="site-panel text-xs uppercase tracking-wide">
                   <tr>
-                    <th className="w-[42%] px-4 py-3 font-semibold">Job</th>
+                    <th className="w-[30%] px-4 py-3 font-semibold">Job</th>
                     <th className="w-[120px] whitespace-nowrap px-4 py-3 font-semibold">
                       Type
                     </th>
@@ -534,18 +645,21 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
                     <th className="w-[140px] whitespace-nowrap px-4 py-3 font-semibold">
                       Status
                     </th>
-                    <th className="w-[380px] whitespace-nowrap px-4 py-3 text-right font-semibold">
+                    <th className="w-[170px] whitespace-nowrap px-4 py-3 font-semibold">
+                      Approval
+                    </th>
+                    <th className="w-[640px] whitespace-nowrap px-4 py-3 text-right font-semibold">
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {isLoading ? (<tr>
-                      <td colSpan={5} className="site-muted px-4 py-10 text-center">
+                      <td colSpan={6} className="site-muted px-4 py-10 text-center">
                         Loading jobs...
                       </td>
                     </tr>) : jobs.length === 0 ? (<tr>
-                      <td colSpan={5} className="px-4 py-10 text-center">
+                      <td colSpan={6} className="px-4 py-10 text-center">
                         <p className="font-semibold">No jobs found</p>
                         <p className="site-muted mt-1 text-xs">
                           Create a new listing or adjust your search.
@@ -592,25 +706,39 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
                                 Expires {formatDate(job.expiresAt)}
                               </p>) : null}
                           </td>
+                          <td className="px-4 py-4 align-top text-xs">
+                            <span className={`inline-flex max-w-full rounded-md border px-2 py-1 font-semibold ${getApprovalClass(job.approvalStatus)}`}>
+                              {formatApprovalStatus(job.approvalStatus)}
+                            </span>
+                            {job.approvalStatus === "declined" && job.rejectionNote ? (<p className="site-muted mt-1 line-clamp-2 whitespace-normal">
+                                {job.rejectionNote}
+                              </p>) : null}
+                          </td>
                           <td className="px-4 py-4 align-top">
-                            <div className="flex justify-end gap-2">
-                              <Link href={`/jobs/${jobId}`} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold">
+                            <div className="flex flex-nowrap justify-end gap-2">
+                              <Link href={`/jobs/${jobId}`} className="site-border site-field inline-flex min-w-[64px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold">
                                 View
                               </Link>
-                              <Link href={`/manage-jobs/${jobId}/applications`} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold">
+                              <Link href={`/manage-jobs/${jobId}/applications`} className="site-border site-field inline-flex min-w-[96px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold">
                                 Applicants
                               </Link>
-                              <button type="button" onClick={() => handleEdit(job)} disabled={loadingJobId === jobId} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
+                              <button type="button" onClick={() => handleEdit(job)} disabled={loadingJobId === jobId} className="site-border site-field inline-flex min-w-[64px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
                                 {loadingJobId === jobId ? "Loading" : "Edit"}
                               </button>
-                              <button type="button" onClick={() => updateJobStatus(job)} disabled={statusUpdatingJobId === jobId} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
+                              <button type="button" onClick={() => updateJobStatus(job)} disabled={statusUpdatingJobId === jobId} className="site-border site-field inline-flex min-w-[72px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
                                 {statusUpdatingJobId === jobId
                     ? "Saving"
                     : job.status === "closed"
                         ? "Reopen"
                         : "Close"}
                               </button>
-                              <button type="button" onClick={() => handleDelete(job)} disabled={deletingJobId === jobId} className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
+                              {isAdmin && job.approvalStatus !== "approved" ? (<button type="button" onClick={() => reviewJob(job, "approved")} disabled={reviewingJobId === jobId} className="inline-flex min-w-[82px] justify-center rounded-md border border-[var(--site-success-border)] bg-[var(--site-success-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-success-text)] disabled:opacity-60">
+                                  {reviewingJobId === jobId ? "Saving" : "Approve"}
+                                </button>) : null}
+                              {isAdmin && job.approvalStatus !== "declined" ? (<button type="button" onClick={() => handleDecline(job)} disabled={reviewingJobId === jobId} className="inline-flex min-w-[76px] justify-center rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
+                                  Decline
+                                </button>) : null}
+                              <button type="button" onClick={() => handleDelete(job)} disabled={deletingJobId === jobId} className="inline-flex min-w-[72px] justify-center rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
                                 {deletingJobId === jobId
                     ? "Deleting"
                     : "Delete"}
@@ -647,7 +775,9 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
                 <p className="site-muted mt-1 text-xs">
                   {editingJobId
             ? (selectedJob?.title ?? "Update selected listing")
-            : "Publish a new listing"}
+            : isAdmin
+                ? "Publish a new listing"
+                : "Submit a new listing for admin approval"}
                 </p>
               </div>
               <button type="button" onClick={() => setIsFormOpen((current) => !current)} className="site-border site-field rounded-md border p-2" aria-label={isFormOpen ? "Collapse form" : "Expand form"}>
@@ -656,6 +786,13 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
             </div>
 
             {isFormOpen ? (<form onSubmit={handleSubmit} noValidate className="space-y-4 p-4">
+                {!isAdmin ? (<div className="site-border site-panel rounded-lg border p-3 text-xs leading-5">
+                    New and edited jobs enter admin review before appearing in public job search.
+                  </div>) : null}
+                {selectedJob?.approvalStatus === "declined" && selectedJob.rejectionNote ? (<div className="site-danger rounded-lg border p-3 text-xs leading-5">
+                    <span className="font-semibold">Admin note: </span>
+                    {selectedJob.rejectionNote}
+                  </div>) : null}
                 <label className="block">
                   <span className="text-sm font-medium">Title</span>
                   <input value={form.title} onChange={(event) => updateFormField("title", event.target.value)} onBlur={() => markFormTouched("title")} aria-invalid={Boolean(visibleErrors.title)} aria-describedby={visibleErrors.title ? "job-title-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={10} maxLength={150} required placeholder="Senior Product Designer"/>
@@ -729,6 +866,47 @@ export default function ManageJobsClient({ currentRole = "admin" }) {
           </aside>
         </div>
       </div>
+
+      {jobPendingDecline ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="decline-job-title" aria-describedby="decline-job-description">
+          <form onSubmit={confirmDecline} className="site-border site-card w-full max-w-md rounded-lg border">
+            <div className="flex items-start gap-3 border-b border-[var(--site-border)] p-5">
+              <span className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] p-2 text-[var(--site-danger-text)]">
+                <Icon name="x"/>
+              </span>
+              <div className="min-w-0">
+                <h2 id="decline-job-title" className="text-lg font-semibold">
+                  Decline job post?
+                </h2>
+                <p id="decline-job-description" className="site-muted mt-1 text-sm leading-6">
+                  Send a clear note to the employer explaining what needs to be
+                  fixed before approval.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 p-5">
+              <label className="block">
+                <span className="text-sm font-medium">Decline note</span>
+                <textarea value={rejectionNote} onChange={(event) => setRejectionNote(event.target.value)} className="site-field mt-1 min-h-32 w-full resize-y rounded-md border px-3 py-2 text-sm leading-6 focus:outline-none" maxLength={1000} required placeholder="Example: Please include a clearer responsibilities section and salary range."/>
+              </label>
+            </div>
+
+            <div className="flex flex-col-reverse gap-2 border-t border-[var(--site-border)] p-5 sm:flex-row sm:justify-end">
+              <button type="button" onClick={() => {
+            setJobPendingDecline(null);
+            setRejectionNote("");
+        }} disabled={reviewingJobId === getJobId(jobPendingDecline)} className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-60">
+                Cancel
+              </button>
+              <button type="submit" disabled={reviewingJobId === getJobId(jobPendingDecline)} className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-4 py-2 text-sm font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
+                <Icon name="x"/>
+                {reviewingJobId === getJobId(jobPendingDecline)
+                ? "Declining..."
+                : "Decline Job"}
+              </button>
+            </div>
+          </form>
+        </div>) : null}
 
       {jobPendingDelete ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="delete-job-title" aria-describedby="delete-job-description">
           <div className="site-border site-card w-full max-w-md rounded-lg border">

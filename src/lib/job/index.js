@@ -1,7 +1,50 @@
 const { isValidObjectId } = require("mongoose");
-const { Application, Job } = require("../../model");
+const { Application, Job, User } = require("../../model");
 const { notFound } = require("../../utils/error");
 const notificationService = require("../notification");
+
+const getApprovalFilter = (approvalStatus) => {
+  if (["pending", "approved", "declined"].includes(approvalStatus)) {
+    return { approvalStatus };
+  }
+
+  if (approvalStatus === "public") {
+    return {
+      $or: [
+        { approvalStatus: "approved" },
+        { approvalStatus: { $exists: false } },
+        { approvalStatus: null },
+      ],
+    };
+  }
+
+  return {};
+};
+
+const getPublicApprovalFilter = () => ({
+    $or: [
+      { approvalStatus: "approved" },
+      { approvalStatus: { $exists: false } },
+      { approvalStatus: null },
+    ],
+});
+
+const notifyAdminsForReview = async (job) => {
+  const admins = await User.find({ role: "admin", status: "active" }).select("_id");
+
+  await notificationService.createManyNotifications(
+    admins.map((admin) => ({
+      recipient: admin._id,
+      type: "job_pending_review",
+      title: "New job awaiting approval",
+      message: `${job.title} was submitted for review.`,
+      link: "/manage-jobs?approval_status=pending",
+      metadata: {
+        job: job.id,
+      },
+    }))
+  );
+};
 
 const create = async ({
   title,
@@ -16,7 +59,9 @@ const create = async ({
   status,
   expiresAt,
   author,
+  authorRole,
 }) => {
+  const approvalStatus = authorRole === "admin" ? "approved" : "pending";
   const job = await Job({
     title,
     description,
@@ -28,12 +73,20 @@ const create = async ({
     experienceMax,
     salary,
     status,
+    approvalStatus,
+    rejectionNote: "",
+    reviewedAt: authorRole === "admin" ? new Date() : undefined,
+    reviewedBy: authorRole === "admin" ? author : undefined,
     expiresAt,
     closedAt: status === "closed" ? new Date() : undefined,
     author,
   });
 
   await job.save();
+
+  if (approvalStatus === "pending") {
+    await notifyAdminsForReview(job);
+  }
 
   return {
     ...job._doc,
@@ -66,6 +119,7 @@ const updateItem = async (
     status,
     expiresAt,
     author,
+    authorRole,
   }
 ) => {
   const job = await Job.findById(id);
@@ -84,6 +138,7 @@ const updateItem = async (
       status,
       expiresAt,
       author,
+      authorRole,
     });
 
     return {
@@ -103,13 +158,22 @@ const updateItem = async (
     experienceMax,
     salary,
     status,
+    approvalStatus:
+      authorRole === "admin" ? job.approvalStatus ?? "approved" : "pending",
+    rejectionNote: authorRole === "admin" ? job.rejectionNote ?? "" : "",
+    reviewedAt: authorRole === "admin" ? job.reviewedAt : undefined,
+    reviewedBy: authorRole === "admin" ? job.reviewedBy : undefined,
     expiresAt,
     closedAt: status === "closed" ? new Date() : undefined,
-    author,
+    author: authorRole === "admin" ? job.author : author,
   };
 
   job.overwrite(payload);
   await job.save();
+
+  if (authorRole !== "admin") {
+    await notifyAdminsForReview(job);
+  }
 
   return {
     job: { ...job._doc, id: job._id },
@@ -132,6 +196,7 @@ const updateItemUsingPatch = async (
     status,
     expiresAt,
     author,
+    authorRole,
   }
 ) => {
   const job = await Job.findById(id);
@@ -152,7 +217,7 @@ const updateItemUsingPatch = async (
     salary,
     status,
     expiresAt,
-    author,
+    author: authorRole === "admin" ? job.author : author,
   };
 
   Object.keys(payload).forEach((key) => {
@@ -165,7 +230,19 @@ const updateItemUsingPatch = async (
     job.closedAt = status === "closed" ? new Date() : undefined;
   }
 
+  if (authorRole !== "admin") {
+    job.approvalStatus = "pending";
+    job.rejectionNote = "";
+    job.reviewedAt = undefined;
+    job.reviewedBy = undefined;
+  }
+
   await job.save();
+
+  if (authorRole !== "admin") {
+    await notifyAdminsForReview(job);
+  }
+
   return { ...job._doc, id: job.id };
 };
 
@@ -218,6 +295,7 @@ const getJobFilter = ({
   maxExperience,
   author,
   status = "",
+  approvalStatus = "",
   includeClosed = false,
 }) => {
   const filter = {};
@@ -240,6 +318,7 @@ const getJobFilter = ({
   if (!includeClosed) {
     filter.$and = [
       ...(filter.$and ?? []),
+      getPublicApprovalFilter(),
       {
         $or: [
           { status: "open" },
@@ -255,7 +334,15 @@ const getJobFilter = ({
         ],
       },
     ];
-  } else if (status === "open") {
+  } else {
+    const approvalFilter = getApprovalFilter(approvalStatus);
+
+    if (Object.keys(approvalFilter).length) {
+      filter.$and = [...(filter.$and ?? []), approvalFilter];
+    }
+  }
+
+  if (includeClosed && status === "open") {
     filter.$and = [
       ...(filter.$and ?? []),
       {
@@ -266,7 +353,7 @@ const getJobFilter = ({
         ],
       },
     ];
-  } else if (["open", "closed"].includes(status)) {
+  } else if (includeClosed && ["open", "closed"].includes(status)) {
     filter.status = status;
   }
 
@@ -356,6 +443,7 @@ const findAll = async ({
   maxExperience,
   author,
   status,
+  approvalStatus,
   includeClosed,
 }) => {
   const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
@@ -370,6 +458,7 @@ const findAll = async ({
     maxExperience,
     author,
     status,
+    approvalStatus,
     includeClosed,
   });
 
@@ -395,6 +484,7 @@ const count = ({
   maxExperience,
   author,
   status,
+  approvalStatus,
   includeClosed,
 }) => {
   const filter = getJobFilter({
@@ -408,6 +498,7 @@ const count = ({
     maxExperience,
     author,
     status,
+    approvalStatus,
     includeClosed,
   });
 
@@ -472,6 +563,42 @@ const updateStatus = async ({ id, status, expiresAt }) => {
   return { ...job._doc, id: job.id };
 };
 
+const updateApproval = async ({ id, approvalStatus, rejectionNote = "", reviewer }) => {
+  const job = await Job.findById(id);
+
+  if (!job) {
+    throw notFound("Job not found");
+  }
+
+  job.approvalStatus = approvalStatus;
+  job.rejectionNote = approvalStatus === "declined" ? rejectionNote : "";
+  job.reviewedAt = new Date();
+  job.reviewedBy = reviewer.id;
+
+  await job.save();
+
+  await notificationService.createNotification({
+    recipient: job.author,
+    type: approvalStatus === "approved" ? "job_approved" : "job_declined",
+    title:
+      approvalStatus === "approved"
+        ? "Job approved"
+        : "Job declined",
+    message:
+      approvalStatus === "approved"
+        ? `${job.title} is approved and visible to candidates.`
+        : `${job.title} was declined. ${rejectionNote}`,
+    link: "/manage-jobs",
+    metadata: {
+      job: job.id,
+      approvalStatus,
+      rejectionNote: job.rejectionNote,
+    },
+  });
+
+  return { ...job._doc, id: job.id };
+};
+
 const checkOwnership = async ({ resourceId, userId }) => {
   const job = await Job.findById(resourceId);
 
@@ -494,5 +621,6 @@ module.exports = {
   count,
   findSingle,
   updateStatus,
+  updateApproval,
   checkOwnership,
 };

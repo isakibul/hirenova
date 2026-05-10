@@ -38,6 +38,13 @@ const getEmployerSummary = async (userId) => {
     author: userId,
     $and: [
       {
+        $or: [
+          { approvalStatus: "approved" },
+          { approvalStatus: { $exists: false } },
+          { approvalStatus: null },
+        ],
+      },
+      {
         $or: [{ status: "open" }, { status: { $exists: false } }, { status: null }],
       },
       {
@@ -53,17 +60,34 @@ const getEmployerSummary = async (userId) => {
     author: userId,
     $and: [
       {
+        $or: [
+          { approvalStatus: "approved" },
+          { approvalStatus: { $exists: false } },
+          { approvalStatus: null },
+        ],
+      },
+      {
         $or: [{ status: "open" }, { status: { $exists: false } }, { status: null }],
       },
       { expiresAt: { $lte: now } },
     ],
   };
-  const [totalJobs, totalApplications, openJobs, closedJobs, expiredJobs] = await Promise.all([
+  const [
+    totalJobs,
+    totalApplications,
+    openJobs,
+    closedJobs,
+    expiredJobs,
+    pendingJobs,
+    declinedJobs,
+  ] = await Promise.all([
     Job.countDocuments({ author: userId }),
     Application.countDocuments({ job: { $in: jobIds } }),
     Job.countDocuments(activeJobFilter),
     Job.countDocuments({ author: userId, status: "closed" }),
     Job.countDocuments(expiredJobFilter),
+    Job.countDocuments({ author: userId, approvalStatus: "pending" }),
+    Job.countDocuments({ author: userId, approvalStatus: "declined" }),
   ]);
 
   return {
@@ -72,6 +96,8 @@ const getEmployerSummary = async (userId) => {
     openJobs,
     closedJobs,
     expiredJobs,
+    pendingJobs,
+    declinedJobs,
   };
 };
 

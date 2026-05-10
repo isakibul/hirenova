@@ -69,6 +69,13 @@ router.patch(
   jobControllers.updateStatus
 );
 
+router.patch(
+  "/:id/approval",
+  authenticate,
+  authorize(["admin"]),
+  jobControllers.updateApproval
+);
+
 router.put(
   "/:id",
   authenticate,

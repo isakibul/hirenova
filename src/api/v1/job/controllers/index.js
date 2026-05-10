@@ -5,6 +5,7 @@ const updateItemByPatch = require("./updateItemByPatch");
 const findAll = require("./findAll");
 const findSingle = require("./findSingle");
 const updateStatus = require("./updateStatus");
+const updateApproval = require("./updateApproval");
 
 module.exports = {
   create,
@@ -14,4 +15,5 @@ module.exports = {
   findAll,
   findSingle,
   updateStatus,
+  updateApproval,
 };

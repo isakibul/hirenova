@@ -28,6 +28,13 @@ const applyToJob = async ({ jobId, applicantId, coverLetter = "" }) => {
     throw badRequest("This job is closed");
   }
 
+  if (
+    job.approvalStatus &&
+    job.approvalStatus !== "approved"
+  ) {
+    throw badRequest("This job is not accepting applications yet");
+  }
+
   if (job.expiresAt && job.expiresAt <= new Date()) {
     throw badRequest("This job has expired");
   }
