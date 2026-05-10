@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { acquireRealtimeSocket } from "../_lib/realtime";
 import Icon from "./Icon";
 
 function getMessage(body, fallback) {
@@ -84,7 +85,11 @@ function getUnreadSignature(conversations = []) {
     .join("|");
 }
 
-export default function MessagesMenu({ enabled = false, currentUserId = "" }) {
+export default function MessagesMenu({
+  enabled = false,
+  currentUserId = "",
+  accessToken = "",
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [selectedId, setSelectedId] = useState("");
@@ -94,6 +99,8 @@ export default function MessagesMenu({ enabled = false, currentUserId = "" }) {
   const [error, setError] = useState("");
   const audioContextRef = useRef(null);
   const messagesPanelRef = useRef(null);
+  const isOpenRef = useRef(false);
+  const selectedIdRef = useRef("");
   const soundReadyRef = useRef(false);
   const unreadSignatureRef = useRef("");
   const hasLoadedUnreadRef = useRef(false);
@@ -164,6 +171,35 @@ export default function MessagesMenu({ enabled = false, currentUserId = "" }) {
     },
     [playMessageSound],
   );
+
+  const updateConversation = useCallback((updatedConversation) => {
+    if (!updatedConversation) {
+      return;
+    }
+
+    setConversations((current) => {
+      const updatedId = getConversationId(updatedConversation);
+      const hasConversation = current.some(
+        (conversation) => getConversationId(conversation) === updatedId,
+      );
+      const nextConversations = (
+        hasConversation
+          ? current.map((conversation) =>
+              getConversationId(conversation) === updatedId
+                ? updatedConversation
+                : conversation,
+            )
+          : [updatedConversation, ...current]
+      ).sort(
+        (first, second) =>
+          new Date(second.lastMessageAt ?? 0).getTime() -
+          new Date(first.lastMessageAt ?? 0).getTime(),
+      );
+
+      rememberUnreadState(nextConversations);
+      return nextConversations;
+    });
+  }, [rememberUnreadState]);
 
   async function refreshConversations({ markSelectedRead = false } = {}) {
     const response = await fetch("/api/messages/conversations", {
@@ -238,60 +274,96 @@ export default function MessagesMenu({ enabled = false, currentUserId = "" }) {
   }, [enabled, unlockSound]);
 
   useEffect(() => {
-    if (!enabled) {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
+
+  useEffect(() => {
+    if (!enabled || !accessToken) {
       return undefined;
     }
 
     let ignore = false;
-    let isRefreshing = false;
+    const realtime = acquireRealtimeSocket(accessToken);
 
-    async function refreshUnread() {
-      if (isRefreshing) {
+    if (!realtime) {
+      return undefined;
+    }
+
+    const { socket } = realtime;
+
+    async function refreshInitialConversations({ allowSound = false } = {}) {
+      if (document.visibilityState === "hidden") {
         return;
       }
-      isRefreshing = true;
+
       try {
-        if (isOpen && selectedId) {
-          const response = await fetch(`/api/messages/conversations/${selectedId}`, {
-            cache: "no-store",
-          });
-          const body = await response.json();
-          if (!ignore && response.ok && body.data) {
-            setConversations((current) => {
-              const nextConversations = current.map((conversation) =>
-                getConversationId(conversation) === selectedId
-                  ? body.data
-                  : conversation,
-              );
-              rememberUnreadState(nextConversations);
-              return nextConversations;
-            });
-          }
-        } else {
-          const response = await fetch("/api/messages/conversations", {
-            cache: "no-store",
-          });
-          const body = await response.json();
-          if (!ignore && response.ok) {
-            const nextConversations = body.data ?? [];
-            rememberUnreadState(nextConversations);
-            setConversations(nextConversations);
-          }
+        const response = await fetch("/api/messages/conversations", {
+          cache: "no-store",
+        });
+        const body = await response.json();
+        if (!ignore && response.ok) {
+          const nextConversations = body.data ?? [];
+          rememberUnreadState(nextConversations, { allowSound });
+          setConversations(nextConversations);
         }
       } catch {
-        // Keep the nav quiet if a session expires mid-request.
-      } finally {
-        isRefreshing = false;
+        // Keep the nav quiet if a realtime refresh fails.
       }
     }
 
-    refreshUnread();
-    const intervalId = window.setInterval(refreshUnread, 5000);
+    function handleConversationUpdated(payload) {
+      const updatedConversation = payload?.conversation;
+      const updatedId = getConversationId(updatedConversation);
+
+      if (!updatedConversation || !updatedId) {
+        return;
+      }
+
+      updateConversation(updatedConversation);
+
+      if (isOpenRef.current && selectedIdRef.current === updatedId) {
+        fetch(`/api/messages/conversations/${updatedId}`, {
+          cache: "no-store",
+        })
+          .then((response) => response.json())
+          .then((body) => {
+            if (body?.data) {
+              updateConversation(body.data);
+            }
+          })
+          .catch(() => undefined);
+      }
+    }
+
+    function handleVisibleAgain() {
+      if (document.visibilityState === "visible") {
+        void refreshInitialConversations({ allowSound: true });
+      }
+    }
+
+    function handleConnect() {
+      void refreshInitialConversations();
+    }
+
+    socket.on("connect", handleConnect);
+    socket.on("conversation:updated", handleConversationUpdated);
+    document.addEventListener("visibilitychange", handleVisibleAgain);
+    if (socket.connected) {
+      void refreshInitialConversations();
+    }
+
     return () => {
       ignore = true;
-      window.clearInterval(intervalId);
+      socket.off("connect", handleConnect);
+      socket.off("conversation:updated", handleConversationUpdated);
+      realtime.release();
+      document.removeEventListener("visibilitychange", handleVisibleAgain);
     };
-  }, [enabled, isOpen, selectedId, rememberUnreadState]);
+  }, [accessToken, enabled, rememberUnreadState, updateConversation]);
 
   useEffect(() => {
     if (!isOpen) {

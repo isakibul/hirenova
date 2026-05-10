@@ -1,6 +1,7 @@
 "use client";
 
 import Icon from "@components/Icon";
+import { acquireRealtimeSocket } from "@lib/realtime";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -74,7 +75,7 @@ function getProfileHref(user) {
     : "";
 }
 
-export default function MessagesClient({ currentUserId }) {
+export default function MessagesClient({ currentUserId, accessToken = "" }) {
   const searchParams = useSearchParams();
   const requestedConversationId = searchParams.get("conversation");
   const [conversations, setConversations] = useState([]);
@@ -84,6 +85,7 @@ export default function MessagesClient({ currentUserId }) {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState("");
   const messagesPanelRef = useRef(null);
+  const selectedIdRef = useRef(selectedId);
 
   const selectedConversation = useMemo(
     () =>
@@ -137,12 +139,132 @@ export default function MessagesClient({ currentUserId }) {
     }
   }, [requestedConversationId]);
 
+  const updateConversation = useCallback((updatedConversation) => {
+    if (!updatedConversation) {
+      return;
+    }
+
+    setConversations((current) => {
+      const updatedId = getConversationId(updatedConversation);
+      const hasConversation = current.some(
+        (conversation) => getConversationId(conversation) === updatedId,
+      );
+      const nextConversations = (
+        hasConversation
+          ? current.map((conversation) =>
+              getConversationId(conversation) === updatedId
+                ? updatedConversation
+                : conversation,
+            )
+          : [updatedConversation, ...current]
+      ).sort(
+        (first, second) =>
+          new Date(second.lastMessageAt ?? 0).getTime() -
+          new Date(first.lastMessageAt ?? 0).getTime(),
+      );
+
+      return nextConversations;
+    });
+
+    setSelectedId((currentSelectedId) =>
+      currentSelectedId || selectedIdRef.current
+        ? currentSelectedId
+        : getConversationId(updatedConversation),
+    );
+  }, []);
+
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       void loadConversations();
     }, 0);
     return () => window.clearTimeout(timeoutId);
   }, [loadConversations]);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
+
+  useEffect(() => {
+    if (!accessToken) {
+      return undefined;
+    }
+
+    let ignore = false;
+    const realtime = acquireRealtimeSocket(accessToken);
+
+    if (!realtime) {
+      return undefined;
+    }
+
+    const { socket } = realtime;
+
+    async function refreshConversations() {
+      if (document.visibilityState === "hidden") {
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/messages/conversations", {
+          cache: "no-store",
+        });
+        const body = await response.json();
+        if (!ignore && response.ok) {
+          setConversations(body.data ?? []);
+        }
+      } catch {
+        // The existing REST load/error state handles visible failures.
+      }
+    }
+
+    function handleConversationUpdated(payload) {
+      const updatedConversation = payload?.conversation;
+      const updatedId = getConversationId(updatedConversation);
+
+      if (!updatedConversation || !updatedId) {
+        return;
+      }
+
+      updateConversation(updatedConversation);
+
+      if (selectedIdRef.current === updatedId) {
+        fetch(`/api/messages/conversations/${updatedId}`, {
+          cache: "no-store",
+        })
+          .then((response) => response.json())
+          .then((body) => {
+            if (body?.data) {
+              updateConversation(body.data);
+            }
+          })
+          .catch(() => undefined);
+      }
+    }
+
+    function handleVisibleAgain() {
+      if (document.visibilityState === "visible") {
+        void refreshConversations();
+      }
+    }
+
+    function handleConnect() {
+      void refreshConversations();
+    }
+
+    socket.on("connect", handleConnect);
+    socket.on("conversation:updated", handleConversationUpdated);
+    document.addEventListener("visibilitychange", handleVisibleAgain);
+    if (socket.connected) {
+      void refreshConversations();
+    }
+
+    return () => {
+      ignore = true;
+      socket.off("connect", handleConnect);
+      socket.off("conversation:updated", handleConversationUpdated);
+      realtime.release();
+      document.removeEventListener("visibilitychange", handleVisibleAgain);
+    };
+  }, [accessToken, updateConversation]);
 
   useEffect(() => {
     if (!selectedConversation) {

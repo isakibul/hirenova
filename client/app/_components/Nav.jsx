@@ -162,6 +162,7 @@ export default function Nav() {
         <MessagesMenu
           enabled={isAuthenticated}
           currentUserId={session?.user?.id}
+          accessToken={session?.accessToken}
         />
         {isAuthenticated ? (
           <div className="relative" ref={profileMenuRef}>

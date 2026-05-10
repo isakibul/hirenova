@@ -10,5 +10,10 @@ export default async function MessagesPage() {
     redirect("/login");
   }
 
-  return <MessagesClient currentUserId={session.user.id} />;
+  return (
+    <MessagesClient
+      currentUserId={session.user.id}
+      accessToken={session.accessToken}
+    />
+  );
 }

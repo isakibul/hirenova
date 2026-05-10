@@ -1,4 +1,5 @@
 const { Conversation, User } = require("../../model");
+const { emitToUser } = require("../../realtime/socket");
 const { authorizationError, badRequest, notFound } = require("../../utils/error");
 const notificationService = require("../notification");
 
@@ -43,6 +44,25 @@ const serializeConversation = (conversation, userId) => ({
   ),
 });
 
+const emitConversationUpdate = async (conversationId) => {
+  const conversation = await populateConversation(
+    Conversation.findById(conversationId)
+  );
+
+  if (!conversation) {
+    return null;
+  }
+
+  conversation.participants.forEach((participant) => {
+    const participantId = participant._id.toString();
+    emitToUser(participantId, "conversation:updated", {
+      conversation: serializeConversation(conversation, participantId),
+    });
+  });
+
+  return conversation;
+};
+
 const findMine = async ({ userId }) => {
   const conversations = await populateConversation(
     Conversation.find({ participants: userId }).sort("-lastMessageAt")
@@ -66,10 +86,17 @@ const getOne = async ({ conversationId, userId }) => {
     throw authorizationError("Operation not allowed");
   }
 
-  conversation.unreadBy = conversation.unreadBy.filter(
-    (participant) => participant.toString() !== userId
+  const wasUnread = conversation.unreadBy.some(
+    (participant) => participant.toString() === userId
   );
-  await conversation.save();
+
+  if (wasUnread) {
+    conversation.unreadBy = conversation.unreadBy.filter(
+      (participant) => participant.toString() !== userId
+    );
+    await conversation.save();
+    await emitConversationUpdate(conversation.id);
+  }
 
   const populated = await populateConversation(
     Conversation.findById(conversation.id)
@@ -126,6 +153,7 @@ const startConversation = async ({ sender, recipientId, body = "" }) => {
   await conversation.save();
 
   if (body.trim()) {
+    await emitConversationUpdate(conversation.id);
     await notificationService.createNotification({
       recipient: recipientId,
       type: "message",
@@ -173,6 +201,7 @@ const sendMessage = async ({ conversationId, sender, body }) => {
   );
 
   await conversation.save();
+  await emitConversationUpdate(conversation.id);
 
   await notificationService.createManyNotifications(
     conversation.unreadBy.map((recipient) => ({

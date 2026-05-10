@@ -3,11 +3,13 @@ const http = require("http");
 const app = require("./app");
 const { connectDatabase } = require("./db");
 const { connectRedis } = require("./config/redisClient");
+const { initRealtime } = require("./realtime/socket");
 
 /**
  * Create HTTP server
  */
 const server = http.createServer(app);
+initRealtime(server);
 
 /**
  * Server configuration
