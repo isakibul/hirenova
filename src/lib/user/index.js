@@ -1,8 +1,15 @@
 const { User } = require("../../model");
 const { badRequest, notFound } = require("../../utils/error");
 
+const normalizeEmail = (email = "") => email.trim().toLowerCase();
+const escapeRegExp = (value) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const findUserByEmail = async (email) => {
-  const user = await User.findOne({ email });
+  const normalizedEmail = normalizeEmail(email);
+  const user = await User.findOne({
+    email: new RegExp(`^${escapeRegExp(normalizedEmail)}$`, "i"),
+  });
   return user ? user : false;
 };
 
@@ -27,7 +34,12 @@ const userExitsByUsername = async (username) => {
 };
 
 const createUser = async ({ username, email, password, role }) => {
-  const user = new User({ username, email, password, role });
+  const user = new User({
+    username,
+    email: normalizeEmail(email),
+    password,
+    role,
+  });
   await user.save();
   return { ...user._doc, id: user.id };
 };
@@ -208,6 +220,10 @@ const updateUserByAdmin = async (id, payload) => {
   return { ...target._doc, id: target._id.toString() };
 };
 
+const touchLastSeen = async (id) => {
+  await User.findByIdAndUpdate(id, { lastSeenAt: new Date() });
+};
+
 const removeUser = async (id) => {
   const user = await User.findByIdAndDelete(id);
   if (!user) {
@@ -230,5 +246,6 @@ module.exports = {
   getSingleUser,
   updateProfile,
   updateUserByAdmin,
+  touchLastSeen,
   removeUser,
 };

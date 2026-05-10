@@ -68,6 +68,9 @@ const userSchema = new Schema(
       type: String,
       maxLength: 50,
     },
+    lastSeenAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

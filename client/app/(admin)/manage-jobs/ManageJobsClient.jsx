@@ -59,6 +59,18 @@ function formatDate(value) {
         year: "numeric",
     }).format(new Date(value));
 }
+function formatDateTime(value) {
+    if (!value) {
+        return "Not available";
+    }
+    return new Intl.DateTimeFormat("en", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+    }).format(new Date(value));
+}
 function formatSalary(value) {
     if (typeof value !== "number") {
         return "Not disclosed";
@@ -87,6 +99,36 @@ function formatApprovalStatus(value) {
         return "Pending";
     }
     return "Approved";
+}
+function formatApprovalHistoryAction(value) {
+    if (value === "resubmitted") {
+        return "Resubmitted";
+    }
+    if (value === "submitted") {
+        return "Submitted";
+    }
+    if (value === "declined") {
+        return "Declined";
+    }
+    return "Approved";
+}
+function getApprovalHistoryClass(value) {
+    if (value === "declined") {
+        return "site-danger";
+    }
+    if (value === "approved") {
+        return "site-success";
+    }
+    return "site-badge";
+}
+function formatApprovalStatusRole(value) {
+    if (value === "superadmin") {
+        return "super admin";
+    }
+    if (value === "jobseeker") {
+        return "jobseeker";
+    }
+    return value ?? "user";
 }
 function getApprovalClass(value) {
     if (value === "declined") {
@@ -233,10 +275,14 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
     const [deletingJobId, setDeletingJobId] = useState(null);
     const [jobPendingDelete, setJobPendingDelete] = useState(null);
     const [jobPendingDecline, setJobPendingDecline] = useState(null);
+    const [jobHistoryTarget, setJobHistoryTarget] = useState(null);
     const [rejectionNote, setRejectionNote] = useState("");
     const [notice, setNotice] = useState(null);
     const [error, setError] = useState(null);
     const selectedJob = useMemo(() => jobs.find((job) => getJobId(job) === editingJobId), [editingJobId, jobs]);
+    const approvalHistory = useMemo(() => [...(jobHistoryTarget?.approvalHistory ?? [])].sort((first, second) => new Date(second.createdAt ?? 0).getTime() -
+        new Date(first.createdAt ?? 0).getTime()), [jobHistoryTarget]);
+    const declinedHistory = useMemo(() => approvalHistory.filter((item) => item.action === "declined"), [approvalHistory]);
     const validationErrors = validateJobForm(form);
     const visibleErrors = getVisibleErrors(validationErrors, formTouched, submitAttempted);
     function updateFormField(field, value) {
@@ -320,6 +366,18 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [jobPendingDecline, reviewingJobId]);
+    useEffect(() => {
+        if (!jobHistoryTarget) {
+            return;
+        }
+        function handleKeyDown(event) {
+            if (event.key === "Escape") {
+                setJobHistoryTarget(null);
+            }
+        }
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [jobHistoryTarget]);
     function resetForm() {
         setForm(emptyForm);
         setFormTouched({});
@@ -369,6 +427,7 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
         }
         setIsSubmitting(true);
         const payload = buildPayload(form);
+        const isResubmission = !isAdmin && selectedJob?.approvalStatus === "declined";
         const target = editingJobId
             ? `/api/manage-jobs/${editingJobId}`
             : "/api/manage-jobs";
@@ -386,7 +445,9 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                 throw new Error(getMessage(body));
             }
             setNotice(editingJobId
-                ? isAdmin
+                ? isResubmission
+                    ? "Job updated and resubmitted for admin review."
+                    : isAdmin
                     ? "Job updated."
                     : "Job updated and sent for admin review."
                 : isAdmin
@@ -668,8 +729,8 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                     </tr>) : (jobs.map((job) => {
             const jobId = getJobId(job);
             const isSelected = editingJobId === jobId;
-            return (<tr key={jobId} className={`border-t border-[var(--site-border)] ${isSelected ? "bg-[var(--site-panel)]" : ""}`}>
-                          <td className="px-4 py-3 align-top">
+            return (<tr key={jobId} className={isSelected ? "bg-[var(--site-panel)]" : ""}>
+                          <td className="border-t border-[var(--site-border)] px-4 py-3 align-top">
                             <div className="flex gap-3">
                               <span className="site-badge mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
                                 <Icon name="briefcase"/>
@@ -692,13 +753,13 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                               </div>
                             </div>
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 align-top">
+                          <td className="whitespace-nowrap border-t border-[var(--site-border)] px-4 py-3 align-top">
                             {formatJobType(job.jobType)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 align-top">
+                          <td className="whitespace-nowrap border-t border-[var(--site-border)] px-4 py-3 align-top">
                             {formatSalary(job.salary)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 align-top text-xs">
+                          <td className="whitespace-nowrap border-t border-[var(--site-border)] px-4 py-3 align-top text-xs">
                             <span className={`inline-flex rounded-md border px-2 py-1 font-semibold ${getStatusClass(job)}`}>
                               {formatJobStatus(job)}
                             </span>
@@ -706,7 +767,7 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                                 Expires {formatDate(job.expiresAt)}
                               </p>) : null}
                           </td>
-                          <td className="px-4 py-3 align-top text-xs">
+                          <td className="border-t border-[var(--site-border)] px-4 py-3 align-top text-xs">
                             <span className={`inline-flex max-w-full rounded-md border px-2 py-1 font-semibold ${getApprovalClass(job.approvalStatus)}`}>
                               {formatApprovalStatus(job.approvalStatus)}
                             </span>
@@ -714,8 +775,8 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                                 {job.rejectionNote}
                               </p>) : null}
                           </td>
-                          <td className="px-4 py-3 align-top">
-                            <div className="flex flex-nowrap justify-start gap-2">
+                          <td className="border-t border-[var(--site-border)] px-4 py-3 pr-8 align-top">
+                            <div className="flex flex-wrap justify-start gap-2">
                               <Link href={`/jobs/${jobId}`} className="site-border site-field inline-flex min-w-[64px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold">
                                 View
                               </Link>
@@ -723,7 +784,11 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                                 Applicants
                               </Link>
                               <button type="button" onClick={() => handleEdit(job)} disabled={loadingJobId === jobId} className="site-border site-field inline-flex min-w-[64px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
-                                {loadingJobId === jobId ? "Loading" : "Edit"}
+                                {loadingJobId === jobId
+                    ? "Loading"
+                    : !isAdmin && job.approvalStatus === "declined"
+                        ? "Fix & Resubmit"
+                        : "Edit"}
                               </button>
                               <button type="button" onClick={() => updateJobStatus(job)} disabled={statusUpdatingJobId === jobId} className="site-border site-field inline-flex min-w-[72px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
                                 {statusUpdatingJobId === jobId
@@ -738,6 +803,9 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                               {isAdmin && job.approvalStatus !== "declined" ? (<button type="button" onClick={() => handleDecline(job)} disabled={reviewingJobId === jobId} className="inline-flex min-w-[76px] justify-center rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
                                   Decline
                                 </button>) : null}
+                              <button type="button" onClick={() => setJobHistoryTarget(job)} className="site-border site-field inline-flex min-w-[74px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold">
+                                History
+                              </button>
                               <button type="button" onClick={() => handleDelete(job)} disabled={deletingJobId === jobId} className="inline-flex min-w-[72px] justify-center rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
                                 {deletingJobId === jobId
                     ? "Deleting"
@@ -792,6 +860,9 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                 {selectedJob?.approvalStatus === "declined" && selectedJob.rejectionNote ? (<div className="site-danger rounded-lg border p-3 text-xs leading-5">
                     <span className="font-semibold">Admin note: </span>
                     {selectedJob.rejectionNote}
+                    {!isAdmin ? (<p className="mt-2 font-semibold">
+                        Update the job details and resubmit it for admin review.
+                      </p>) : null}
                   </div>) : null}
                 <label className="block">
                   <span className="text-sm font-medium">Title</span>
@@ -855,7 +926,9 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                     {isSubmitting
                 ? "Saving..."
                 : editingJobId
-                    ? "Save Changes"
+                    ? !isAdmin && selectedJob?.approvalStatus === "declined"
+                        ? "Resubmit for Review"
+                        : "Save Changes"
                     : "Create Job"}
                   </button>
                   {editingJobId ? (<button type="button" onClick={resetForm} className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold">
@@ -906,6 +979,68 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
               </button>
             </div>
           </form>
+        </div>) : null}
+
+      {jobHistoryTarget ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="job-history-title">
+          <div className="site-border site-card max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-lg border">
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--site-border)] p-5">
+              <div className="min-w-0">
+                <h2 id="job-history-title" className="text-lg font-semibold">
+                  Review History
+                </h2>
+                <p className="site-muted mt-1 truncate text-sm">
+                  {jobHistoryTarget.title ?? "Selected job"}
+                </p>
+              </div>
+              <button type="button" onClick={() => setJobHistoryTarget(null)} className="site-border site-field rounded-md border p-2" aria-label="Close history">
+                <Icon name="x"/>
+              </button>
+            </div>
+
+            <div className="max-h-[calc(90vh-92px)] space-y-5 overflow-y-auto p-5">
+              <section>
+                <h3 className="text-sm font-semibold">Declined Messages</h3>
+                {declinedHistory.length > 0 ? (<div className="mt-3 space-y-3">
+                    {declinedHistory.map((item, index) => (<div key={`declined-${item.createdAt ?? index}`} className="site-danger rounded-md border p-3 text-sm leading-6">
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                          <span>Declined</span>
+                          <span>{formatDateTime(item.createdAt)}</span>
+                          {item.actorRole ? (<span>
+                              by {formatApprovalStatusRole(item.actorRole)}
+                            </span>) : null}
+                        </div>
+                        <p className="mt-2">{item.note || "No note provided."}</p>
+                      </div>))}
+                  </div>) : (<p className="site-muted mt-2 text-sm">
+                    No declined messages yet.
+                  </p>)}
+              </section>
+
+              <section>
+                <h3 className="text-sm font-semibold">Full Timeline</h3>
+                {approvalHistory.length > 0 ? (<div className="mt-3 space-y-3">
+                    {approvalHistory.map((item, index) => (<div key={`${item.action}-${item.createdAt ?? index}`} className="site-border site-panel rounded-md border p-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`rounded-md border px-2 py-1 text-[11px] font-semibold ${getApprovalHistoryClass(item.action)}`}>
+                            {formatApprovalHistoryAction(item.action)}
+                          </span>
+                          <span className="site-muted text-xs">
+                            {formatDateTime(item.createdAt)}
+                          </span>
+                          {item.actorRole ? (<span className="site-muted text-xs">
+                              by {formatApprovalStatusRole(item.actorRole)}
+                            </span>) : null}
+                        </div>
+                        {item.note ? (<p className="site-muted mt-2 text-sm leading-6">
+                            {item.note}
+                          </p>) : null}
+                      </div>))}
+                  </div>) : (<p className="site-muted mt-2 text-sm">
+                    No review history recorded yet.
+                  </p>)}
+              </section>
+            </div>
+          </div>
         </div>) : null}
 
       {jobPendingDelete ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="delete-job-title" aria-describedby="delete-job-description">

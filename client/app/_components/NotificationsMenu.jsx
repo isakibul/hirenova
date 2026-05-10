@@ -149,14 +149,14 @@ export default function NotificationsMenu({ enabled = false }) {
             loadNotifications();
           }
         }}
-        className="site-border site-panel relative inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-[var(--site-accent)] hover:text-[var(--site-accent)]"
+        className="site-border site-panel relative inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-(--site-accent) hover:text-(--site-accent)"
         aria-label="Open notifications"
         aria-expanded={isOpen}
         aria-haspopup="menu"
       >
         <Icon name="bell" />
         {unreadCount > 0 ? (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--site-button-bg)] px-1 text-[10px] font-bold text-[var(--site-button-fg)]">
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-(--site-button-bg) px-1 text-[10px] font-bold text-(--site-button-fg)">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         ) : null}
@@ -167,7 +167,7 @@ export default function NotificationsMenu({ enabled = false }) {
           className="site-border site-card absolute right-0 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg border"
           role="menu"
         >
-          <div className="flex items-center justify-between gap-3 border-b border-[var(--site-border)] px-4 py-3">
+          <div className="flex items-center justify-between gap-3 border-b border-(--site-border) px-4 py-3">
             <div>
               <p className="text-sm font-semibold">Notifications</p>
               <p className="site-muted mt-0.5 text-xs">
@@ -178,7 +178,7 @@ export default function NotificationsMenu({ enabled = false }) {
               type="button"
               onClick={markAllAsRead}
               disabled={!unreadCount}
-              className="site-link text-xs font-semibold transition hover:text-[var(--site-accent)] disabled:opacity-50 disabled:hover:text-current"
+              className="site-link text-xs font-semibold transition hover:text-(--site-accent) disabled:opacity-50 disabled:hover:text-current"
             >
               Mark all read
             </button>
@@ -204,8 +204,8 @@ export default function NotificationsMenu({ enabled = false }) {
                     <span
                       className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
                         isUnread
-                          ? "bg-[var(--site-button-bg)]"
-                          : "bg-[var(--site-border)]"
+                          ? "bg-(--site-button-bg)"
+                          : "bg-(--site-border)"
                       }`}
                     />
                     <div className="min-w-0">
@@ -230,7 +230,7 @@ export default function NotificationsMenu({ enabled = false }) {
                       markOneAsRead(notification);
                       setIsOpen(false);
                     }}
-                    className="block px-4 py-3 transition hover:bg-[var(--site-panel)] hover:text-[var(--site-accent)]"
+                    className="block px-4 py-3 transition hover:bg-(--site-panel) hover:text-(--site-accent)"
                     role="menuitem"
                   >
                     {content}
@@ -240,7 +240,7 @@ export default function NotificationsMenu({ enabled = false }) {
                     key={id}
                     type="button"
                     onClick={() => markOneAsRead(notification)}
-                    className="block w-full px-4 py-3 text-left transition hover:bg-[var(--site-panel)] hover:text-[var(--site-accent)]"
+                    className="block w-full px-4 py-3 text-left transition hover:bg-(--site-panel) hover:text-(--site-accent)"
                     role="menuitem"
                   >
                     {content}
@@ -250,11 +250,11 @@ export default function NotificationsMenu({ enabled = false }) {
             )}
           </div>
 
-          <div className="border-t border-[var(--site-border)] p-2">
+          <div className="border-t border-(--site-border) p-2">
             <Link
               href="/notifications"
               onClick={() => setIsOpen(false)}
-              className="site-panel site-border block rounded-md border px-3 py-2 text-center text-sm font-semibold transition hover:border-[var(--site-accent)] hover:text-[var(--site-accent)]"
+              className="site-panel site-border block rounded-md border px-3 py-2 text-center text-sm font-semibold transition hover:border-(--site-accent) hover:text-(--site-accent)"
             >
               View all notifications
             </Link>

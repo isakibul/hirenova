@@ -31,7 +31,7 @@ const getPublicApprovalFilter = () => ({
     ],
 });
 
-const notifyAdminsForReview = async (job) => {
+const notifyAdminsForReview = async (job, { isResubmission = false } = {}) => {
   const admins = await User.find({
     role: { $in: ["admin", "superadmin"] },
     status: "active",
@@ -41,14 +41,54 @@ const notifyAdminsForReview = async (job) => {
     admins.map((admin) => ({
       recipient: admin._id,
       type: "job_pending_review",
-      title: "New job awaiting approval",
-      message: `${job.title} was submitted for review.`,
+      title: isResubmission ? "Job resubmitted" : "New job awaiting approval",
+      message: isResubmission
+        ? `${job.title} was updated and resubmitted for review.`
+        : `${job.title} was submitted for review.`,
       link: "/manage-jobs?approval_status=pending",
       metadata: {
         job: job.id,
       },
     }))
   );
+};
+
+const addApprovalHistory = ({ job, action, note = "", actor, actorRole }) => {
+  job.approvalHistory = [
+    ...(job.approvalHistory ?? []),
+    {
+      action,
+      note,
+      actor,
+      actorRole,
+      createdAt: new Date(),
+    },
+  ];
+};
+
+const preserveCurrentDeclineNote = (job) => {
+  if (job.approvalStatus !== "declined" || !job.rejectionNote) {
+    return;
+  }
+
+  const hasCurrentNote = (job.approvalHistory ?? []).some(
+    (item) => item.action === "declined" && item.note === job.rejectionNote
+  );
+
+  if (hasCurrentNote) {
+    return;
+  }
+
+  job.approvalHistory = [
+    ...(job.approvalHistory ?? []),
+    {
+      action: "declined",
+      note: job.rejectionNote,
+      actor: job.reviewedBy,
+      actorRole: "admin",
+      createdAt: job.reviewedAt ?? new Date(),
+    },
+  ];
 };
 
 const create = async ({
@@ -83,6 +123,17 @@ const create = async ({
     rejectionNote: "",
     reviewedAt: authorIsAdmin ? new Date() : undefined,
     reviewedBy: authorIsAdmin ? author : undefined,
+    approvalHistory: [
+      {
+        action: authorIsAdmin ? "approved" : "submitted",
+        note: authorIsAdmin
+          ? "Created by admin and approved automatically."
+          : "Submitted for admin review.",
+        actor: author,
+        actorRole: authorRole,
+        createdAt: new Date(),
+      },
+    ],
     expiresAt,
     closedAt: status === "closed" ? new Date() : undefined,
     author,
@@ -102,7 +153,6 @@ const create = async ({
 
 const deleteItem = async (id) => {
   const job = await Job.findById(id);
-  const authorIsAdmin = isAdminRole(authorRole);
 
   if (!job) {
     throw notFound("Job not found");
@@ -130,6 +180,7 @@ const updateItem = async (
   }
 ) => {
   const job = await Job.findById(id);
+  const authorIsAdmin = isAdminRole(authorRole);
 
   if (!job) {
     const job = await create({
@@ -153,6 +204,11 @@ const updateItem = async (
       statusCode: 201,
     };
   }
+  const wasDeclined = job.approvalStatus === "declined";
+  if (!authorIsAdmin) {
+    preserveCurrentDeclineNote(job);
+  }
+  const approvalHistory = job.approvalHistory ?? [];
 
   const payload = {
     title,
@@ -170,16 +226,28 @@ const updateItem = async (
     rejectionNote: authorIsAdmin ? job.rejectionNote ?? "" : "",
     reviewedAt: authorIsAdmin ? job.reviewedAt : undefined,
     reviewedBy: authorIsAdmin ? job.reviewedBy : undefined,
+    approvalHistory,
     expiresAt,
     closedAt: status === "closed" ? new Date() : undefined,
     author: authorIsAdmin ? job.author : author,
   };
 
   job.overwrite(payload);
+  if (!authorIsAdmin) {
+    addApprovalHistory({
+      job,
+      action: wasDeclined ? "resubmitted" : "submitted",
+      note: wasDeclined
+        ? "Updated after decline and resubmitted for admin review."
+        : "Updated and sent for admin review.",
+      actor: author,
+      actorRole: authorRole,
+    });
+  }
   await job.save();
 
   if (!authorIsAdmin) {
-    await notifyAdminsForReview(job);
+    await notifyAdminsForReview(job, { isResubmission: wasDeclined });
   }
 
   return {
@@ -213,6 +281,10 @@ const updateItemUsingPatch = async (
     throw notFound();
   }
 
+  const wasDeclined = job.approvalStatus === "declined";
+  if (!authorIsAdmin) {
+    preserveCurrentDeclineNote(job);
+  }
   const payload = {
     title,
     description,
@@ -243,12 +315,21 @@ const updateItemUsingPatch = async (
     job.rejectionNote = "";
     job.reviewedAt = undefined;
     job.reviewedBy = undefined;
+    addApprovalHistory({
+      job,
+      action: wasDeclined ? "resubmitted" : "submitted",
+      note: wasDeclined
+        ? "Updated after decline and resubmitted for admin review."
+        : "Updated and sent for admin review.",
+      actor: author,
+      actorRole: authorRole,
+    });
   }
 
   await job.save();
 
   if (!authorIsAdmin) {
-    await notifyAdminsForReview(job);
+    await notifyAdminsForReview(job, { isResubmission: wasDeclined });
   }
 
   return { ...job._doc, id: job.id };
@@ -582,6 +663,13 @@ const updateApproval = async ({ id, approvalStatus, rejectionNote = "", reviewer
   job.rejectionNote = approvalStatus === "declined" ? rejectionNote : "";
   job.reviewedAt = new Date();
   job.reviewedBy = reviewer.id;
+  addApprovalHistory({
+    job,
+    action: approvalStatus,
+    note: approvalStatus === "declined" ? rejectionNote : "Approved by admin.",
+    actor: reviewer.id,
+    actorRole: reviewer.role,
+  });
 
   await job.save();
 

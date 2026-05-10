@@ -28,6 +28,12 @@ const paths = {
       <path d="M9 13h6"/>
       <path d="M9 17h4"/>
     </>),
+    fullscreen: (<>
+      <path d="M8 3H3v5"/>
+      <path d="M16 3h5v5"/>
+      <path d="M21 16v5h-5"/>
+      <path d="M8 21H3v-5"/>
+    </>),
     edit: (<>
       <path d="M12 20h9"/>
       <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
@@ -41,6 +47,11 @@ const paths = {
       <path d="M10 17 15 12 10 7"/>
       <path d="M15 12H3"/>
       <path d="M21 19V5"/>
+    </>),
+    message: (<>
+      <path d="M4 5h16v11H8l-4 4z"/>
+      <path d="M8 9h8"/>
+      <path d="M8 13h5"/>
     </>),
     moon: (<>
       <path d="M20 15.5A8 8 0 0 1 8.5 4 7 7 0 1 0 20 15.5z"/>

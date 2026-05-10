@@ -8,7 +8,8 @@ const { generateHash, hashMatched } = require("../../utils/hashing");
 const { generateToken } = require("../token/");
 
 const register = async ({ username, email, password, role }) => {
-  const hasUserByEmail = await userExitsByEmail(email);
+  const normalizedEmail = email.trim().toLowerCase();
+  const hasUserByEmail = await userExitsByEmail(normalizedEmail);
   const hasUserByUsername = await userExitsByUsername(username);
 
   if (hasUserByEmail || hasUserByUsername) {
@@ -19,7 +20,7 @@ const register = async ({ username, email, password, role }) => {
 
   const user = await createUser({
     username,
-    email,
+    email: normalizedEmail,
     password: hashedPassword,
     role,
   });
@@ -28,7 +29,7 @@ const register = async ({ username, email, password, role }) => {
 };
 
 const login = async ({ email, password }) => {
-  const user = await userExitsByEmail(email);
+  const user = await userExitsByEmail(email.trim().toLowerCase());
 
   if (!user) {
     throw badRequest("Invalid credentials");

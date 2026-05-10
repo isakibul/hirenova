@@ -44,6 +44,31 @@ const jobSchema = Schema({
     type: Schema.ObjectId,
     ref: "User",
   },
+  approvalHistory: [
+    {
+      action: {
+        type: String,
+        enum: ["submitted", "resubmitted", "approved", "declined"],
+        required: true,
+      },
+      note: {
+        type: String,
+        maxLength: 1000,
+      },
+      actor: {
+        type: Schema.ObjectId,
+        ref: "User",
+      },
+      actorRole: {
+        type: String,
+        enum: ["jobseeker", "employer", "admin", "superadmin"],
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
   expiresAt: Date,
   closedAt: Date,
   createdAt: { type: Date, default: Date.now() },

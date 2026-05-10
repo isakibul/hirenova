@@ -2,6 +2,7 @@
 
 import Icon from "@components/Icon";
 import SelectField from "@components/forms/SelectField";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 const sortOptions = [
@@ -42,6 +43,9 @@ function formatSkills(skills) {
 }
 
 export default function CandidatesClient({ initialCandidates = [], initialPagination, initialError = "" }) {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const requestedCandidateId = searchParams.get("candidate");
     const [candidates, setCandidates] = useState(initialCandidates);
     const [pagination, setPagination] = useState(initialPagination);
     const [selectedCandidate, setSelectedCandidate] = useState(initialCandidates[0] ?? null);
@@ -52,6 +56,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
     const [sortType, setSortType] = useState("dsc");
     const [isLoading, setIsLoading] = useState(false);
     const [loadingCandidateId, setLoadingCandidateId] = useState(null);
+    const [messagingCandidateId, setMessagingCandidateId] = useState(null);
     const [error, setError] = useState(initialError);
     const totalItems = pagination?.totalItems ?? candidates.length;
     const totalPages = pagination?.totalPage ?? 1;
@@ -102,6 +107,20 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
         }, 0);
         return () => window.clearTimeout(timeoutId);
     }, [loadCandidates, page, search, sortBy, sortType]);
+    useEffect(() => {
+        if (!requestedCandidateId) {
+            return undefined;
+        }
+        const timeoutId = window.setTimeout(() => {
+            const existingCandidate = candidates.find((candidate) => getCandidateId(candidate) === requestedCandidateId);
+            if (existingCandidate) {
+                void handleSelectCandidate(existingCandidate);
+                return;
+            }
+            void handleSelectCandidate({ id: requestedCandidateId });
+        }, 0);
+        return () => window.clearTimeout(timeoutId);
+    }, [candidates, requestedCandidateId]);
 
     async function handleSelectCandidate(candidate) {
         const candidateId = getCandidateId(candidate);
@@ -130,6 +149,34 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
         event.preventDefault();
         setPage(1);
         setSearch(searchInput.trim());
+    }
+    async function messageCandidate(candidate) {
+        const candidateId = getCandidateId(candidate);
+        if (!candidateId) {
+            return;
+        }
+        setMessagingCandidateId(candidateId);
+        setError("");
+        try {
+            const response = await fetch("/api/messages/conversations", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ recipientId: candidateId }),
+            });
+            const body = await response.json();
+            if (!response.ok || !body.data) {
+                throw new Error(getMessage(body, "Unable to start conversation."));
+            }
+            router.push(`/messages?conversation=${body.data.id ?? body.data._id}`);
+        }
+        catch (caughtError) {
+            setError(caughtError instanceof Error ? caughtError.message : "Unable to start conversation.");
+        }
+        finally {
+            setMessagingCandidateId(null);
+        }
     }
 
     return (<section className="px-5 py-8 md:px-[6vw] lg:px-[8vw]">
@@ -252,6 +299,11 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
                   <p className="site-muted text-xs font-medium">Resume</p>
                   {selectedCandidate.resumeUrl ? (<a href={selectedCandidate.resumeUrl} target="_blank" rel="noreferrer" className="site-link mt-1 inline-block break-all font-semibold">Open resume</a>) : (<p className="mt-1 font-semibold">Not set</p>)}
                 </div>
+                <button type="button" onClick={() => messageCandidate(selectedCandidate)} disabled={messagingCandidateId === getCandidateId(selectedCandidate)} className="site-button inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60">
+                  {messagingCandidateId === getCandidateId(selectedCandidate)
+                ? "Opening..."
+                : "Message"}
+                </button>
                 <div className="grid grid-cols-2 gap-3 border-t border-[var(--site-border)] pt-4">
                   <div>
                     <p className="site-muted text-xs font-medium">Joined</p>

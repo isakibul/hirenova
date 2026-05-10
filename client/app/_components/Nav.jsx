@@ -3,6 +3,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
+import MessagesMenu from "./MessagesMenu";
 import NotificationsMenu from "./NotificationsMenu";
 import ThemeToggle from "./theme/ThemeToggle";
 const accountMenuItems = [
@@ -158,6 +159,10 @@ export default function Nav() {
 
       <div className="flex items-center gap-3">
         <NotificationsMenu enabled={isAuthenticated} />
+        <MessagesMenu
+          enabled={isAuthenticated}
+          currentUserId={session?.user?.id}
+        />
         {isAuthenticated ? (
           <div className="relative" ref={profileMenuRef}>
             <button

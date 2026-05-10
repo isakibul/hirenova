@@ -27,6 +27,12 @@ const authenticate = async (req, _res, next) => {
 
     req.user = { ...user._doc, id: user.id };
     req.token = token;
+    if (
+      !user.lastSeenAt ||
+      Date.now() - new Date(user.lastSeenAt).getTime() > 60 * 1000
+    ) {
+      userService.touchLastSeen(user.id).catch(() => undefined);
+    }
     next();
   } catch (err) {
     next(authenticationError());
