@@ -19,6 +19,12 @@ const isParticipant = (conversation, userId) =>
     (participant) => participant._id.toString() === userId
   );
 
+const hasUserId = (items = [], userId) =>
+  items.some((item) => item.toString() === userId);
+
+const isDeletedFor = (conversation, userId) =>
+  hasUserId(conversation.deletedBy ?? [], userId);
+
 const serializeUser = (user) =>
   user
     ? {
@@ -55,6 +61,11 @@ const emitConversationUpdate = async (conversationId) => {
 
   conversation.participants.forEach((participant) => {
     const participantId = participant._id.toString();
+
+    if (isDeletedFor(conversation, participantId)) {
+      return;
+    }
+
     emitToUser(participantId, "conversation:updated", {
       conversation: serializeConversation(conversation, participantId),
     });
@@ -65,7 +76,10 @@ const emitConversationUpdate = async (conversationId) => {
 
 const findMine = async ({ userId }) => {
   const conversations = await populateConversation(
-    Conversation.find({ participants: userId }).sort("-lastMessageAt")
+    Conversation.find({
+      participants: userId,
+      deletedBy: { $ne: userId },
+    }).sort("-lastMessageAt")
   );
 
   return conversations.map((conversation) =>
@@ -86,9 +100,11 @@ const getOne = async ({ conversationId, userId }) => {
     throw authorizationError("Operation not allowed");
   }
 
-  const wasUnread = conversation.unreadBy.some(
-    (participant) => participant.toString() === userId
-  );
+  if (isDeletedFor(conversation, userId)) {
+    throw notFound("Conversation not found");
+  }
+
+  const wasUnread = hasUserId(conversation.unreadBy, userId);
 
   if (wasUnread) {
     conversation.unreadBy = conversation.unreadBy.filter(
@@ -120,7 +136,12 @@ const startConversation = async ({ sender, recipientId, body = "" }) => {
   });
 
   if (existing) {
+    existing.deletedBy = existing.deletedBy.filter(
+      (participant) => participant.toString() !== sender.id
+    );
+
     if (body.trim()) {
+      await existing.save();
       return sendMessage({
         conversationId: existing.id,
         sender,
@@ -128,6 +149,7 @@ const startConversation = async ({ sender, recipientId, body = "" }) => {
       });
     }
 
+    await existing.save();
     return getOne({ conversationId: existing.id, userId: sender.id });
   }
 
@@ -199,6 +221,13 @@ const sendMessage = async ({ conversationId, sender, body }) => {
   conversation.unreadBy = conversation.participants.filter(
     (participant) => participant.toString() !== sender.id
   );
+  conversation.deletedBy = conversation.deletedBy.filter(
+    (participant) =>
+      !conversation.participants.some(
+        (conversationParticipant) =>
+          conversationParticipant.toString() === participant.toString()
+      )
+  );
 
   await conversation.save();
   await emitConversationUpdate(conversation.id);
@@ -219,9 +248,41 @@ const sendMessage = async ({ conversationId, sender, body }) => {
   return getOne({ conversationId: conversation.id, userId: sender.id });
 };
 
+const deleteForMe = async ({ conversationId, userId }) => {
+  const conversation = await Conversation.findById(conversationId);
+
+  if (!conversation) {
+    throw notFound("Conversation not found");
+  }
+
+  if (
+    !conversation.participants.some(
+      (participant) => participant.toString() === userId
+    )
+  ) {
+    throw authorizationError("Operation not allowed");
+  }
+
+  if (!hasUserId(conversation.deletedBy, userId)) {
+    conversation.deletedBy.push(userId);
+  }
+
+  conversation.unreadBy = conversation.unreadBy.filter(
+    (participant) => participant.toString() !== userId
+  );
+
+  await conversation.save();
+  emitToUser(userId, "conversation:deleted", {
+    conversationId: conversation.id,
+  });
+
+  return { id: conversation.id };
+};
+
 module.exports = {
   findMine,
   getOne,
   startConversation,
   sendMessage,
+  deleteForMe,
 };

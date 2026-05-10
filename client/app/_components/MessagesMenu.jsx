@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { acquireRealtimeSocket } from "../_lib/realtime";
 import Icon from "./Icon";
 
@@ -96,6 +97,8 @@ export default function MessagesMenu({
   const [draft, setDraft] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [error, setError] = useState("");
   const audioContextRef = useRef(null);
   const messagesPanelRef = useRef(null);
@@ -197,6 +200,23 @@ export default function MessagesMenu({
       );
 
       rememberUnreadState(nextConversations);
+      return nextConversations;
+    });
+  }, [rememberUnreadState]);
+
+  const removeConversation = useCallback((conversationId) => {
+    setConversations((current) => {
+      const nextConversations = current.filter(
+        (conversation) => getConversationId(conversation) !== conversationId,
+      );
+
+      if (selectedIdRef.current === conversationId) {
+        const nextSelectedId = getConversationId(nextConversations[0]);
+        selectedIdRef.current = nextSelectedId;
+        setSelectedId(nextSelectedId);
+      }
+
+      rememberUnreadState(nextConversations, { allowSound: false });
       return nextConversations;
     });
   }, [rememberUnreadState]);
@@ -339,6 +359,12 @@ export default function MessagesMenu({
       }
     }
 
+    function handleConversationDeleted(payload) {
+      if (payload?.conversationId) {
+        removeConversation(payload.conversationId);
+      }
+    }
+
     function handleVisibleAgain() {
       if (document.visibilityState === "visible") {
         void refreshInitialConversations({ allowSound: true });
@@ -351,6 +377,7 @@ export default function MessagesMenu({
 
     socket.on("connect", handleConnect);
     socket.on("conversation:updated", handleConversationUpdated);
+    socket.on("conversation:deleted", handleConversationDeleted);
     document.addEventListener("visibilitychange", handleVisibleAgain);
     if (socket.connected) {
       void refreshInitialConversations();
@@ -360,10 +387,17 @@ export default function MessagesMenu({
       ignore = true;
       socket.off("connect", handleConnect);
       socket.off("conversation:updated", handleConversationUpdated);
+      socket.off("conversation:deleted", handleConversationDeleted);
       realtime.release();
       document.removeEventListener("visibilitychange", handleVisibleAgain);
     };
-  }, [accessToken, enabled, rememberUnreadState, updateConversation]);
+  }, [
+    accessToken,
+    enabled,
+    rememberUnreadState,
+    removeConversation,
+    updateConversation,
+  ]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -471,6 +505,36 @@ export default function MessagesMenu({
       );
     } finally {
       setIsSending(false);
+    }
+  }
+
+  async function deleteConversation() {
+    const conversationId = getConversationId(selectedConversation);
+
+    if (!conversationId) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setError("");
+    try {
+      const response = await fetch(`/api/messages/conversations/${conversationId}`, {
+        method: "DELETE",
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(getMessage(body, "Unable to delete conversation."));
+      }
+      removeConversation(conversationId);
+      setIsDeleteModalOpen(false);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to delete conversation.",
+      );
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -606,32 +670,46 @@ export default function MessagesMenu({
               </aside>
 
               <section className="flex min-h-0 flex-col">
-                <div className="site-panel border-b border-[var(--site-border)] px-4 py-3">
-                  {selectedOther && getProfileHref(selectedOther) ? (
-                    <Link
-                      href={getProfileHref(selectedOther)}
-                      onClick={() => setIsOpen(false)}
-                      className="font-semibold transition hover:text-[var(--site-accent)]"
+                <div className="site-panel flex items-center justify-between gap-3 border-b border-[var(--site-border)] px-4 py-3">
+                  <div className="min-w-0">
+                    {selectedOther && getProfileHref(selectedOther) ? (
+                      <Link
+                        href={getProfileHref(selectedOther)}
+                        onClick={() => setIsOpen(false)}
+                        className="font-semibold transition hover:text-[var(--site-accent)]"
+                      >
+                        {getDisplayName(selectedOther)}
+                      </Link>
+                    ) : (
+                      <p className="font-semibold">
+                        {selectedOther
+                          ? getDisplayName(selectedOther)
+                          : "Select a conversation"}
+                      </p>
+                    )}
+                    {selectedOther ? (
+                      <div className="site-muted mt-1 flex items-center gap-1.5 text-xs capitalize">
+                        <span>{selectedOther.role} ·</span>
+                        <span className="inline-flex items-center gap-1.5">
+                          {isOnline(selectedOther.lastSeenAt) ? (
+                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                          ) : null}
+                          {formatPresence(selectedOther.lastSeenAt)}
+                        </span>
+                      </div>
+                    ) : null}
+                  </div>
+                  {selectedConversation ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsDeleteModalOpen(true)}
+                      disabled={isDeleting}
+                      className="site-border site-field inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border text-red-600 transition hover:border-red-400 hover:bg-red-50 disabled:opacity-60"
+                      aria-label="Delete conversation"
+                      title="Delete conversation"
                     >
-                      {getDisplayName(selectedOther)}
-                    </Link>
-                  ) : (
-                    <p className="font-semibold">
-                      {selectedOther
-                        ? getDisplayName(selectedOther)
-                        : "Select a conversation"}
-                    </p>
-                  )}
-                  {selectedOther ? (
-                    <div className="site-muted mt-1 flex items-center gap-1.5 text-xs capitalize">
-                      <span>{selectedOther.role} ·</span>
-                      <span className="inline-flex items-center gap-1.5">
-                        {isOnline(selectedOther.lastSeenAt) ? (
-                          <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                        ) : null}
-                        {formatPresence(selectedOther.lastSeenAt)}
-                      </span>
-                    </div>
+                      <Icon name="trash" />
+                    </button>
                   ) : null}
                 </div>
 
@@ -700,6 +778,60 @@ export default function MessagesMenu({
           </div>
         </div>
       ) : null}
+
+      {isDeleteModalOpen && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 px-4"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-conversation-title"
+              onMouseDown={() => {
+                if (!isDeleting) {
+                  setIsDeleteModalOpen(false);
+                }
+              }}
+            >
+              <div
+                className="site-border site-card site-elevated w-full max-w-sm rounded-lg border p-5"
+                onMouseDown={(event) => event.stopPropagation()}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="site-border flex h-10 w-10 shrink-0 items-center justify-center rounded-md border text-red-600">
+                    <Icon name="trash" />
+                  </span>
+                  <div>
+                    <h3 id="delete-conversation-title" className="font-semibold">
+                      Delete conversation?
+                    </h3>
+                    <p className="site-muted mt-1 text-sm leading-6">
+                      This will remove the conversation from your inbox only.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-5 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteModalOpen(false)}
+                    disabled={isDeleting}
+                    className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold transition hover:border-[var(--site-accent)] disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={deleteConversation}
+                    disabled={isDeleting}
+                    className="rounded-md border border-red-500 bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
+                  >
+                    {isDeleting ? "Deleting" : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }

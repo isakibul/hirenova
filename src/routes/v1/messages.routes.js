@@ -11,6 +11,12 @@ router.post(
   messageControllers.start
 );
 router.get("/conversations/:id", authenticate, messageControllers.findSingle);
+router.delete(
+  "/conversations/:id",
+  authenticate,
+  checkUserStatus,
+  messageControllers.deleteForMe
+);
 router.post(
   "/conversations/:id/messages",
   authenticate,

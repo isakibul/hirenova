@@ -56,11 +56,18 @@ const conversationSchema = new Schema(
         ref: "User",
       },
     ],
+    deletedBy: [
+      {
+        type: Schema.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );
 
 conversationSchema.index({ participants: 1, lastMessageAt: -1 });
+conversationSchema.index({ deletedBy: 1 });
 
 const Conversation = model("Conversation", conversationSchema);
 module.exports = Conversation;

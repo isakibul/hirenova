@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getFromBackend } from "@lib/backend";
+import { deleteFromBackend, getFromBackend } from "@lib/backend";
 import { getAuthHeaders, getCurrentSession, unauthorizedJson } from "@lib/session";
 
 export async function GET(_request, context) {
@@ -10,6 +10,20 @@ export async function GET(_request, context) {
 
   const { id } = await context.params;
   const result = await getFromBackend(`/messages/conversations/${id}`, {
+    headers: getAuthHeaders(session.accessToken),
+  });
+
+  return NextResponse.json(result.body, { status: result.status });
+}
+
+export async function DELETE(_request, context) {
+  const session = await getCurrentSession();
+  if (!session) {
+    return unauthorizedJson("You must be signed in to delete messages.");
+  }
+
+  const { id } = await context.params;
+  const result = await deleteFromBackend(`/messages/conversations/${id}`, {
     headers: getAuthHeaders(session.accessToken),
   });
 
