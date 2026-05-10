@@ -16,7 +16,7 @@ const makeAdmin = async (req, res, next) => {
       throw notFound("User not found");
     }
 
-    if (user.role === "admin") {
+    if (user.role === "admin" || user.role === "superadmin") {
       return res.status(400).json({ message: "User is already an admin." });
     }
 

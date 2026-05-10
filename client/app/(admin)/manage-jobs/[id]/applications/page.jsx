@@ -11,7 +11,7 @@ export default async function JobApplicationsPage({ params }) {
     if (!session?.user) {
         redirect("/login");
     }
-    if (!["admin", "employer"].includes(session.user.role)) {
+    if (!["admin", "superadmin", "employer"].includes(session.user.role)) {
         redirect("/my-jobs");
     }
 

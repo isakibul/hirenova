@@ -23,7 +23,7 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["jobseeker", "employer", "admin"],
+      enum: ["jobseeker", "employer", "admin", "superadmin"],
       required: true,
     },
     status: {

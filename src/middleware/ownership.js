@@ -4,7 +4,7 @@ const { authorizationError } = require("../utils/error");
 const ownership =
   (model = "") =>
   async (req, _res, next) => {
-    if (req.user?.role === "admin") {
+    if (req.user?.role === "admin" || req.user?.role === "superadmin") {
       return next();
     }
 

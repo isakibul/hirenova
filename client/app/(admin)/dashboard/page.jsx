@@ -94,7 +94,7 @@ export default async function DashboardPage() {
         headers: getAuthHeaders(session.accessToken),
     });
     const summary = result.ok ? result.body.data : {};
-    const isAdmin = session.user.role === "admin";
+    const isAdmin = session.user.role === "admin" || session.user.role === "superadmin";
     const jobsResult = await getFromBackend("/jobs", {
             headers: getAuthHeaders(session.accessToken),
             params: {

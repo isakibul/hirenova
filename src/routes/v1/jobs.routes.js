@@ -21,7 +21,7 @@ router.post(
 router.get(
   "/:id/applications",
   authenticate,
-  authorize(["admin", "employer"]),
+  authorize(["admin", "superadmin", "employer"]),
   applicationControllers.findForJob
 );
 
@@ -47,7 +47,7 @@ router.post(
   "/",
   authenticate,
   checkUserStatus,
-  authorize(["admin", "employer"]),
+  authorize(["admin", "superadmin", "employer"]),
   jobControllers.create
 );
 
@@ -56,7 +56,7 @@ router.delete(
   authenticate,
   ownership("Job"),
   checkUserStatus,
-  authorize(["admin", "employer"]),
+  authorize(["admin", "superadmin", "employer"]),
   jobControllers.deleteItem
 );
 
@@ -65,14 +65,14 @@ router.patch(
   authenticate,
   ownership("Job"),
   checkUserStatus,
-  authorize(["admin", "employer"]),
+  authorize(["admin", "superadmin", "employer"]),
   jobControllers.updateStatus
 );
 
 router.patch(
   "/:id/approval",
   authenticate,
-  authorize(["admin"]),
+  authorize(["admin", "superadmin"]),
   jobControllers.updateApproval
 );
 
@@ -81,7 +81,7 @@ router.put(
   authenticate,
   ownership("Job"),
   checkUserStatus,
-  authorize(["admin", "employer"]),
+  authorize(["admin", "superadmin", "employer"]),
   jobControllers.updateItem
 );
 
@@ -90,7 +90,7 @@ router.patch(
   authenticate,
   ownership("Job"),
   checkUserStatus,
-  authorize(["admin", "employer"]),
+  authorize(["admin", "superadmin", "employer"]),
   jobControllers.updateItemByPatch
 );
 

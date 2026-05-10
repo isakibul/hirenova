@@ -1,6 +1,7 @@
 "use client";
 import Icon from "@components/Icon";
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function SelectField({
     name,
@@ -16,8 +17,10 @@ export default function SelectField({
 }) {
     const listboxId = useId();
     const rootRef = useRef(null);
+    const listboxRef = useRef(null);
     const [internalValue, setInternalValue] = useState(defaultValue);
     const [isOpen, setIsOpen] = useState(false);
+    const [listboxStyle, setListboxStyle] = useState(null);
     const selectedValue = value ?? internalValue;
     const selectedOption = options.find((option) => option.value === selectedValue) ?? options[0];
 
@@ -26,8 +29,26 @@ export default function SelectField({
             return;
         }
 
+        function updateListboxPosition() {
+            const rect = rootRef.current?.getBoundingClientRect();
+            if (!rect) {
+                return;
+            }
+            setListboxStyle({
+                left: rect.left,
+                top: rect.bottom + 4,
+                width: rect.width,
+            });
+        }
+
+        updateListboxPosition();
+
         function handlePointerDown(event) {
-            if (rootRef.current && !rootRef.current.contains(event.target)) {
+            const target = event.target;
+            if (rootRef.current?.contains(target) || listboxRef.current?.contains(target)) {
+                return;
+            }
+            if (rootRef.current) {
                 setIsOpen(false);
                 onBlur?.();
             }
@@ -42,10 +63,14 @@ export default function SelectField({
 
         document.addEventListener("pointerdown", handlePointerDown);
         document.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("resize", updateListboxPosition);
+        window.addEventListener("scroll", updateListboxPosition, true);
 
         return () => {
             document.removeEventListener("pointerdown", handlePointerDown);
             document.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("resize", updateListboxPosition);
+            window.removeEventListener("scroll", updateListboxPosition, true);
         };
     }, [isOpen, onBlur]);
 
@@ -77,7 +102,7 @@ export default function SelectField({
             </span>
           </button>
 
-          {isOpen ? (<div id={listboxId} role="listbox" className="site-border site-card absolute left-0 right-0 z-40 mt-1 max-h-60 overflow-auto rounded-md border py-1 text-sm font-medium shadow-lg">
+          {isOpen && listboxStyle ? createPortal(<div ref={listboxRef} id={listboxId} role="listbox" style={listboxStyle} className="site-border site-card fixed z-[80] max-h-60 overflow-auto rounded-md border py-1 text-sm font-medium shadow-lg">
               {options.map((option) => {
             const isSelected = option.value === selectedValue;
             return (<button key={option.value} type="button" role="option" aria-selected={isSelected} onMouseDown={(event) => event.preventDefault()} onClick={() => selectValue(option.value)} className={`block w-full px-3 py-2 text-left font-medium transition ${isSelected
@@ -86,7 +111,7 @@ export default function SelectField({
                     {option.label}
                   </button>);
         })}
-            </div>) : null}
+            </div>, document.body) : null}
         </div>
     );
 }

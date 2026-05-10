@@ -7,7 +7,7 @@ export default async function ManageJobsPage({ searchParams }) {
     if (!session?.user) {
         redirect("/login");
     }
-    if (!["admin", "employer"].includes(session.user.role)) {
+    if (!["admin", "superadmin", "employer"].includes(session.user.role)) {
         redirect("/my-jobs");
     }
     const params = (await searchParams) ?? {};

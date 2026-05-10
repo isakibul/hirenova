@@ -13,7 +13,7 @@ router.get(
 router.patch(
   "/:id/status",
   authenticate,
-  authorize(["admin", "employer"]),
+  authorize(["admin", "superadmin", "employer"]),
   applicationControllers.updateStatus
 );
 

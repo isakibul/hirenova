@@ -540,13 +540,13 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
     }
     const totalItems = pagination?.totalItems ?? jobs.length;
     const totalPages = pagination?.totalPage ?? 1;
-    const isAdmin = currentRole === "admin";
+    const isAdmin = currentRole === "admin" || currentRole === "superadmin";
     return (<section className="px-5 py-8 md:px-[6vw] lg:px-[8vw]">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">
-              {isAdmin ? "Admin" : "Employer"}
+              {currentRole === "superadmin" ? "Super Admin" : isAdmin ? "Admin" : "Employer"}
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
               Manage Jobs

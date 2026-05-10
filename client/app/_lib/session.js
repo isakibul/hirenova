@@ -24,7 +24,7 @@ export async function getCurrentSession() {
 export async function getAdminSession() {
   const session = await getCurrentSession();
 
-  if (!session || session.user.role !== "admin") {
+  if (!session || !["admin", "superadmin"].includes(session.user.role)) {
     return null;
   }
 
@@ -34,7 +34,7 @@ export async function getAdminSession() {
 export async function getJobManagerSession() {
   const session = await getCurrentSession();
 
-  if (!session || !["admin", "employer"].includes(session.user.role)) {
+  if (!session || !["admin", "superadmin", "employer"].includes(session.user.role)) {
     return null;
   }
 

@@ -2,6 +2,8 @@ const { Application, Job, User } = require("../../model");
 const { badRequest, notFound, authorizationError } = require("../../utils/error");
 const notificationService = require("../notification");
 
+const isAdminRole = (role) => role === "admin" || role === "superadmin";
+
 const populateApplication = (query) =>
   query
     .populate("job", "title location jobType salary author createdAt updatedAt")
@@ -100,7 +102,7 @@ const findForJob = async ({ jobId, user }) => {
     throw notFound("Job not found");
   }
 
-  if (user.role !== "admin" && job.author?.toString() !== user.id) {
+  if (!isAdminRole(user.role) && job.author?.toString() !== user.id) {
     throw authorizationError("Operation not allowed");
   }
 
@@ -123,7 +125,7 @@ const updateStatus = async ({ applicationId, status, user }) => {
 
   const author = application.job?.author?.toString();
 
-  if (user.role !== "admin" && author !== user.id) {
+  if (!isAdminRole(user.role) && author !== user.id) {
     throw authorizationError("Operation not allowed");
   }
 

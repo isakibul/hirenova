@@ -6,42 +6,42 @@ const authorize = require("../../middleware/authorize");
 router.post(
   "/users",
   authenticate,
-  authorize(["admin"]),
+  authorize(["admin", "superadmin"]),
   adminControllers.addUser
 );
 
 router.get(
   "/users",
   authenticate,
-  authorize(["admin"]),
+  authorize(["admin", "superadmin"]),
   adminControllers.getAllUser
 );
 
 router.get(
   "/users/:id",
   authenticate,
-  authorize(["admin"]),
+  authorize(["admin", "superadmin"]),
   adminControllers.getSingleUser
 );
 
 router.patch(
   "/users/:id",
   authenticate,
-  authorize(["admin"]),
+  authorize(["admin", "superadmin"]),
   adminControllers.updateUser
 );
 
 router.patch(
   "/users/make-admin/:id",
   authenticate,
-  authorize(["admin"]),
+  authorize(["superadmin"]),
   adminControllers.makeAdmin
 );
 
 router.delete(
   "/users/:id",
   authenticate,
-  authorize(["admin"]),
+  authorize(["admin", "superadmin"]),
   adminControllers.removeUser
 );
 

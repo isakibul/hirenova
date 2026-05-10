@@ -32,7 +32,7 @@ const createUser = async ({ username, email, password, role }) => {
   return { ...user._doc, id: user.id };
 };
 
-const allowedRoles = ["jobseeker", "employer", "admin"];
+const allowedRoles = ["jobseeker", "employer", "admin", "superadmin"];
 
 const getUserFilter = ({ search = "", role = "" }) => {
   const filter = {};

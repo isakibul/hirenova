@@ -14,13 +14,16 @@ const roles = [
     { value: "jobseeker", label: "Job Seeker" },
     { value: "employer", label: "Employer" },
     { value: "admin", label: "Admin" },
+    { value: "superadmin", label: "Super Admin" },
 ];
 const roleTabs = [
     { value: "all", label: "All" },
     { value: "jobseeker", label: "Job Seeker" },
     { value: "employer", label: "Employer" },
     { value: "admin", label: "Admin" },
+    { value: "superadmin", label: "Super Admin" },
 ];
+const adminManagedRoles = roles.filter((role) => ["jobseeker", "employer"].includes(role.value));
 const userSortOptions = [
     { value: "createdAt", label: "Created Date" },
     { value: "updatedAt", label: "Updated Date" },
@@ -56,6 +59,9 @@ function formatStatus(value) {
     }
     return value.charAt(0).toUpperCase() + value.slice(1);
 }
+function isAdminLevelRole(role) {
+    return role === "admin" || role === "superadmin";
+}
 function buildPayload(form) {
     return {
         username: form.username.trim(),
@@ -64,17 +70,17 @@ function buildPayload(form) {
         role: form.role,
     };
 }
-function validateUserForm(form) {
+function validateUserForm(form, roleOptions = roles) {
     return {
         username: usernameError(form.username),
         email: emailError(form.email),
         password: passwordError(form.password),
-        role: roles.some((role) => role.value === form.role)
+        role: roleOptions.some((role) => role.value === form.role)
             ? ""
             : "Choose a valid role.",
     };
 }
-export default function ManageUsersClient({ currentUserId, }) {
+export default function ManageUsersClient({ currentUserId, currentUserRole = "admin", }) {
     const [users, setUsers] = useState([]);
     const [pagination, setPagination] = useState();
     const [searchInput, setSearchInput] = useState("");
@@ -100,8 +106,22 @@ export default function ManageUsersClient({ currentUserId, }) {
     const [error, setError] = useState(null);
     const totalItems = pagination?.totalItems ?? users.length;
     const totalPages = pagination?.totalPage ?? 1;
-    const validationErrors = validateUserForm(form);
+    const isSuperAdmin = currentUserRole === "superadmin";
+    const createRoleOptions = isSuperAdmin ? roles : adminManagedRoles;
+    const validationErrors = validateUserForm(form, createRoleOptions);
     const visibleErrors = getVisibleErrors(validationErrors, formTouched, submitAttempted);
+    function getRoleOptionsForUser(user) {
+        if (isSuperAdmin || isAdminLevelRole(user.role)) {
+            return roles;
+        }
+        return adminManagedRoles;
+    }
+    function canChangeUserRole(user) {
+        return isSuperAdmin || !isAdminLevelRole(user.role);
+    }
+    function canDeleteUser(user) {
+        return isSuperAdmin || !isAdminLevelRole(user.role);
+    }
     function updateFormField(field, value) {
         setForm((current) => ({
             ...current,
@@ -245,7 +265,12 @@ export default function ManageUsersClient({ currentUserId, }) {
     }
     function requestRoleChange(user, nextRole) {
         const userId = getUserId(user);
-        if (!userId || user.role === nextRole || !roles.some((role) => role.value === nextRole)) {
+        const canUseRole = getRoleOptionsForUser(user).some((role) => role.value === nextRole);
+        if (!userId ||
+            user.role === nextRole ||
+            !roles.some((role) => role.value === nextRole) ||
+            !canChangeUserRole(user) ||
+            !canUseRole) {
             return;
         }
         setRolePendingChange({ user, nextRole });
@@ -482,7 +507,9 @@ export default function ManageUsersClient({ currentUserId, }) {
                             </div>
                           </td>
                           <td className="px-4 py-4 align-top">
-                            <SelectField value={user.role} onChange={(nextRole) => requestRoleChange(user, nextRole)} options={roles} disabled={isBusy || isCurrentUser} className="site-field min-h-9 w-36 rounded-md border px-3 py-1.5 text-xs font-semibold focus:outline-none"/>
+                            <SelectField value={user.role} onChange={(nextRole) => requestRoleChange(user, nextRole)} options={getRoleOptionsForUser(user)} disabled={isBusy ||
+                    isCurrentUser ||
+                    !canChangeUserRole(user)} className="site-field min-h-9 w-36 rounded-md border px-3 py-1.5 text-xs font-semibold focus:outline-none"/>
                             {roleUpdatingUserId === userId ? (<p className="site-muted mt-1 text-xs">Updating...</p>) : null}
                           </td>
                           <td className="px-4 py-4 align-top">
@@ -498,7 +525,9 @@ export default function ManageUsersClient({ currentUserId, }) {
                               <button type="button" onClick={() => handleSelectUser(user)} disabled={isBusy} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
                                 {loadingUserId === userId ? "Loading" : "View"}
                               </button>
-                              <button type="button" onClick={() => handleDelete(user)} disabled={isBusy || isCurrentUser} className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-50">
+                              <button type="button" onClick={() => handleDelete(user)} disabled={isBusy ||
+                    isCurrentUser ||
+                    !canDeleteUser(user)} className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-50">
                                 {deletingUserId === userId
                     ? "Deleting"
                     : "Delete"}
@@ -531,7 +560,9 @@ export default function ManageUsersClient({ currentUserId, }) {
               <div>
                 <h2 className="font-semibold">Create User</h2>
                 <p className="site-muted mt-1 text-xs">
-                  Add a job seeker, employer, or admin account.
+                  {isSuperAdmin
+                ? "Add a job seeker, employer, admin, or super admin account."
+                : "Add a job seeker or employer account."}
                 </p>
               </div>
               <button type="button" onClick={() => setIsFormOpen((current) => !current)} className="site-border site-field rounded-md border p-2" aria-label={isFormOpen ? "Collapse form" : "Expand form"}>
@@ -560,7 +591,7 @@ export default function ManageUsersClient({ currentUserId, }) {
 
                 <label className="block">
                   <span className="text-sm font-medium">Role</span>
-                  <SelectField value={form.role} onChange={(nextValue) => updateFormField("role", nextValue)} onBlur={() => markFormTouched("role")} options={roles} className="site-field mt-1 min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" ariaInvalid={Boolean(visibleErrors.role)} ariaDescribedBy={visibleErrors.role ? "user-role-error" : undefined}/>
+                  <SelectField value={form.role} onChange={(nextValue) => updateFormField("role", nextValue)} onBlur={() => markFormTouched("role")} options={createRoleOptions} className="site-field mt-1 min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" ariaInvalid={Boolean(visibleErrors.role)} ariaDescribedBy={visibleErrors.role ? "user-role-error" : undefined}/>
                   <FieldError id="user-role-error" message={visibleErrors.role}/>
                 </label>
 
@@ -594,8 +625,9 @@ export default function ManageUsersClient({ currentUserId, }) {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <p className="site-muted text-xs font-medium">Role</p>
-                      <SelectField value={selectedUser.role} onChange={(nextRole) => requestRoleChange(selectedUser, nextRole)} options={roles} disabled={roleUpdatingUserId === selectedUserId ||
-                    currentUserId === selectedUserId} className="site-field mt-1 min-h-10 w-full rounded-md border px-3 py-2 text-sm font-semibold focus:outline-none"/>
+                      <SelectField value={selectedUser.role} onChange={(nextRole) => requestRoleChange(selectedUser, nextRole)} options={getRoleOptionsForUser(selectedUser)} disabled={roleUpdatingUserId === selectedUserId ||
+                    currentUserId === selectedUserId ||
+                    !canChangeUserRole(selectedUser)} className="site-field mt-1 min-h-10 w-full rounded-md border px-3 py-2 text-sm font-semibold focus:outline-none"/>
                     </div>
                     <div>
                       <p className="site-muted text-xs font-medium">Status</p>

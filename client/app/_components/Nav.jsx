@@ -23,7 +23,7 @@ const accountMenuItems = [
     },
 ];
 function getUserRole(role) {
-    if (role === "jobseeker" || role === "employer" || role === "admin") {
+    if (role === "jobseeker" || role === "employer" || role === "admin" || role === "superadmin") {
         return role;
     }
     return undefined;
@@ -34,7 +34,7 @@ export default function Nav() {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileMenuRef = useRef(null);
     const userRole = getUserRole(session?.user?.role);
-    const roleMenuItems = userRole === "admin"
+    const roleMenuItems = userRole === "admin" || userRole === "superadmin"
         ? [
             {
                 label: "Dashboard",

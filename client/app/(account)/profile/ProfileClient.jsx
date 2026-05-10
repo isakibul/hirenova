@@ -7,6 +7,7 @@ const roleLabels = {
     jobseeker: "Job Seeker",
     employer: "Employer",
     admin: "Admin",
+    superadmin: "Super Admin",
 };
 const statusLabels = {
     pending: "Pending",

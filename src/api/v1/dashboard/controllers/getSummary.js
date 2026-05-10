@@ -4,7 +4,7 @@ const getSummary = async (req, res, next) => {
   try {
     const role = req.user.role;
     const data =
-      role === "admin"
+      role === "admin" || role === "superadmin"
         ? await dashboardService.getAdminSummary()
         : role === "employer"
         ? await dashboardService.getEmployerSummary(req.user.id)

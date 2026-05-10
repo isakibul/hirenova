@@ -3,6 +3,8 @@ const { Application, Job, User } = require("../../model");
 const { notFound } = require("../../utils/error");
 const notificationService = require("../notification");
 
+const isAdminRole = (role) => role === "admin" || role === "superadmin";
+
 const getApprovalFilter = (approvalStatus) => {
   if (["pending", "approved", "declined"].includes(approvalStatus)) {
     return { approvalStatus };
@@ -30,7 +32,10 @@ const getPublicApprovalFilter = () => ({
 });
 
 const notifyAdminsForReview = async (job) => {
-  const admins = await User.find({ role: "admin", status: "active" }).select("_id");
+  const admins = await User.find({
+    role: { $in: ["admin", "superadmin"] },
+    status: "active",
+  }).select("_id");
 
   await notificationService.createManyNotifications(
     admins.map((admin) => ({
@@ -61,7 +66,8 @@ const create = async ({
   author,
   authorRole,
 }) => {
-  const approvalStatus = authorRole === "admin" ? "approved" : "pending";
+  const authorIsAdmin = isAdminRole(authorRole);
+  const approvalStatus = authorIsAdmin ? "approved" : "pending";
   const job = await Job({
     title,
     description,
@@ -75,8 +81,8 @@ const create = async ({
     status,
     approvalStatus,
     rejectionNote: "",
-    reviewedAt: authorRole === "admin" ? new Date() : undefined,
-    reviewedBy: authorRole === "admin" ? author : undefined,
+    reviewedAt: authorIsAdmin ? new Date() : undefined,
+    reviewedBy: authorIsAdmin ? author : undefined,
     expiresAt,
     closedAt: status === "closed" ? new Date() : undefined,
     author,
@@ -96,6 +102,7 @@ const create = async ({
 
 const deleteItem = async (id) => {
   const job = await Job.findById(id);
+  const authorIsAdmin = isAdminRole(authorRole);
 
   if (!job) {
     throw notFound("Job not found");
@@ -159,19 +166,19 @@ const updateItem = async (
     salary,
     status,
     approvalStatus:
-      authorRole === "admin" ? job.approvalStatus ?? "approved" : "pending",
-    rejectionNote: authorRole === "admin" ? job.rejectionNote ?? "" : "",
-    reviewedAt: authorRole === "admin" ? job.reviewedAt : undefined,
-    reviewedBy: authorRole === "admin" ? job.reviewedBy : undefined,
+      authorIsAdmin ? job.approvalStatus ?? "approved" : "pending",
+    rejectionNote: authorIsAdmin ? job.rejectionNote ?? "" : "",
+    reviewedAt: authorIsAdmin ? job.reviewedAt : undefined,
+    reviewedBy: authorIsAdmin ? job.reviewedBy : undefined,
     expiresAt,
     closedAt: status === "closed" ? new Date() : undefined,
-    author: authorRole === "admin" ? job.author : author,
+    author: authorIsAdmin ? job.author : author,
   };
 
   job.overwrite(payload);
   await job.save();
 
-  if (authorRole !== "admin") {
+  if (!authorIsAdmin) {
     await notifyAdminsForReview(job);
   }
 
@@ -200,6 +207,7 @@ const updateItemUsingPatch = async (
   }
 ) => {
   const job = await Job.findById(id);
+  const authorIsAdmin = isAdminRole(authorRole);
 
   if (!job) {
     throw notFound();
@@ -217,7 +225,7 @@ const updateItemUsingPatch = async (
     salary,
     status,
     expiresAt,
-    author: authorRole === "admin" ? job.author : author,
+    author: authorIsAdmin ? job.author : author,
   };
 
   Object.keys(payload).forEach((key) => {
@@ -230,7 +238,7 @@ const updateItemUsingPatch = async (
     job.closedAt = status === "closed" ? new Date() : undefined;
   }
 
-  if (authorRole !== "admin") {
+  if (!authorIsAdmin) {
     job.approvalStatus = "pending";
     job.rejectionNote = "";
     job.reviewedAt = undefined;
@@ -239,7 +247,7 @@ const updateItemUsingPatch = async (
 
   await job.save();
 
-  if (authorRole !== "admin") {
+  if (!authorIsAdmin) {
     await notifyAdminsForReview(job);
   }
 

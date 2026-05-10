@@ -26,7 +26,7 @@ export default async function MyJobsPage() {
     if (!session?.user) {
         redirect("/login");
     }
-    if (session.user.role === "admin") {
+    if (session.user.role === "admin" || session.user.role === "superadmin") {
         redirect("/manage-jobs");
     }
     if (session.user.role === "employer") {

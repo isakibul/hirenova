@@ -175,8 +175,10 @@ export default function SettingsClient({ user }) {
 
     const roleLabel = useMemo(() => user.role === "employer"
         ? "Employer workspace"
-        : user.role === "admin"
-            ? "Admin workspace"
+        : user.role === "admin" || user.role === "superadmin"
+            ? user.role === "superadmin"
+                ? "Super admin workspace"
+                : "Admin workspace"
             : "Jobseeker workspace", [user.role]);
 
     function updateSetting(key, value) {
