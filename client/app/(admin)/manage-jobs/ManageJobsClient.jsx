@@ -632,7 +632,7 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1580px] table-fixed border-collapse text-left text-sm">
+              <table className="w-full min-w-[1420px] table-fixed border-collapse text-left text-sm">
                 <thead className="site-panel text-xs uppercase tracking-wide">
                   <tr>
                     <th className="w-[30%] px-4 py-3 font-semibold">Job</th>
@@ -648,7 +648,7 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                     <th className="w-[170px] whitespace-nowrap px-4 py-3 font-semibold">
                       Approval
                     </th>
-                    <th className="w-[640px] whitespace-nowrap px-4 py-3 text-right font-semibold">
+                    <th className="w-[500px] whitespace-nowrap px-4 py-3 font-semibold">
                       Actions
                     </th>
                   </tr>
@@ -669,7 +669,7 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
             const jobId = getJobId(job);
             const isSelected = editingJobId === jobId;
             return (<tr key={jobId} className={`border-t border-[var(--site-border)] ${isSelected ? "bg-[var(--site-panel)]" : ""}`}>
-                          <td className="px-4 py-4 align-top">
+                          <td className="px-4 py-3 align-top">
                             <div className="flex gap-3">
                               <span className="site-badge mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
                                 <Icon name="briefcase"/>
@@ -692,13 +692,13 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                               </div>
                             </div>
                           </td>
-                          <td className="whitespace-nowrap px-4 py-4 align-top">
+                          <td className="whitespace-nowrap px-4 py-3 align-top">
                             {formatJobType(job.jobType)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-4 align-top">
+                          <td className="whitespace-nowrap px-4 py-3 align-top">
                             {formatSalary(job.salary)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-4 align-top text-xs">
+                          <td className="whitespace-nowrap px-4 py-3 align-top text-xs">
                             <span className={`inline-flex rounded-md border px-2 py-1 font-semibold ${getStatusClass(job)}`}>
                               {formatJobStatus(job)}
                             </span>
@@ -706,7 +706,7 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                                 Expires {formatDate(job.expiresAt)}
                               </p>) : null}
                           </td>
-                          <td className="px-4 py-4 align-top text-xs">
+                          <td className="px-4 py-3 align-top text-xs">
                             <span className={`inline-flex max-w-full rounded-md border px-2 py-1 font-semibold ${getApprovalClass(job.approvalStatus)}`}>
                               {formatApprovalStatus(job.approvalStatus)}
                             </span>
@@ -714,8 +714,8 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                                 {job.rejectionNote}
                               </p>) : null}
                           </td>
-                          <td className="px-4 py-4 align-top">
-                            <div className="flex flex-nowrap justify-end gap-2">
+                          <td className="px-4 py-3 align-top">
+                            <div className="flex flex-nowrap justify-start gap-2">
                               <Link href={`/jobs/${jobId}`} className="site-border site-field inline-flex min-w-[64px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold">
                                 View
                               </Link>

@@ -40,6 +40,10 @@ const visibilityOptions = [
     { value: "limited", label: "Limited visibility" },
     { value: "hidden", label: "Hidden from employer search" },
 ];
+const themeOptions = [
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Night" },
+];
 
 function Toggle({ checked, onChange, label, description }) {
     return (<button type="button" onClick={() => onChange(!checked)} className="site-border flex w-full items-center justify-between gap-4 rounded-lg border p-4 text-left">
@@ -309,8 +313,8 @@ export default function SettingsClient({ user }) {
               <div>
                 <p className="text-sm font-semibold">Theme</p>
                 <div className="mt-2 grid grid-cols-2 gap-2">
-                  {["light", "dark"].map((option) => (<button key={option} type="button" onClick={() => updateSetting("theme", option)} className={`site-border rounded-md border px-3 py-2 text-sm font-semibold capitalize ${settings.theme === option ? "site-badge" : "site-field"}`}>
-                      {option}
+                  {themeOptions.map((option) => (<button key={option.value} type="button" onClick={() => updateSetting("theme", option.value)} className={`site-border rounded-md border px-3 py-2 text-sm font-semibold ${settings.theme === option.value ? "site-badge" : "site-field"}`}>
+                      {option.label}
                     </button>))}
                 </div>
               </div>

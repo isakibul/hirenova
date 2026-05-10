@@ -149,7 +149,7 @@ export default function NotificationsMenu({ enabled = false }) {
             loadNotifications();
           }
         }}
-        className="site-border site-panel relative inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-[var(--site-accent)]"
+        className="site-border site-panel relative inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-[var(--site-accent)] hover:text-[var(--site-accent)]"
         aria-label="Open notifications"
         aria-expanded={isOpen}
         aria-haspopup="menu"
@@ -178,7 +178,7 @@ export default function NotificationsMenu({ enabled = false }) {
               type="button"
               onClick={markAllAsRead}
               disabled={!unreadCount}
-              className="site-link text-xs font-semibold disabled:opacity-50"
+              className="site-link text-xs font-semibold transition hover:text-[var(--site-accent)] disabled:opacity-50 disabled:hover:text-current"
             >
               Mark all read
             </button>
@@ -230,7 +230,7 @@ export default function NotificationsMenu({ enabled = false }) {
                       markOneAsRead(notification);
                       setIsOpen(false);
                     }}
-                    className="block px-4 py-3 transition hover:bg-[var(--site-panel)]"
+                    className="block px-4 py-3 transition hover:bg-[var(--site-panel)] hover:text-[var(--site-accent)]"
                     role="menuitem"
                   >
                     {content}
@@ -240,7 +240,7 @@ export default function NotificationsMenu({ enabled = false }) {
                     key={id}
                     type="button"
                     onClick={() => markOneAsRead(notification)}
-                    className="block w-full px-4 py-3 text-left transition hover:bg-[var(--site-panel)]"
+                    className="block w-full px-4 py-3 text-left transition hover:bg-[var(--site-panel)] hover:text-[var(--site-accent)]"
                     role="menuitem"
                   >
                     {content}
@@ -254,7 +254,7 @@ export default function NotificationsMenu({ enabled = false }) {
             <Link
               href="/notifications"
               onClick={() => setIsOpen(false)}
-              className="site-panel block rounded-md px-3 py-2 text-center text-sm font-semibold transition hover:border-[var(--site-accent)]"
+              className="site-panel site-border block rounded-md border px-3 py-2 text-center text-sm font-semibold transition hover:border-[var(--site-accent)] hover:text-[var(--site-accent)]"
             >
               View all notifications
             </Link>

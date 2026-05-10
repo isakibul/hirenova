@@ -72,6 +72,64 @@ const count = async ({ search = "", role = "" }) => {
   return User.countDocuments(filter);
 };
 
+const getJobseekerFilter = ({ search = "" }) => {
+  const filter = {
+    role: "jobseeker",
+    status: "active",
+  };
+
+  if (search) {
+    filter.$or = [
+      { username: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+      { preferredLocation: { $regex: search, $options: "i" } },
+      { skills: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  return filter;
+};
+
+const getJobseekers = async ({ page, limit, sortType, sortBy, search }) => {
+  const sortStr = `${sortType === "dsc" ? "-" : ""}${sortBy}`;
+  const filter = getJobseekerFilter({ search });
+
+  const users = await User.find(filter)
+    .select(
+      "username email role status skills resumeUrl experience preferredLocation createdAt updatedAt"
+    )
+    .sort(sortStr)
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  return users.map((user) => ({
+    ...user._doc,
+    id: user.id,
+  }));
+};
+
+const countJobseekers = async ({ search = "" }) => {
+  const filter = getJobseekerFilter({ search });
+
+  return User.countDocuments(filter);
+};
+
+const getJobseekerProfile = async (id) => {
+  const user = await User.findOne({
+    _id: id,
+    role: "jobseeker",
+    status: "active",
+  }).select(
+    "username email role status skills resumeUrl experience preferredLocation createdAt updatedAt"
+  );
+
+  if (!user) {
+    throw notFound("Job seeker not found");
+  }
+
+  return { ...user._doc, id: user._id.toString() };
+};
+
 const getSingleUser = async (id) => {
   const user = await User.findById(id);
   if (!user) {
@@ -166,6 +224,9 @@ module.exports = {
   createUser,
   getAllUser,
   count,
+  getJobseekers,
+  countJobseekers,
+  getJobseekerProfile,
   getSingleUser,
   updateProfile,
   updateUserByAdmin,
