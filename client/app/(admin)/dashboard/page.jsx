@@ -72,6 +72,18 @@ function QuickAction({ href, icon, title, description }) {
     </Link>);
 }
 
+function MiniStat({ label, value, tone = "default" }) {
+    const toneClass = tone === "danger"
+        ? "site-danger"
+        : tone === "success"
+            ? "site-success"
+            : "site-panel";
+    return (<div className={`site-border rounded-lg border p-4 ${toneClass}`}>
+      <p className="text-xs font-medium">{label}</p>
+      <p className="mt-2 text-2xl font-semibold">{value ?? 0}</p>
+    </div>);
+}
+
 export default async function DashboardPage() {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -83,22 +95,42 @@ export default async function DashboardPage() {
     });
     const summary = result.ok ? result.body.data : {};
     const isAdmin = session.user.role === "admin";
-    const jobsResult = !isAdmin
-        ? await getFromBackend("/jobs", {
+    const jobsResult = await getFromBackend("/jobs", {
             headers: getAuthHeaders(session.accessToken),
             params: {
-                author: session.user.id,
+                author: !isAdmin ? session.user.id : undefined,
                 include_closed: "true",
                 limit: 5,
                 page: 1,
                 sort_by: "updatedAt",
                 sort_type: "dsc",
             },
+        });
+    const pendingJobsResult = isAdmin
+        ? await getFromBackend("/jobs", {
+            headers: getAuthHeaders(session.accessToken),
+            params: {
+                approval_status: "pending",
+                include_closed: "true",
+                limit: 5,
+                page: 1,
+                sort_by: "createdAt",
+                sort_type: "dsc",
+            },
         })
         : null;
     const recentJobs = jobsResult?.ok ? (jobsResult.body.data ?? []) : [];
+    const pendingJobs = pendingJobsResult?.ok ? (pendingJobsResult.body.data ?? []) : [];
+    const pendingJobCount = pendingJobsResult?.ok
+        ? pendingJobsResult.body.pagination?.totalItems ?? pendingJobs.length
+        : 0;
     const totalJobs = summary.totalJobs ?? 0;
     const totalApplications = summary.totalApplications ?? 0;
+    const totalUsers = summary.totalUsers ?? 0;
+    const pendingUsers = summary.pendingUsers ?? 0;
+    const activeUsers = summary.activeUsers ?? 0;
+    const suspendedUsers = summary.suspendedUsers ?? 0;
+    const savedJobs = summary.totalSavedJobs ?? 0;
     const openJobs = summary.openJobs ?? 0;
     const closedJobs = summary.closedJobs ?? 0;
     const expiredJobs = summary.expiredJobs ?? 0;
@@ -106,6 +138,15 @@ export default async function DashboardPage() {
     const applicationRate = totalJobs ? Math.round(totalApplications / totalJobs) : 0;
     const openRate = totalJobs
         ? Math.round((openJobs / totalJobs) * 100)
+        : 0;
+    const activeUserRate = totalUsers
+        ? Math.round((activeUsers / totalUsers) * 100)
+        : 0;
+    const pendingUserRate = totalUsers
+        ? Math.round((pendingUsers / totalUsers) * 100)
+        : 0;
+    const applicationDensity = totalJobs
+        ? Math.round(totalApplications / totalJobs)
         : 0;
 
     if (!isAdmin) {
@@ -231,27 +272,149 @@ export default async function DashboardPage() {
     }
 
     return (<section className="px-5 py-12 md:px-[8vw]">
-      <div className="mx-auto max-w-6xl">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">
-              {isAdmin ? "Admin" : "Employer"}
+              Admin
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Dashboard</h1>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+              Platform Dashboard
+            </h1>
+            <p className="site-muted mt-2 max-w-2xl text-sm leading-6">
+              Review marketplace health, moderate new job posts, and keep users
+              moving through the system.
+            </p>
           </div>
-          <Link href={isAdmin ? "/manage-users" : "/manage-jobs"} className="site-button inline-flex rounded-md px-4 py-2 text-sm font-semibold">
-            {isAdmin ? "Manage Users" : "Manage Jobs"}
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/manage-jobs?approval_status=pending" className="site-button inline-flex rounded-md px-4 py-2 text-sm font-semibold">
+              Review Jobs
+            </Link>
+            <Link href="/manage-users" className="rounded-md border border-[var(--site-border)] px-4 py-2 text-sm font-semibold transition hover:border-[var(--site-accent)]">
+              Manage Users
+            </Link>
+          </div>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric label="Users" value={summary.totalUsers} icon="user"/>
-          <Metric label="Jobs" value={summary.totalJobs} icon="briefcase"/>
-          <Metric label="Applications" value={summary.totalApplications} icon="file"/>
-          <Metric label="Saved Jobs" value={summary.totalSavedJobs} icon="bell"/>
-          <Metric label="Pending Users" value={summary.pendingUsers} icon="target"/>
-          <Metric label="Active Users" value={summary.activeUsers} icon="check"/>
-          <Metric label="Suspended Users" value={summary.suspendedUsers} icon="x"/>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <Metric label="Total Users" value={totalUsers} helper={`${activeUserRate}% active accounts`} icon="user"/>
+          <Metric label="Jobs" value={totalJobs} helper={`${pendingJobCount} awaiting admin review`} icon="briefcase"/>
+          <Metric label="Applications" value={totalApplications} helper={`${applicationDensity} average per job`} icon="file"/>
+          <Metric label="Saved Jobs" value={savedJobs} helper="Candidate intent across the platform" icon="bell"/>
+        </div>
+
+        <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <section className="site-border site-card rounded-lg border">
+            <div className="flex flex-col gap-3 border-b border-[var(--site-border)] p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Job Approval Queue</h2>
+                <p className="site-muted mt-1 text-sm">
+                  Employer posts waiting for review.
+                </p>
+              </div>
+              <Link href="/manage-jobs?approval_status=pending" className="site-link text-sm font-semibold">
+                Open queue
+              </Link>
+            </div>
+
+            <div className="divide-y divide-[var(--site-border)]">
+              {pendingJobs.length === 0 ? (<div className="p-6">
+                  <div className="site-badge inline-flex h-10 w-10 items-center justify-center rounded-md">
+                    <Icon name="check"/>
+                  </div>
+                  <p className="mt-4 font-semibold">No jobs waiting</p>
+                  <p className="site-muted mt-2 text-sm leading-6">
+                    New employer submissions will appear here for approval.
+                  </p>
+                </div>) : pendingJobs.map((job) => (<div key={job.id} className="grid gap-4 p-5 md:grid-cols-[1fr_130px_120px] md:items-center">
+                  <div className="min-w-0">
+                    <p className="font-semibold">{job.title ?? "Untitled job"}</p>
+                    <p className="site-muted mt-1 text-sm">
+                      {job.location || "Location not set"} · Submitted {formatDate(job.createdAt)}
+                    </p>
+                  </div>
+                  <span className="site-badge w-fit rounded-md px-3 py-1.5 text-xs font-semibold">
+                    Pending
+                  </span>
+                  <Link href="/manage-jobs?approval_status=pending" className="site-link text-sm font-semibold">
+                    Review
+                  </Link>
+                </div>))}
+            </div>
+          </section>
+
+          <aside className="space-y-6">
+            <section className="site-border site-card rounded-lg border p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold">User Health</h2>
+                  <p className="site-muted mt-1 text-sm leading-6">
+                    Active account share across the marketplace.
+                  </p>
+                </div>
+                <span className="site-badge rounded-md px-2.5 py-1 text-xs font-semibold">
+                  {activeUserRate}%
+                </span>
+              </div>
+              <ProgressBar value={activeUserRate}/>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                <MiniStat label="Pending" value={pendingUsers} tone={pendingUsers ? "default" : "success"}/>
+                <MiniStat label="Active" value={activeUsers} tone="success"/>
+                <MiniStat label="Suspended" value={suspendedUsers} tone={suspendedUsers ? "danger" : "default"}/>
+              </div>
+              {pendingUsers ? (<p className="site-muted mt-3 text-xs leading-5">
+                  {pendingUserRate}% of users are waiting for account action.
+                </p>) : null}
+            </section>
+          </aside>
+        </div>
+
+        <div className="mt-6 grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
+          <section className="site-border site-card rounded-lg border p-5">
+            <h2 className="text-lg font-semibold">Quick Actions</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <QuickAction href="/manage-jobs?approval_status=pending" icon="target" title="Review pending jobs" description="Approve listings or decline with a clear note."/>
+              <QuickAction href="/manage-users" icon="user" title="Moderate users" description="Inspect accounts, roles, and user status."/>
+              <QuickAction href="/notifications" icon="bell" title="Open notifications" description="See approval and account activity."/>
+            </div>
+          </section>
+
+          <section className="site-border site-card rounded-lg border">
+            <div className="flex flex-col gap-3 border-b border-[var(--site-border)] p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Recent Job Activity</h2>
+                <p className="site-muted mt-1 text-sm">
+                  Latest job records across the platform.
+                </p>
+              </div>
+              <Link href="/manage-jobs" className="site-link text-sm font-semibold">
+                View all
+              </Link>
+            </div>
+            <div className="divide-y divide-[var(--site-border)]">
+              {recentJobs.length === 0 ? (<div className="p-6">
+                  <p className="font-semibold">No jobs yet</p>
+                  <p className="site-muted mt-2 text-sm leading-6">
+                    Job activity will appear here after employers post roles.
+                  </p>
+                </div>) : recentJobs.map((job) => (<div key={job.id} className="grid gap-4 p-5 md:grid-cols-[1fr_130px_110px] md:items-center">
+                  <div className="min-w-0">
+                    <Link href={`/jobs/${job.id}`} className="font-semibold transition hover:text-[var(--site-accent)]">
+                      {job.title ?? "Untitled job"}
+                    </Link>
+                    <p className="site-muted mt-1 text-sm">
+                      {job.location || "Location not set"} · Updated {formatDate(job.updatedAt)}
+                    </p>
+                  </div>
+                  <span className={`w-fit rounded-md border px-3 py-1.5 text-xs font-semibold ${getStatusClass(job)}`}>
+                    {getJobStatus(job)}
+                  </span>
+                  <Link href={`/manage-jobs/${job.id}/applications`} className="site-link text-sm font-semibold">
+                    Applicants
+                  </Link>
+                </div>))}
+            </div>
+          </section>
         </div>
       </div>
     </section>);

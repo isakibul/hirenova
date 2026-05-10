@@ -92,8 +92,9 @@ export default function ManageUsersClient({ currentUserId, }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingUserId, setLoadingUserId] = useState(null);
-    const [promotingUserId, setPromotingUserId] = useState(null);
+    const [roleUpdatingUserId, setRoleUpdatingUserId] = useState(null);
     const [deletingUserId, setDeletingUserId] = useState(null);
+    const [rolePendingChange, setRolePendingChange] = useState(null);
     const [userPendingDelete, setUserPendingDelete] = useState(null);
     const [notice, setNotice] = useState(null);
     const [error, setError] = useState(null);
@@ -157,17 +158,18 @@ export default function ManageUsersClient({ currentUserId, }) {
         return () => window.clearTimeout(timeoutId);
     }, [loadUsers]);
     useEffect(() => {
-        if (!userPendingDelete || deletingUserId) {
+        if ((!userPendingDelete && !rolePendingChange) || deletingUserId || roleUpdatingUserId) {
             return;
         }
         function handleKeyDown(event) {
             if (event.key === "Escape") {
                 setUserPendingDelete(null);
+                setRolePendingChange(null);
             }
         }
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [deletingUserId, userPendingDelete]);
+    }, [deletingUserId, rolePendingChange, roleUpdatingUserId, userPendingDelete]);
     function resetForm() {
         setForm(emptyForm);
         setFormTouched({});
@@ -241,35 +243,54 @@ export default function ManageUsersClient({ currentUserId, }) {
             setIsSubmitting(false);
         }
     }
-    async function handleMakeAdmin(user) {
+    function requestRoleChange(user, nextRole) {
         const userId = getUserId(user);
-        if (!userId || user.role === "admin") {
+        if (!userId || user.role === nextRole || !roles.some((role) => role.value === nextRole)) {
             return;
         }
-        setPromotingUserId(userId);
+        setRolePendingChange({ user, nextRole });
+        setNotice(null);
+        setError(null);
+    }
+    async function confirmRoleChange() {
+        if (!rolePendingChange) {
+            return;
+        }
+        const { user, nextRole } = rolePendingChange;
+        const userId = getUserId(user);
+        if (!userId) {
+            setRolePendingChange(null);
+            return;
+        }
+        setRoleUpdatingUserId(userId);
         setNotice(null);
         setError(null);
         try {
-            const response = await fetch(`/api/manage-users/${userId}/make-admin`, {
+            const response = await fetch(`/api/manage-users/${userId}`, {
                 method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ role: nextRole }),
             });
             const body = (await response.json());
             if (!response.ok) {
                 throw new Error(getMessage(body));
             }
-            setNotice(`${user.username ?? user.email ?? "User"} is now an admin.`);
+            setNotice(`${user.username ?? user.email ?? "User"} role updated to ${formatRole(nextRole)}.`);
             if (selectedUserId === userId) {
-                setSelectedUser((current) => current ? { ...current, role: "admin" } : current);
+                setSelectedUser((current) => current ? { ...current, role: nextRole } : current);
             }
+            setRolePendingChange(null);
             await loadUsers();
         }
         catch (caughtError) {
             setError(caughtError instanceof Error
                 ? caughtError.message
-                : "Unable to promote user.");
+                : "Unable to update user role.");
         }
         finally {
-            setPromotingUserId(null);
+            setRoleUpdatingUserId(null);
         }
     }
     function handleDelete(user) {
@@ -328,8 +349,8 @@ export default function ManageUsersClient({ currentUserId, }) {
               Manage Users
             </h1>
             <p className="site-muted mt-2 max-w-2xl text-sm leading-6">
-              Create users, review account details, promote trusted teammates,
-              and remove accounts any times.
+              Create users, review account details, change account roles, and
+              remove accounts any time.
             </p>
           </div>
           <button type="button" onClick={resetForm} className="site-button inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition">
@@ -439,7 +460,7 @@ export default function ManageUsersClient({ currentUserId, }) {
             const isSelected = selectedUserId === userId;
             const isCurrentUser = currentUserId === userId;
             const isBusy = loadingUserId === userId ||
-                promotingUserId === userId ||
+                roleUpdatingUserId === userId ||
                 deletingUserId === userId;
             return (<tr key={userId} className={`border-t border-[var(--site-border)] ${isSelected ? "bg-[var(--site-panel)]" : ""}`}>
                           <td className="px-4 py-4 align-top">
@@ -461,7 +482,8 @@ export default function ManageUsersClient({ currentUserId, }) {
                             </div>
                           </td>
                           <td className="px-4 py-4 align-top">
-                            {formatRole(user.role)}
+                            <SelectField value={user.role} onChange={(nextRole) => requestRoleChange(user, nextRole)} options={roles} disabled={isBusy || isCurrentUser} className="site-field min-h-9 w-36 rounded-md border px-3 py-1.5 text-xs font-semibold focus:outline-none"/>
+                            {roleUpdatingUserId === userId ? (<p className="site-muted mt-1 text-xs">Updating...</p>) : null}
                           </td>
                           <td className="px-4 py-4 align-top">
                             <span className="site-badge rounded px-2 py-1 text-xs font-semibold">
@@ -475,13 +497,6 @@ export default function ManageUsersClient({ currentUserId, }) {
                             <div className="flex justify-end gap-2">
                               <button type="button" onClick={() => handleSelectUser(user)} disabled={isBusy} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
                                 {loadingUserId === userId ? "Loading" : "View"}
-                              </button>
-                              <button type="button" onClick={() => handleMakeAdmin(user)} disabled={isBusy ||
-                    user.role === "admin" ||
-                    isCurrentUser} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
-                                {promotingUserId === userId
-                    ? "Promoting"
-                    : "Make Admin"}
                               </button>
                               <button type="button" onClick={() => handleDelete(user)} disabled={isBusy || isCurrentUser} className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-50">
                                 {deletingUserId === userId
@@ -579,9 +594,8 @@ export default function ManageUsersClient({ currentUserId, }) {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <p className="site-muted text-xs font-medium">Role</p>
-                      <p className="mt-1 font-semibold">
-                        {formatRole(selectedUser.role)}
-                      </p>
+                      <SelectField value={selectedUser.role} onChange={(nextRole) => requestRoleChange(selectedUser, nextRole)} options={roles} disabled={roleUpdatingUserId === selectedUserId ||
+                    currentUserId === selectedUserId} className="site-field mt-1 min-h-10 w-full rounded-md border px-3 py-2 text-sm font-semibold focus:outline-none"/>
                     </div>
                     <div>
                       <p className="site-muted text-xs font-medium">Status</p>
@@ -641,6 +655,42 @@ export default function ManageUsersClient({ currentUserId, }) {
                 {deletingUserId === getUserId(userPendingDelete)
                 ? "Deleting..."
                 : "Delete User"}
+              </button>
+            </div>
+          </div>
+        </div>) : null}
+      {rolePendingChange ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="role-change-title" aria-describedby="role-change-description">
+          <div className="site-border site-card w-full max-w-md rounded-lg border">
+            <div className="flex items-start gap-3 border-b border-[var(--site-border)] p-5">
+              <span className="site-badge rounded-md p-2">
+                <Icon name="user"/>
+              </span>
+              <div className="min-w-0">
+                <h2 id="role-change-title" className="text-lg font-semibold">
+                  Change user role?
+                </h2>
+                <p id="role-change-description" className="site-muted mt-1 text-sm leading-6">
+                  Change{" "}
+                  <span className="font-semibold text-[var(--site-fg)]">
+                    {rolePendingChange.user.username ??
+                rolePendingChange.user.email ??
+                "this user"}
+                  </span>{" "}
+                  from {formatRole(rolePendingChange.user.role)} to{" "}
+                  {formatRole(rolePendingChange.nextRole)}.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse gap-2 p-5 sm:flex-row sm:justify-end">
+              <button type="button" onClick={() => setRolePendingChange(null)} disabled={roleUpdatingUserId === getUserId(rolePendingChange.user)} className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-60">
+                Cancel
+              </button>
+              <button type="button" onClick={confirmRoleChange} disabled={roleUpdatingUserId === getUserId(rolePendingChange.user)} className="site-button inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-60">
+                <Icon name="check"/>
+                {roleUpdatingUserId === getUserId(rolePendingChange.user)
+                ? "Updating..."
+                : "Confirm Change"}
               </button>
             </div>
           </div>

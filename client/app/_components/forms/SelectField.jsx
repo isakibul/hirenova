@@ -12,6 +12,7 @@ export default function SelectField({
     className = "site-field h-10 w-full rounded-md border px-3 text-sm focus:outline-none",
     ariaInvalid,
     ariaDescribedBy,
+    disabled = false,
 }) {
     const listboxId = useId();
     const rootRef = useRef(null);
@@ -49,6 +50,10 @@ export default function SelectField({
     }, [isOpen, onBlur]);
 
     function selectValue(nextValue) {
+        if (disabled) {
+            return;
+        }
+
         if (value === undefined) {
             setInternalValue(nextValue);
         }
@@ -61,11 +66,11 @@ export default function SelectField({
     return (
         <div ref={rootRef} className="relative">
           {name ? <input type="hidden" name={name} value={selectedValue} readOnly/> : null}
-          <button type="button" onClick={() => setIsOpen((current) => !current)} onBlur={() => {
+          <button type="button" disabled={disabled} onClick={() => setIsOpen((current) => !current)} onBlur={() => {
         if (!isOpen) {
             onBlur?.();
         }
-    }} className={`${className} flex items-center justify-between gap-2 text-left`} aria-haspopup="listbox" aria-expanded={isOpen} aria-controls={listboxId} data-invalid={ariaInvalid ? "true" : undefined} aria-describedby={ariaDescribedBy}>
+    }} className={`${className} flex items-center justify-between gap-2 text-left disabled:cursor-not-allowed disabled:opacity-60`} aria-haspopup="listbox" aria-expanded={isOpen} aria-controls={listboxId} data-invalid={ariaInvalid ? "true" : undefined} aria-describedby={ariaDescribedBy}>
             <span className="truncate">{selectedOption?.label ?? "Select"}</span>
             <span className="site-muted shrink-0">
               <Icon name="chevronDown"/>
