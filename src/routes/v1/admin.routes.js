@@ -45,4 +45,18 @@ router.delete(
   adminControllers.removeUser
 );
 
+router.get(
+  "/newsletter",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.getNewsletterSubscriptions
+);
+
+router.delete(
+  "/newsletter/:id",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.removeNewsletterSubscription
+);
+
 module.exports = router;

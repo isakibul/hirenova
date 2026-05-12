@@ -48,6 +48,10 @@ const paths = {
       <path d="M15 12H3"/>
       <path d="M21 19V5"/>
     </>),
+    mail: (<>
+      <path d="M4 6h16v12H4z"/>
+      <path d="m4 7 8 6 8-6"/>
+    </>),
     message: (<>
       <path d="M4 5h16v11H8l-4 4z"/>
       <path d="M8 9h8"/>

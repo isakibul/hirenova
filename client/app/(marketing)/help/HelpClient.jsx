@@ -52,7 +52,6 @@ const quickLinks = [
     { href: "/saved-jobs", label: "Saved jobs", icon: "bell" },
     { href: "/profile", label: "Profile", icon: "user" },
     { href: "/dashboard", label: "Dashboard", icon: "chart" },
-    { href: "/status", label: "System status", icon: "spark" },
 ];
 
 function getMailto({ subject, category, message, email }) {
@@ -66,7 +65,7 @@ function getMailto({ subject, category, message, email }) {
     return `mailto:support@hirenova.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
-export default function HelpClient({ health }) {
+export default function HelpClient() {
     const [query, setQuery] = useState("");
     const [category, setCategory] = useState("All");
     const [openQuestion, setOpenQuestion] = useState(faqs[0].question);
@@ -136,15 +135,7 @@ export default function HelpClient({ health }) {
             </div>
           </div>
 
-          <aside className="space-y-6">
-            <div className={`rounded-lg border p-4 ${health.ok ? "site-success" : "site-danger"}`}>
-              <p className="text-sm font-semibold">System Status</p>
-              <p className="mt-2 text-2xl font-semibold">{health.status}</p>
-              <Link href="/status" className="mt-3 inline-flex text-sm font-semibold underline-offset-4 hover:underline">
-                View status
-              </Link>
-            </div>
-
+          <aside className="space-y-6 lg:pt-[5.25rem]">
             <div className="site-border site-card rounded-lg border p-4">
               <h2 className="font-semibold">Quick Links</h2>
               <div className="mt-3 grid gap-2">

@@ -1,12 +1,15 @@
 "use client";
 
 import Icon from "@components/Icon";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Home() {
   const [email, setEmail] = useState("");
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterMessage, setNewsletterMessage] = useState("");
+  const [newsletterError, setNewsletterError] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
   const router = useRouter();
 
   function handleJoin(event) {
@@ -15,6 +18,51 @@ export default function Home() {
       ? `?email=${encodeURIComponent(email.trim())}`
       : "";
     router.push(`/signup${query}`);
+  }
+
+  async function handleNewsletter(event) {
+    event.preventDefault();
+    const nextEmail = newsletterEmail.trim().toLowerCase();
+
+    setNewsletterMessage("");
+    setNewsletterError("");
+
+    if (!nextEmail) {
+      setNewsletterError("Enter your email to join the HireNova update list.");
+      return;
+    }
+
+    setIsSubscribing(true);
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: nextEmail, source: "home" }),
+      });
+      const body = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          body?.error ?? body?.message ?? "Unable to subscribe right now.",
+        );
+      }
+
+      setNewsletterMessage(
+        body?.message ?? "Thanks for joining the HireNova update list.",
+      );
+      setNewsletterEmail("");
+    } catch (caughtError) {
+      setNewsletterError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to subscribe right now.",
+      );
+    } finally {
+      setIsSubscribing(false);
+    }
   }
 
   return (
@@ -26,13 +74,13 @@ export default function Home() {
               Hiring platform
             </p>
             <h1 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight md:text-4xl">
-              Manage jobs, applications, and candidates in one workspace
+              A complete hiring workspace for jobs, applications, and conversations
             </h1>
 
             <p className="site-muted mt-4 max-w-xl text-sm leading-6">
               HireNova helps jobseekers browse and apply for roles while
-              employers post jobs, review applicants, and keep application
-              status clear.
+              employers and admins manage job approvals, review candidates,
+              track applications, and keep conversations in one place.
             </p>
 
             <form
@@ -154,20 +202,54 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="site-border border-t px-5 py-12 text-center md:px-[10vw]">
-        <h2 className="text-2xl font-semibold">
-          Start managing your hiring journey today
-        </h2>
-        <p className="site-soft mt-2 text-sm">
-          Create an account to browse jobs, post roles, or track applications.
-        </p>
+      <section className="site-border border-t px-5 py-12 md:px-[10vw]">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="site-accent text-xs font-semibold uppercase tracking-widest">
+            Newsletter
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold">
+            Get hiring updates from HireNova
+          </h2>
+          <p className="site-soft mt-2 text-sm leading-6">
+            Receive platform updates, hiring workflow tips, and product notes
+            for jobseekers, employers, and admins.
+          </p>
 
-        <Link
-          href="/signup"
-          className="site-button mt-5 inline-block rounded-md px-4 py-2 text-sm font-medium transition"
-        >
-          Get Started
-        </Link>
+          <form
+            onSubmit={handleNewsletter}
+            className="site-border site-card mx-auto mt-5 flex w-full max-w-md gap-2 rounded-lg border p-2"
+          >
+            <input
+              value={newsletterEmail}
+              onChange={(event) => {
+                setNewsletterEmail(event.target.value);
+                setNewsletterMessage("");
+                setNewsletterError("");
+              }}
+              placeholder="Email address"
+              type="email"
+              required
+              className="site-field flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={isSubscribing}
+              className="site-button rounded-md px-4 py-2 text-sm font-medium transition disabled:opacity-60"
+            >
+              {isSubscribing ? "Saving..." : "Subscribe"}
+            </button>
+          </form>
+          {newsletterMessage ? (
+            <p className="site-success mx-auto mt-3 max-w-md rounded-md border px-3 py-2 text-xs">
+              {newsletterMessage}
+            </p>
+          ) : null}
+          {newsletterError ? (
+            <p className="site-danger mx-auto mt-3 max-w-md rounded-md border px-3 py-2 text-xs">
+              {newsletterError}
+            </p>
+          ) : null}
+        </div>
       </section>
     </>
   );

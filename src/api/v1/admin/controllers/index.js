@@ -4,6 +4,8 @@ const getSingleUser = require("./getSingleUser");
 const removeUser = require("./removeUser");
 const makeAdmin = require("./makeAdmin");
 const updateUser = require("./updateUser");
+const getNewsletterSubscriptions = require("./getNewsletterSubscriptions");
+const removeNewsletterSubscription = require("./removeNewsletterSubscription");
 
 module.exports = {
   addUser,
@@ -12,4 +14,6 @@ module.exports = {
   removeUser,
   makeAdmin,
   updateUser,
+  getNewsletterSubscriptions,
+  removeNewsletterSubscription,
 };

@@ -4,6 +4,7 @@ const {
   userExitsByEmail,
   userExitsByUsername,
 } = require("../user");
+const newsletterService = require("../newsletter");
 const { generateHash, hashMatched } = require("../../utils/hashing");
 const { generateToken } = require("../token/");
 
@@ -51,6 +52,11 @@ const login = async ({ email, password }) => {
     email: user.email,
     role: user.role,
   };
+
+  await newsletterService.subscribe({
+    email: user.email,
+    source: "auth-login",
+  });
 
   return generateToken({ payload });
 };

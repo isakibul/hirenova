@@ -9,6 +9,7 @@ const dashboardRoutes = require("./dashboard.routes");
 const notificationRoutes = require("./notifications.routes");
 const candidateRoutes = require("./candidates.routes");
 const messageRoutes = require("./messages.routes");
+const newsletterRoutes = require("./newsletter.routes");
 
 router.use("/auth", authRoutes);
 router.use("/jobs", jobRoutes);
@@ -19,5 +20,6 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/candidates", candidateRoutes);
 router.use("/messages", messageRoutes);
+router.use("/newsletter", newsletterRoutes);
 
 module.exports = router;

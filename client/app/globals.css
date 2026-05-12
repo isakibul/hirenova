@@ -184,7 +184,7 @@ body {
   left: 0;
   right: 0;
   top: 50%;
-  height: 0.1875rem;
+  height: 1px;
   transform: translateY(-50%);
   border-radius: 999px;
   background: var(--site-border);

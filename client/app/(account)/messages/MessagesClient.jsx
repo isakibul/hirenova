@@ -511,7 +511,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
                   </p>
                 )}
                 {selectedOther ? (
-                  <div className="site-muted mt-1 flex items-center gap-1.5 text-xs capitalize">
+                  <div className="site-muted mt-1 flex items-center gap-1.5 text-xs">
                     <span>{selectedOther.role} ·</span>
                     <span className="inline-flex items-center gap-1.5">
                       {isOnline(selectedOther.lastSeenAt) ? (

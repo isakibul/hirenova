@@ -108,7 +108,9 @@ export default function MessagesMenu({
   const unreadSignatureRef = useRef("");
   const hasLoadedUnreadRef = useRef(false);
 
-  const unreadCount = conversations.filter((conversation) => conversation.isUnread).length;
+  const unreadCount = conversations.filter(
+    (conversation) => conversation.isUnread,
+  ).length;
   const selectedConversation = useMemo(
     () =>
       conversations.find(
@@ -116,7 +118,10 @@ export default function MessagesMenu({
       ) ?? conversations[0],
     [conversations, selectedId],
   );
-  const selectedOther = getOtherParticipant(selectedConversation, currentUserId);
+  const selectedOther = getOtherParticipant(
+    selectedConversation,
+    currentUserId,
+  );
 
   const unlockSound = useCallback(() => {
     if (soundReadyRef.current || typeof window === "undefined") {
@@ -175,51 +180,57 @@ export default function MessagesMenu({
     [playMessageSound],
   );
 
-  const updateConversation = useCallback((updatedConversation) => {
-    if (!updatedConversation) {
-      return;
-    }
-
-    setConversations((current) => {
-      const updatedId = getConversationId(updatedConversation);
-      const hasConversation = current.some(
-        (conversation) => getConversationId(conversation) === updatedId,
-      );
-      const nextConversations = (
-        hasConversation
-          ? current.map((conversation) =>
-              getConversationId(conversation) === updatedId
-                ? updatedConversation
-                : conversation,
-            )
-          : [updatedConversation, ...current]
-      ).sort(
-        (first, second) =>
-          new Date(second.lastMessageAt ?? 0).getTime() -
-          new Date(first.lastMessageAt ?? 0).getTime(),
-      );
-
-      rememberUnreadState(nextConversations);
-      return nextConversations;
-    });
-  }, [rememberUnreadState]);
-
-  const removeConversation = useCallback((conversationId) => {
-    setConversations((current) => {
-      const nextConversations = current.filter(
-        (conversation) => getConversationId(conversation) !== conversationId,
-      );
-
-      if (selectedIdRef.current === conversationId) {
-        const nextSelectedId = getConversationId(nextConversations[0]);
-        selectedIdRef.current = nextSelectedId;
-        setSelectedId(nextSelectedId);
+  const updateConversation = useCallback(
+    (updatedConversation) => {
+      if (!updatedConversation) {
+        return;
       }
 
-      rememberUnreadState(nextConversations, { allowSound: false });
-      return nextConversations;
-    });
-  }, [rememberUnreadState]);
+      setConversations((current) => {
+        const updatedId = getConversationId(updatedConversation);
+        const hasConversation = current.some(
+          (conversation) => getConversationId(conversation) === updatedId,
+        );
+        const nextConversations = (
+          hasConversation
+            ? current.map((conversation) =>
+                getConversationId(conversation) === updatedId
+                  ? updatedConversation
+                  : conversation,
+              )
+            : [updatedConversation, ...current]
+        ).sort(
+          (first, second) =>
+            new Date(second.lastMessageAt ?? 0).getTime() -
+            new Date(first.lastMessageAt ?? 0).getTime(),
+        );
+
+        rememberUnreadState(nextConversations);
+        return nextConversations;
+      });
+    },
+    [rememberUnreadState],
+  );
+
+  const removeConversation = useCallback(
+    (conversationId) => {
+      setConversations((current) => {
+        const nextConversations = current.filter(
+          (conversation) => getConversationId(conversation) !== conversationId,
+        );
+
+        if (selectedIdRef.current === conversationId) {
+          const nextSelectedId = getConversationId(nextConversations[0]);
+          selectedIdRef.current = nextSelectedId;
+          setSelectedId(nextSelectedId);
+        }
+
+        rememberUnreadState(nextConversations, { allowSound: false });
+        return nextConversations;
+      });
+    },
+    [rememberUnreadState],
+  );
 
   async function refreshConversations({ markSelectedRead = false } = {}) {
     const response = await fetch("/api/messages/conversations", {
@@ -421,7 +432,8 @@ export default function MessagesMenu({
 
     const frameId = window.requestAnimationFrame(() => {
       if (messagesPanelRef.current) {
-        messagesPanelRef.current.scrollTop = messagesPanelRef.current.scrollHeight;
+        messagesPanelRef.current.scrollTop =
+          messagesPanelRef.current.scrollHeight;
       }
     });
 
@@ -438,9 +450,12 @@ export default function MessagesMenu({
       ),
     );
     try {
-      const response = await fetch(`/api/messages/conversations/${conversationId}`, {
-        cache: "no-store",
-      });
+      const response = await fetch(
+        `/api/messages/conversations/${conversationId}`,
+        {
+          cache: "no-store",
+        },
+      );
       const body = await response.json();
       if (response.ok && body.data) {
         setConversations((current) =>
@@ -452,7 +467,9 @@ export default function MessagesMenu({
         );
       }
     } catch {
-      // Leave the local conversation selected if marking read fails.
+      /**
+       * Leave the local conversation selected if marking read fails.
+       */
     }
   }
 
@@ -518,9 +535,12 @@ export default function MessagesMenu({
     setIsDeleting(true);
     setError("");
     try {
-      const response = await fetch(`/api/messages/conversations/${conversationId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/messages/conversations/${conversationId}`,
+        {
+          method: "DELETE",
+        },
+      );
       const body = await response.json();
       if (!response.ok) {
         throw new Error(getMessage(body, "Unable to delete conversation."));
@@ -553,13 +573,13 @@ export default function MessagesMenu({
             void loadConversations();
           }
         }}
-        className="site-border site-panel relative inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-[var(--site-accent)] hover:text-[var(--site-accent)]"
+        className="site-border site-panel relative inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-(--site-accent) hover:text-(--site-accent)"
         aria-label="Open messages"
         aria-expanded={isOpen}
       >
         <Icon name="message" />
         {unreadCount > 0 ? (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--site-button-bg)] px-1 text-[10px] font-bold text-[var(--site-button-fg)]">
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-(--site-button-bg) px-1 text-[10px] font-bold text-(--site-button-fg)">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         ) : null}
@@ -577,7 +597,7 @@ export default function MessagesMenu({
             className="site-border site-card site-elevated flex h-[min(620px,82vh)] w-full max-w-3xl flex-col overflow-hidden rounded-lg border"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between gap-3 border-b border-[var(--site-border)] px-4 py-3">
+            <div className="flex items-center justify-between gap-3 border-b border-(--site-border) px-4 py-3">
               <div>
                 <h2 id="messages-modal-title" className="font-semibold">
                   Inbox
@@ -590,7 +610,7 @@ export default function MessagesMenu({
                 <Link
                   href="/messages"
                   onClick={() => setIsOpen(false)}
-                  className="site-border site-field inline-flex h-9 w-9 items-center justify-center rounded-md border transition hover:border-[var(--site-accent)] hover:text-[var(--site-accent)]"
+                  className="site-border site-field inline-flex h-9 w-9 items-center justify-center rounded-md border transition hover:border-(--site-accent) hover:text-(--site-accent)"
                   aria-label="Open messages full screen"
                   title="Open full screen"
                 >
@@ -599,7 +619,7 @@ export default function MessagesMenu({
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="site-border site-field inline-flex h-9 w-9 items-center justify-center rounded-md border transition hover:border-[var(--site-accent)] hover:text-[var(--site-accent)]"
+                  className="site-border site-field inline-flex h-9 w-9 items-center justify-center rounded-md border transition hover:border-(--site-accent) hover:text-(--site-accent)"
                   aria-label="Close messages"
                 >
                   <Icon name="x" />
@@ -614,10 +634,12 @@ export default function MessagesMenu({
             ) : null}
 
             <div className="grid min-h-0 flex-1 md:grid-cols-[240px_1fr]">
-              <aside className="min-h-0 border-b border-[var(--site-border)] md:border-b-0 md:border-r">
+              <aside className="min-h-0 border-b border-(--site-border) md:border-b-0 md:border-r">
                 <div className="max-h-44 overflow-y-auto md:max-h-full">
                   {isLoading ? (
-                    <div className="site-muted p-4 text-sm">Loading inbox...</div>
+                    <div className="site-muted p-4 text-sm">
+                      Loading inbox...
+                    </div>
                   ) : conversations.length === 0 ? (
                     <div className="p-4 text-sm">
                       <div className="site-badge inline-flex h-10 w-10 items-center justify-center rounded-md">
@@ -636,14 +658,15 @@ export default function MessagesMenu({
                         currentUserId,
                       );
                       const isSelected =
-                        conversationId === getConversationId(selectedConversation);
+                        conversationId ===
+                        getConversationId(selectedConversation);
                       return (
                         <button
                           key={conversationId}
                           type="button"
                           onClick={() => openConversation(conversationId)}
-                          className={`block w-full border-b border-[var(--site-border)] px-4 py-3 text-left transition hover:bg-[var(--site-panel)] ${
-                            isSelected ? "bg-[var(--site-panel)]" : ""
+                          className={`block w-full border-b border-(--site-border) px-4 py-3 text-left transition hover:bg-(--site-panel) ${
+                            isSelected ? "bg-(--site-panel)" : ""
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3">
@@ -670,13 +693,13 @@ export default function MessagesMenu({
               </aside>
 
               <section className="flex min-h-0 flex-col">
-                <div className="site-panel flex items-center justify-between gap-3 border-b border-[var(--site-border)] px-4 py-3">
+                <div className="site-panel flex items-center justify-between gap-3 border-b border-(--site-border) px-4 py-3">
                   <div className="min-w-0">
                     {selectedOther && getProfileHref(selectedOther) ? (
                       <Link
                         href={getProfileHref(selectedOther)}
                         onClick={() => setIsOpen(false)}
-                        className="font-semibold transition hover:text-[var(--site-accent)]"
+                        className="font-semibold transition hover:text-(--site-accent)"
                       >
                         {getDisplayName(selectedOther)}
                       </Link>
@@ -688,7 +711,7 @@ export default function MessagesMenu({
                       </p>
                     )}
                     {selectedOther ? (
-                      <div className="site-muted mt-1 flex items-center gap-1.5 text-xs capitalize">
+                      <div className="site-muted mt-1 flex items-center gap-1.5 text-xs">
                         <span>{selectedOther.role} ·</span>
                         <span className="inline-flex items-center gap-1.5">
                           {isOnline(selectedOther.lastSeenAt) ? (
@@ -751,7 +774,7 @@ export default function MessagesMenu({
 
                 <form
                   onSubmit={sendMessage}
-                  className="border-t border-[var(--site-border)] p-3"
+                  className="border-t border-(--site-border) p-3"
                 >
                   <div className="flex gap-2">
                     <textarea
@@ -782,7 +805,7 @@ export default function MessagesMenu({
       {isDeleteModalOpen && typeof document !== "undefined"
         ? createPortal(
             <div
-              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 px-4"
+              className="fixed inset-0 z-100 flex items-center justify-center bg-black/30 px-4"
               role="dialog"
               aria-modal="true"
               aria-labelledby="delete-conversation-title"
@@ -801,7 +824,10 @@ export default function MessagesMenu({
                     <Icon name="trash" />
                   </span>
                   <div>
-                    <h3 id="delete-conversation-title" className="font-semibold">
+                    <h3
+                      id="delete-conversation-title"
+                      className="font-semibold"
+                    >
                       Delete conversation?
                     </h3>
                     <p className="site-muted mt-1 text-sm leading-6">
@@ -814,7 +840,7 @@ export default function MessagesMenu({
                     type="button"
                     onClick={() => setIsDeleteModalOpen(false)}
                     disabled={isDeleting}
-                    className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold transition hover:border-[var(--site-accent)] disabled:opacity-60"
+                    className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold transition hover:border-(--site-accent) disabled:opacity-60"
                   >
                     Cancel
                   </button>

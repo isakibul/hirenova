@@ -4,6 +4,7 @@ const Application = require("./Application");
 const SavedJob = require("./SavedJob");
 const Notification = require("./Notification");
 const Conversation = require("./Conversation");
+const NewsletterSubscription = require("./NewsletterSubscription");
 
 module.exports = {
   User,
@@ -12,4 +13,5 @@ module.exports = {
   SavedJob,
   Notification,
   Conversation,
+  NewsletterSubscription,
 };
