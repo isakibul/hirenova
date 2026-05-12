@@ -42,10 +42,17 @@ const updateUser = async (req, res, next) => {
     }
 
     const requesterIsSuperAdmin = req.user.role === "superadmin";
+    const targetUserId = targetUser.id ?? targetUser._id?.toString();
 
     if (!requesterIsSuperAdmin && adminLevelRoles.includes(targetUser.role)) {
       return res.status(403).json({
         message: "Only a super admin can update admin accounts.",
+      });
+    }
+
+    if (value.status === "suspended" && targetUserId === req.user.id) {
+      return res.status(403).json({
+        message: "You cannot suspend your own account.",
       });
     }
 

@@ -8,7 +8,7 @@ const newsletterService = require("../newsletter");
 const { generateHash, hashMatched } = require("../../utils/hashing");
 const { generateToken } = require("../token/");
 
-const register = async ({ username, email, password, role }) => {
+const register = async ({ username, email, password, role, status }) => {
   const normalizedEmail = email.trim().toLowerCase();
   const hasUserByEmail = await userExitsByEmail(normalizedEmail);
   const hasUserByUsername = await userExitsByUsername(username);
@@ -24,6 +24,7 @@ const register = async ({ username, email, password, role }) => {
     email: normalizedEmail,
     password: hashedPassword,
     role,
+    status,
   });
 
   return user;

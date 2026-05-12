@@ -33,12 +33,13 @@ const userExitsByUsername = async (username) => {
   return user ? user : false;
 };
 
-const createUser = async ({ username, email, password, role }) => {
+const createUser = async ({ username, email, password, role, status }) => {
   const user = new User({
     username,
     email: normalizeEmail(email),
     password,
     role,
+    status,
   });
   await user.save();
   return { ...user._doc, id: user.id };

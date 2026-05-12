@@ -99,8 +99,10 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingUserId, setLoadingUserId] = useState(null);
     const [roleUpdatingUserId, setRoleUpdatingUserId] = useState(null);
+    const [statusUpdatingUserId, setStatusUpdatingUserId] = useState(null);
     const [deletingUserId, setDeletingUserId] = useState(null);
     const [rolePendingChange, setRolePendingChange] = useState(null);
+    const [statusPendingChange, setStatusPendingChange] = useState(null);
     const [userPendingDelete, setUserPendingDelete] = useState(null);
     const [notice, setNotice] = useState(null);
     const [error, setError] = useState(null);
@@ -120,6 +122,9 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
         return isSuperAdmin || !isAdminLevelRole(user.role);
     }
     function canDeleteUser(user) {
+        return isSuperAdmin || !isAdminLevelRole(user.role);
+    }
+    function canChangeUserStatus(user) {
         return isSuperAdmin || !isAdminLevelRole(user.role);
     }
     function updateFormField(field, value) {
@@ -178,18 +183,29 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
         return () => window.clearTimeout(timeoutId);
     }, [loadUsers]);
     useEffect(() => {
-        if ((!userPendingDelete && !rolePendingChange) || deletingUserId || roleUpdatingUserId) {
+        if ((!userPendingDelete && !rolePendingChange && !statusPendingChange) ||
+            deletingUserId ||
+            roleUpdatingUserId ||
+            statusUpdatingUserId) {
             return;
         }
         function handleKeyDown(event) {
             if (event.key === "Escape") {
                 setUserPendingDelete(null);
                 setRolePendingChange(null);
+                setStatusPendingChange(null);
             }
         }
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [deletingUserId, rolePendingChange, roleUpdatingUserId, userPendingDelete]);
+    }, [
+        deletingUserId,
+        rolePendingChange,
+        roleUpdatingUserId,
+        statusPendingChange,
+        statusUpdatingUserId,
+        userPendingDelete,
+    ]);
     function resetForm() {
         setForm(emptyForm);
         setFormTouched({});
@@ -316,6 +332,57 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
         }
         finally {
             setRoleUpdatingUserId(null);
+        }
+    }
+    function requestStatusChange(user) {
+        const userId = getUserId(user);
+        const nextStatus = user.status === "suspended" ? "active" : "suspended";
+        if (!userId || !canChangeUserStatus(user) || currentUserId === userId) {
+            return;
+        }
+        setStatusPendingChange({ user, nextStatus });
+        setNotice(null);
+        setError(null);
+    }
+    async function confirmStatusChange() {
+        if (!statusPendingChange) {
+            return;
+        }
+        const { user, nextStatus } = statusPendingChange;
+        const userId = getUserId(user);
+        if (!userId) {
+            setStatusPendingChange(null);
+            return;
+        }
+        setStatusUpdatingUserId(userId);
+        setNotice(null);
+        setError(null);
+        try {
+            const response = await fetch(`/api/manage-users/${userId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ status: nextStatus }),
+            });
+            const body = (await response.json());
+            if (!response.ok) {
+                throw new Error(getMessage(body));
+            }
+            setNotice(`${user.username ?? user.email ?? "User"} ${nextStatus === "suspended" ? "suspended" : "activated"}.`);
+            if (selectedUserId === userId) {
+                setSelectedUser((current) => current ? { ...current, status: nextStatus } : current);
+            }
+            setStatusPendingChange(null);
+            await loadUsers();
+        }
+        catch (caughtError) {
+            setError(caughtError instanceof Error
+                ? caughtError.message
+                : "Unable to update user status.");
+        }
+        finally {
+            setStatusUpdatingUserId(null);
         }
     }
     function handleDelete(user) {
@@ -486,7 +553,9 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
             const isCurrentUser = currentUserId === userId;
             const isBusy = loadingUserId === userId ||
                 roleUpdatingUserId === userId ||
+                statusUpdatingUserId === userId ||
                 deletingUserId === userId;
+            const isSuspended = user.status === "suspended";
             return (<tr key={userId} className={`border-t border-[var(--site-border)] ${isSelected ? "bg-[var(--site-panel)]" : ""}`}>
                           <td className="px-4 py-4 align-top">
                             <div className="flex gap-3">
@@ -517,13 +586,24 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
                               {formatStatus(user.status)}
                             </span>
                           </td>
-                          <td className="site-muted px-4 py-4 align-top text-xs">
+                          <td className="site-muted whitespace-nowrap px-4 py-4 align-top text-xs">
                             {formatDate(user.createdAt)}
                           </td>
                           <td className="px-4 py-4 align-top">
                             <div className="flex justify-end gap-2">
                               <button type="button" onClick={() => handleSelectUser(user)} disabled={isBusy} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
                                 {loadingUserId === userId ? "Loading" : "View"}
+                              </button>
+                              <button type="button" onClick={() => requestStatusChange(user)} disabled={isBusy ||
+                    isCurrentUser ||
+                    !canChangeUserStatus(user)} className={isSuspended
+                    ? "site-button rounded-md px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50"
+                    : "rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-50"}>
+                                {statusUpdatingUserId === userId
+                    ? "Updating"
+                    : isSuspended
+                        ? "Activate"
+                        : "Suspend"}
                               </button>
                               <button type="button" onClick={() => handleDelete(user)} disabled={isBusy ||
                     isCurrentUser ||
@@ -631,9 +711,20 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
                     </div>
                     <div>
                       <p className="site-muted text-xs font-medium">Status</p>
-                      <p className="mt-1 font-semibold">
-                        {formatStatus(selectedUser.status)}
-                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <p className="font-semibold">
+                          {formatStatus(selectedUser.status)}
+                        </p>
+                        <button type="button" onClick={() => requestStatusChange(selectedUser)} disabled={statusUpdatingUserId === selectedUserId ||
+                    currentUserId === selectedUserId ||
+                    !canChangeUserStatus(selectedUser)} className={selectedUser.status === "suspended"
+                    ? "site-button rounded-md px-2.5 py-1 text-xs font-semibold transition disabled:opacity-50"
+                    : "rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-50"}>
+                          {selectedUser.status === "suspended"
+                    ? "Activate"
+                    : "Suspend"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -687,6 +778,53 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
                 {deletingUserId === getUserId(userPendingDelete)
                 ? "Deleting..."
                 : "Delete User"}
+              </button>
+            </div>
+          </div>
+        </div>) : null}
+      {statusPendingChange ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="status-change-title" aria-describedby="status-change-description">
+          <div className="site-border site-card w-full max-w-md rounded-lg border">
+            <div className="flex items-start gap-3 border-b border-[var(--site-border)] p-5">
+              <span className={statusPendingChange.nextStatus === "suspended"
+                ? "rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] p-2 text-[var(--site-danger-text)]"
+                : "site-badge rounded-md p-2"}>
+                <Icon name={statusPendingChange.nextStatus === "suspended" ? "x" : "check"}/>
+              </span>
+              <div className="min-w-0">
+                <h2 id="status-change-title" className="text-lg font-semibold">
+                  {statusPendingChange.nextStatus === "suspended"
+                ? "Suspend user?"
+                : "Activate user?"}
+                </h2>
+                <p id="status-change-description" className="site-muted mt-1 text-sm leading-6">
+                  {statusPendingChange.nextStatus === "suspended"
+                ? "Suspending"
+                : "Activating"}{" "}
+                  <span className="font-semibold text-[var(--site-fg)]">
+                    {statusPendingChange.user.username ??
+                statusPendingChange.user.email ??
+                "this user"}
+                  </span>
+                  {statusPendingChange.nextStatus === "suspended"
+                ? " will block them from signing in until the account is activated again."
+                : " will allow them to sign in again."}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse gap-2 p-5 sm:flex-row sm:justify-end">
+              <button type="button" onClick={() => setStatusPendingChange(null)} disabled={statusUpdatingUserId === getUserId(statusPendingChange.user)} className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-60">
+                Cancel
+              </button>
+              <button type="button" onClick={confirmStatusChange} disabled={statusUpdatingUserId === getUserId(statusPendingChange.user)} className={statusPendingChange.nextStatus === "suspended"
+                ? "inline-flex items-center justify-center gap-2 rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-4 py-2 text-sm font-semibold text-[var(--site-danger-text)] disabled:opacity-60"
+                : "site-button inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-60"}>
+                <Icon name={statusPendingChange.nextStatus === "suspended" ? "x" : "check"}/>
+                {statusUpdatingUserId === getUserId(statusPendingChange.user)
+                ? "Updating..."
+                : statusPendingChange.nextStatus === "suspended"
+                    ? "Suspend User"
+                    : "Activate User"}
               </button>
             </div>
           </div>

@@ -46,6 +46,7 @@ const addUser = async (req, res, next) => {
       email,
       password,
       role,
+      status: "active",
     });
 
     const response = {
