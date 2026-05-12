@@ -1,7 +1,15 @@
 "use client";
 
 import Icon from "@components/Icon";
+import PaginationControls from "@components/PaginationControls";
+import StatusNotice from "@components/StatusNotice";
 import SelectField from "@components/forms/SelectField";
+import {
+    formatDate,
+    formatExperienceYears,
+    getApiMessage,
+    getRecordId,
+} from "@lib/ui";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -11,32 +19,6 @@ const sortOptions = [
     { value: "username", label: "Name" },
     { value: "experience", label: "Experience" },
 ];
-
-function getMessage(body, fallback) {
-    return body?.error ?? body?.message ?? fallback;
-}
-
-function getCandidateId(candidate) {
-    return candidate.id ?? candidate._id ?? "";
-}
-
-function formatDate(value) {
-    if (!value) {
-        return "Not available";
-    }
-    return new Intl.DateTimeFormat("en", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-    }).format(new Date(value));
-}
-
-function formatExperience(value) {
-    if (typeof value !== "number") {
-        return "Not set";
-    }
-    return `${value} year${value === 1 ? "" : "s"}`;
-}
 
 function formatSkills(skills) {
     return Array.isArray(skills) && skills.length ? skills : ["No skills listed"];
@@ -77,14 +59,14 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
             const response = await fetch(`/api/candidates?${params.toString()}`);
             const body = await response.json();
             if (!response.ok) {
-                throw new Error(getMessage(body, "Unable to load candidates."));
+                throw new Error(getApiMessage(body, "Unable to load candidates."));
             }
             const nextCandidates = body.data ?? [];
             setCandidates(nextCandidates);
             setPagination(body.pagination);
             setSelectedCandidate((current) => {
-                const currentId = current ? getCandidateId(current) : "";
-                return nextCandidates.find((candidate) => getCandidateId(candidate) === currentId) ?? nextCandidates[0] ?? null;
+                const currentId = current ? getRecordId(current) : "";
+                return nextCandidates.find((candidate) => getRecordId(candidate) === currentId) ?? nextCandidates[0] ?? null;
             });
         }
         catch (caughtError) {
@@ -112,7 +94,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
             return undefined;
         }
         const timeoutId = window.setTimeout(() => {
-            const existingCandidate = candidates.find((candidate) => getCandidateId(candidate) === requestedCandidateId);
+            const existingCandidate = candidates.find((candidate) => getRecordId(candidate) === requestedCandidateId);
             if (existingCandidate) {
                 void handleSelectCandidate(existingCandidate);
                 return;
@@ -123,7 +105,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
     }, [candidates, requestedCandidateId]);
 
     async function handleSelectCandidate(candidate) {
-        const candidateId = getCandidateId(candidate);
+        const candidateId = getRecordId(candidate);
         if (!candidateId) {
             return;
         }
@@ -133,7 +115,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
             const response = await fetch(`/api/candidates/${candidateId}`);
             const body = await response.json();
             if (!response.ok || !body.data) {
-                throw new Error(getMessage(body, "Unable to load candidate profile."));
+                throw new Error(getApiMessage(body, "Unable to load candidate profile."));
             }
             setSelectedCandidate(body.data);
         }
@@ -151,7 +133,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
         setSearch(searchInput.trim());
     }
     async function messageCandidate(candidate) {
-        const candidateId = getCandidateId(candidate);
+        const candidateId = getRecordId(candidate);
         if (!candidateId) {
             return;
         }
@@ -167,7 +149,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
             });
             const body = await response.json();
             if (!response.ok || !body.data) {
-                throw new Error(getMessage(body, "Unable to start conversation."));
+                throw new Error(getApiMessage(body, "Unable to start conversation."));
             }
             router.push(`/messages?conversation=${body.data.id ?? body.data._id}`);
         }
@@ -195,7 +177,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
           </div>
         </div>
 
-        {error ? <div className="site-danger mt-5 rounded-lg border px-4 py-3 text-sm">{error}</div> : null}
+        <StatusNotice>{error}</StatusNotice>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_410px]">
           <div className="site-border site-card overflow-hidden rounded-lg border">
@@ -235,8 +217,8 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
                   <p className="font-semibold">No job seekers found</p>
                   <p className="site-muted mt-1 text-xs">Try another skill, location, or name.</p>
                 </div>) : candidates.map((candidate) => {
-            const candidateId = getCandidateId(candidate);
-            const isSelected = getCandidateId(selectedCandidate ?? {}) === candidateId;
+            const candidateId = getRecordId(candidate);
+            const isSelected = getRecordId(selectedCandidate ?? {}) === candidateId;
             return (<button key={candidateId} type="button" onClick={() => handleSelectCandidate(candidate)} className={`block w-full px-4 py-4 text-left transition hover:bg-[var(--site-panel)] ${isSelected ? "bg-[var(--site-panel)]" : ""}`}>
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                       <div className="min-w-0">
@@ -247,7 +229,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
                         </div>
                       </div>
                       <div className="site-muted shrink-0 text-xs md:text-right">
-                        <p>{formatExperience(candidate.experience)}</p>
+                        <p>{formatExperienceYears(candidate.experience)}</p>
                         <p className="mt-1">{candidate.preferredLocation || "Location not set"}</p>
                         {loadingCandidateId === candidateId ? <p className="mt-1">Loading profile...</p> : null}
                       </div>
@@ -256,13 +238,12 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
         })}
             </div>
 
-            <div className="site-panel flex flex-col gap-3 border-t border-[var(--site-border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="site-muted text-xs">Page {pagination?.page ?? page} of {totalPages}</p>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => setPage((current) => Math.max(current - 1, 1))} disabled={page <= 1 || isLoading} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50">Previous</button>
-                <button type="button" onClick={() => setPage((current) => Math.min(current + 1, totalPages))} disabled={page >= totalPages || isLoading} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50">Next</button>
-              </div>
-            </div>
+            <PaginationControls
+              currentPage={pagination?.page ?? page}
+              totalPages={totalPages}
+              isLoading={isLoading}
+              onPageChange={setPage}
+            />
           </div>
 
           <aside className="site-border site-card self-start rounded-lg border">
@@ -282,7 +263,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <p className="site-muted text-xs font-medium">Experience</p>
-                    <p className="mt-1 font-semibold">{formatExperience(selectedCandidate.experience)}</p>
+                    <p className="mt-1 font-semibold">{formatExperienceYears(selectedCandidate.experience)}</p>
                   </div>
                   <div>
                     <p className="site-muted text-xs font-medium">Location</p>
@@ -297,10 +278,10 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
                 </div>
                 <div>
                   <p className="site-muted text-xs font-medium">Resume</p>
-                  {selectedCandidate.resumeUrl ? (<a href={selectedCandidate.resumeUrl} target="_blank" rel="noreferrer" className="site-link mt-1 inline-block break-all font-semibold">Open resume</a>) : (<p className="mt-1 font-semibold">Not set</p>)}
+                  {selectedCandidate.resumeUrl ? (<a href={selectedCandidate.resumeUrl} target="_blank" rel="noopener noreferrer" className="site-link mt-1 inline-block break-all font-semibold">Open resume</a>) : (<p className="mt-1 font-semibold">Not set</p>)}
                 </div>
-                <button type="button" onClick={() => messageCandidate(selectedCandidate)} disabled={messagingCandidateId === getCandidateId(selectedCandidate)} className="site-button inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60">
-                  {messagingCandidateId === getCandidateId(selectedCandidate)
+                <button type="button" onClick={() => messageCandidate(selectedCandidate)} disabled={messagingCandidateId === getRecordId(selectedCandidate)} className="site-button inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60">
+                  {messagingCandidateId === getRecordId(selectedCandidate)
                 ? "Opening..."
                 : "Message"}
                 </button>

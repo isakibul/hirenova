@@ -1,4 +1,6 @@
 "use client";
+import ConfirmDialog from "@components/ConfirmDialog";
+import Modal from "@components/Modal";
 import FieldError from "@components/forms/FieldError";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
@@ -940,8 +942,11 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
         </div>
       </div>
 
-      {jobPendingDecline ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="decline-job-title" aria-describedby="decline-job-description">
-          <form onSubmit={confirmDecline} className="site-border site-card w-full max-w-md rounded-lg border">
+      {jobPendingDecline ? (<Modal ariaLabelledBy="decline-job-title" ariaDescribedBy="decline-job-description" onClose={reviewingJobId === getJobId(jobPendingDecline) ? undefined : () => {
+            setJobPendingDecline(null);
+            setRejectionNote("");
+        }} panelClassName="max-w-md">
+          <form onSubmit={confirmDecline}>
             <div className="flex items-start gap-3 border-b border-[var(--site-border)] p-5">
               <span className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] p-2 text-[var(--site-danger-text)]">
                 <Icon name="x"/>
@@ -979,10 +984,9 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
               </button>
             </div>
           </form>
-        </div>) : null}
+        </Modal>) : null}
 
-      {jobHistoryTarget ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="job-history-title">
-          <div className="site-border site-card max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-lg border">
+      {jobHistoryTarget ? (<Modal ariaLabelledBy="job-history-title" onClose={() => setJobHistoryTarget(null)} panelClassName="max-h-[90vh] max-w-2xl overflow-hidden">
             <div className="flex items-start justify-between gap-4 border-b border-[var(--site-border)] p-5">
               <div className="min-w-0">
                 <h2 id="job-history-title" className="text-lg font-semibold">
@@ -1040,41 +1044,14 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
                   </p>)}
               </section>
             </div>
-          </div>
-        </div>) : null}
+        </Modal>) : null}
 
-      {jobPendingDelete ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="delete-job-title" aria-describedby="delete-job-description">
-          <div className="site-border site-card w-full max-w-md rounded-lg border">
-            <div className="flex items-start gap-3 border-b border-[var(--site-border)] p-5">
-              <span className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] p-2 text-[var(--site-danger-text)]">
-                <Icon name="trash"/>
-              </span>
-              <div className="min-w-0">
-                <h2 id="delete-job-title" className="text-lg font-semibold">
-                  Delete job?
-                </h2>
-                <p id="delete-job-description" className="site-muted mt-1 text-sm leading-6">
-                  This will permanently delete{" "}
-                  <span className="font-semibold text-[var(--site-fg)]">
-                    {jobPendingDelete.title ?? "this job"}
-                  </span>
-                  . This action cannot be undone.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col-reverse gap-2 p-5 sm:flex-row sm:justify-end">
-              <button type="button" onClick={() => setJobPendingDelete(null)} disabled={deletingJobId === getJobId(jobPendingDelete)} className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-60">
-                Cancel
-              </button>
-              <button type="button" onClick={confirmDelete} disabled={deletingJobId === getJobId(jobPendingDelete)} className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-4 py-2 text-sm font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
-                <Icon name="trash"/>
-                {deletingJobId === getJobId(jobPendingDelete)
-                ? "Deleting..."
-                : "Delete Job"}
-              </button>
-            </div>
-          </div>
-        </div>) : null}
+      {jobPendingDelete ? (<ConfirmDialog title="Delete job?" icon="trash" tone="danger" confirmLabel="Delete Job" pendingLabel="Deleting..." isPending={deletingJobId === getJobId(jobPendingDelete)} onCancel={() => setJobPendingDelete(null)} onConfirm={confirmDelete}>
+          This will permanently delete{" "}
+          <span className="font-semibold text-[var(--site-fg)]">
+            {jobPendingDelete.title ?? "this job"}
+          </span>
+          . This action cannot be undone.
+        </ConfirmDialog>) : null}
     </section>);
 }

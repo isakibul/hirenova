@@ -22,134 +22,63 @@ function getUnexpectedBody() {
         message: "Unexpected backend response",
     };
 }
-export async function postToBackend(path, payload, init) {
-    try {
-        const response = await getBackendApi().post(path, payload, {
-            headers: init?.headers,
-        });
+
+function toBackendResult(response) {
+    return {
+        body: response.data,
+        status: response.status,
+        ok: response.status >= 200 && response.status < 300,
+    };
+}
+
+function toBackendError(error) {
+    if (axios.isAxiosError(error) && error.response) {
         return {
-            body: response.data,
-            status: response.status,
-            ok: response.status >= 200 && response.status < 300,
-        };
-    }
-    catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-            return {
-                body: (error.response.data ?? getUnexpectedBody()),
-                status: error.response.status,
-                ok: false,
-            };
-        }
-        return {
-            body: getUnexpectedBody(),
-            status: 500,
+            body: (error.response.data ?? getUnexpectedBody()),
+            status: error.response.status,
             ok: false,
         };
     }
+
+    return {
+        body: getUnexpectedBody(),
+        status: 500,
+        ok: false,
+    };
 }
-export async function getFromBackend(path, init) {
+
+async function requestBackend(method, path, payload, init) {
     try {
-        const response = await getBackendApi().get(path, {
+        const response = await getBackendApi().request({
+            method,
+            url: path,
+            data: payload,
             headers: init?.headers,
             params: init?.params,
         });
-        return {
-            body: response.data,
-            status: response.status,
-            ok: response.status >= 200 && response.status < 300,
-        };
+        return toBackendResult(response);
     }
     catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-            return {
-                body: (error.response.data ?? getUnexpectedBody()),
-                status: error.response.status,
-                ok: false,
-            };
-        }
-        return {
-            body: getUnexpectedBody(),
-            status: 500,
-            ok: false,
-        };
+        return toBackendError(error);
     }
 }
+
+export async function postToBackend(path, payload, init) {
+    return requestBackend("post", path, payload, init);
+}
+
+export async function getFromBackend(path, init) {
+    return requestBackend("get", path, undefined, init);
+}
+
 export async function putToBackend(path, payload, init) {
-    try {
-        const response = await getBackendApi().put(path, payload, {
-            headers: init?.headers,
-        });
-        return {
-            body: response.data,
-            status: response.status,
-            ok: response.status >= 200 && response.status < 300,
-        };
-    }
-    catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-            return {
-                body: (error.response.data ?? getUnexpectedBody()),
-                status: error.response.status,
-                ok: false,
-            };
-        }
-        return {
-            body: getUnexpectedBody(),
-            status: 500,
-            ok: false,
-        };
-    }
+    return requestBackend("put", path, payload, init);
 }
+
 export async function patchToBackend(path, payload, init) {
-    try {
-        const response = await getBackendApi().patch(path, payload, {
-            headers: init?.headers,
-        });
-        return {
-            body: response.data,
-            status: response.status,
-            ok: response.status >= 200 && response.status < 300,
-        };
-    }
-    catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-            return {
-                body: (error.response.data ?? getUnexpectedBody()),
-                status: error.response.status,
-                ok: false,
-            };
-        }
-        return {
-            body: getUnexpectedBody(),
-            status: 500,
-            ok: false,
-        };
-    }
+    return requestBackend("patch", path, payload, init);
 }
+
 export async function deleteFromBackend(path, init) {
-    try {
-        const response = await getBackendApi().delete(path, {
-            headers: init?.headers,
-        });
-        return {
-            body: response.data,
-            status: response.status,
-            ok: response.status >= 200 && response.status < 300,
-        };
-    }
-    catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-            return {
-                body: (error.response.data ?? getUnexpectedBody()),
-                status: error.response.status,
-                ok: false,
-            };
-        }
-        return {
-            body: getUnexpectedBody(),
-            status: 500,
-            ok: false,
-        };
-    }
+    return requestBackend("delete", path, undefined, init);
 }

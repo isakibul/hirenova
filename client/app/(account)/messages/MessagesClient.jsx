@@ -1,5 +1,6 @@
 "use client";
 
+import ConfirmDialog from "@components/ConfirmDialog";
 import Icon from "@components/Icon";
 import { acquireRealtimeSocket } from "@lib/realtime";
 import Link from "next/link";
@@ -598,54 +599,18 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
         </div>
       </div>
       {isDeleteModalOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-conversation-title"
-          onMouseDown={() => {
-            if (!isDeleting) {
-              setIsDeleteModalOpen(false);
-            }
-          }}
+        <ConfirmDialog
+          title="Delete conversation?"
+          icon="trash"
+          tone="danger"
+          confirmLabel="Delete"
+          pendingLabel="Deleting"
+          isPending={isDeleting}
+          onCancel={() => setIsDeleteModalOpen(false)}
+          onConfirm={deleteConversation}
         >
-          <div
-            className="site-border site-card site-elevated w-full max-w-sm rounded-lg border p-5"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-start gap-3">
-              <span className="site-border flex h-10 w-10 shrink-0 items-center justify-center rounded-md border text-red-600">
-                <Icon name="trash" />
-              </span>
-              <div>
-                <h3 id="delete-conversation-title" className="font-semibold">
-                  Delete conversation?
-                </h3>
-                <p className="site-muted mt-1 text-sm leading-6">
-                  This will remove the conversation from your inbox only.
-                </p>
-              </div>
-            </div>
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={isDeleting}
-                className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold transition hover:border-[var(--site-accent)] disabled:opacity-60"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={deleteConversation}
-                disabled={isDeleting}
-                className="rounded-md border border-red-500 bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
-              >
-                {isDeleting ? "Deleting" : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
+          This will remove the conversation from your inbox only.
+        </ConfirmDialog>
       ) : null}
     </section>
   );

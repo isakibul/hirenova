@@ -1,7 +1,11 @@
 "use client";
 
+import ConfirmDialog from "@components/ConfirmDialog";
 import Icon from "@components/Icon";
+import PaginationControls from "@components/PaginationControls";
+import StatusNotice from "@components/StatusNotice";
 import SelectField from "@components/forms/SelectField";
+import { formatDate, getApiMessage, getRecordId } from "@lib/ui";
 import { useCallback, useEffect, useState } from "react";
 
 const sortOptions = [
@@ -16,26 +20,6 @@ const statusOptions = [
   { value: "subscribed", label: "Subscribed" },
   { value: "unsubscribed", label: "Unsubscribed" },
 ];
-
-function getMessage(body, fallback) {
-  return body?.error ?? body?.message ?? fallback;
-}
-
-function getSubscriptionId(subscription) {
-  return subscription.id ?? subscription._id ?? "";
-}
-
-function formatDate(value) {
-  if (!value) {
-    return "Not available";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 function formatStatus(value) {
   return value === "unsubscribed" ? "Unsubscribed" : "Subscribed";
@@ -87,7 +71,7 @@ export default function ManageNewsletterClient({
       const body = await response.json();
       if (!response.ok) {
         throw new Error(
-          getMessage(body, "Unable to load newsletter subscriptions."),
+          getApiMessage(body, "Unable to load newsletter subscriptions."),
         );
       }
       setSubscriptions(body.data ?? []);
@@ -156,7 +140,7 @@ export default function ManageNewsletterClient({
       return;
     }
 
-    const subscriptionId = getSubscriptionId(subscriptionPendingDelete);
+    const subscriptionId = getRecordId(subscriptionPendingDelete);
     if (!subscriptionId) {
       setSubscriptionPendingDelete(null);
       return;
@@ -172,7 +156,7 @@ export default function ManageNewsletterClient({
       });
       const body = await response.json();
       if (!response.ok) {
-        throw new Error(getMessage(body, "Unable to remove subscription."));
+        throw new Error(getApiMessage(body, "Unable to remove subscription."));
       }
 
       setNotice(
@@ -214,16 +198,8 @@ export default function ManageNewsletterClient({
           </div>
         </div>
 
-        {notice ? (
-          <div className="site-success mt-5 rounded-lg border px-4 py-3 text-sm">
-            {notice}
-          </div>
-        ) : null}
-        {error ? (
-          <div className="site-danger mt-5 rounded-lg border px-4 py-3 text-sm">
-            {error}
-          </div>
-        ) : null}
+        <StatusNotice tone="success">{notice}</StatusNotice>
+        <StatusNotice>{error}</StatusNotice>
 
         <div className="site-border site-card mt-6 overflow-hidden rounded-lg border">
           <div className="site-panel border-b border-[var(--site-border)] p-4">
@@ -311,7 +287,7 @@ export default function ManageNewsletterClient({
               </div>
             ) : (
               subscriptions.map((subscription) => {
-                const subscriptionId = getSubscriptionId(subscription);
+                const subscriptionId = getRecordId(subscription);
                 return (
                   <div
                     key={subscriptionId}
@@ -348,94 +324,33 @@ export default function ManageNewsletterClient({
             )}
           </div>
 
-          <div className="site-panel flex flex-col gap-3 border-t border-[var(--site-border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="site-muted text-xs">
-              Page {pagination?.page ?? page} of {totalPages}
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setPage((current) => Math.max(current - 1, 1))}
-                disabled={page <= 1 || isLoading}
-                className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setPage((current) => Math.min(current + 1, totalPages))
-                }
-                disabled={page >= totalPages || isLoading}
-                className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
+          <PaginationControls
+            currentPage={pagination?.page ?? page}
+            totalPages={totalPages}
+            isLoading={isLoading}
+            onPageChange={setPage}
+          />
         </div>
       </div>
       </section>
 
       {subscriptionPendingDelete ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-newsletter-title"
-          aria-describedby="delete-newsletter-description"
+        <ConfirmDialog
+          title="Delete newsletter email?"
+          icon="trash"
+          tone="danger"
+          confirmLabel="Delete Email"
+          pendingLabel="Deleting..."
+          isPending={removingId === getRecordId(subscriptionPendingDelete)}
+          onCancel={() => setSubscriptionPendingDelete(null)}
+          onConfirm={confirmRemove}
         >
-          <div className="site-border site-card w-full max-w-md rounded-lg border p-5 shadow-xl">
-            <div className="flex items-start gap-3">
-              <span className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] p-2 text-[var(--site-danger-text)]">
-                <Icon name="trash" />
-              </span>
-              <div>
-                <h2
-                  id="delete-newsletter-title"
-                  className="text-lg font-semibold"
-                >
-                  Delete newsletter email?
-                </h2>
-                <p
-                  id="delete-newsletter-description"
-                  className="site-muted mt-2 text-sm leading-6"
-                >
-                  This will remove{" "}
-                  <span className="font-semibold text-[var(--site-fg)]">
-                    {subscriptionPendingDelete.email}
-                  </span>{" "}
-                  from the newsletter list.
-                </p>
-              </div>
-            </div>
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setSubscriptionPendingDelete(null)}
-                disabled={
-                  removingId === getSubscriptionId(subscriptionPendingDelete)
-                }
-                className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-60"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmRemove}
-                disabled={
-                  removingId === getSubscriptionId(subscriptionPendingDelete)
-                }
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-4 py-2 text-sm font-semibold text-[var(--site-danger-text)] disabled:opacity-60"
-              >
-                <Icon name="trash" />
-                {removingId === getSubscriptionId(subscriptionPendingDelete)
-                  ? "Deleting..."
-                  : "Delete Email"}
-              </button>
-            </div>
-          </div>
-        </div>
+          This will remove{" "}
+          <span className="font-semibold text-[var(--site-fg)]">
+            {subscriptionPendingDelete.email}
+          </span>{" "}
+          from the newsletter list.
+        </ConfirmDialog>
       ) : null}
     </>
   );

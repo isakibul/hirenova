@@ -1,8 +1,11 @@
 "use client";
 
 import Icon from "@components/Icon";
+import Modal from "@components/Modal";
+import StatusNotice from "@components/StatusNotice";
 import SelectField from "@components/forms/SelectField";
 import { useTheme } from "@components/theme/ThemeProvider";
+import { getApiMessage as getMessage } from "@lib/ui";
 import { signOut } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -64,10 +67,6 @@ function Section({ title, children }) {
       </div>
       <div className="space-y-4 p-4">{children}</div>
     </section>);
-}
-
-function getMessage(body, fallback) {
-    return body?.error ?? body?.message ?? fallback;
 }
 
 function escapePdfText(value) {
@@ -304,8 +303,8 @@ export default function SettingsClient({ user }) {
           </div>
         </div>
 
-        {notice ? <div className="site-success mt-5 rounded-lg border px-4 py-3 text-sm">{notice}</div> : null}
-        {error ? <div className="site-danger mt-5 rounded-lg border px-4 py-3 text-sm">{error}</div> : null}
+        <StatusNotice tone="success">{notice}</StatusNotice>
+        <StatusNotice>{error}</StatusNotice>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-6">
@@ -375,8 +374,8 @@ export default function SettingsClient({ user }) {
           </aside>
         </div>
       </div>
-      {isDeactivateOpen ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="deactivate-title">
-          <form onSubmit={deactivateAccount} className="site-border site-card w-full max-w-md rounded-lg border">
+      {isDeactivateOpen ? (<Modal ariaLabelledBy="deactivate-title" onClose={isDeactivating ? undefined : closeDeactivateModal} panelClassName="max-w-md">
+          <form onSubmit={deactivateAccount}>
             <div className="border-b border-[var(--site-border)] p-5">
               <h2 id="deactivate-title" className="text-lg font-semibold">Deactivate account?</h2>
               <p className="site-muted mt-2 text-sm leading-6">
@@ -402,6 +401,6 @@ export default function SettingsClient({ user }) {
               </button>
             </div>
           </form>
-        </div>) : null}
+        </Modal>) : null}
     </section>);
 }

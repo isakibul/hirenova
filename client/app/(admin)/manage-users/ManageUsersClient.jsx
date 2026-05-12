@@ -1,8 +1,17 @@
 "use client";
+import ConfirmDialog from "@components/ConfirmDialog";
+import PaginationControls from "@components/PaginationControls";
+import StatusNotice from "@components/StatusNotice";
 import FieldError from "@components/forms/FieldError";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
 import { emailError, getVisibleErrors, hasValidationErrors, passwordError, touchAll, usernameError, } from "@lib/formValidation";
+import {
+    formatDate,
+    formatTitle as formatStatus,
+    getApiMessage as getMessage,
+    getRecordId as getUserId,
+} from "@lib/ui";
 import { useCallback, useEffect, useState } from "react";
 const emptyForm = {
     username: "",
@@ -31,33 +40,8 @@ const userSortOptions = [
     { value: "email", label: "Email" },
     { value: "role", label: "Role" },
 ];
-function getMessage(response) {
-    if (response.errors?.length) {
-        return response.errors.join(" ");
-    }
-    return response.error ?? response.message ?? "Something went wrong.";
-}
-function getUserId(user) {
-    return user.id ?? user._id ?? "";
-}
-function formatDate(value) {
-    if (!value) {
-        return "Not available";
-    }
-    return new Intl.DateTimeFormat("en", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-    }).format(new Date(value));
-}
 function formatRole(value) {
     return roles.find((role) => role.value === value)?.label ?? "Not set";
-}
-function formatStatus(value) {
-    if (!value) {
-        return "Not set";
-    }
-    return value.charAt(0).toUpperCase() + value.slice(1);
 }
 function isAdminLevelRole(role) {
     return role === "admin" || role === "superadmin";
@@ -470,9 +454,8 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
           </div>
         </div>
 
-        {(notice || error) && (<div className={`mt-5 rounded-lg border px-4 py-3 text-sm ${error ? "site-danger" : "site-success"}`}>
-            {error ?? notice}
-          </div>)}
+        <StatusNotice tone="success">{notice}</StatusNotice>
+        <StatusNotice>{error}</StatusNotice>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_415px]">
           <div className="site-border site-card overflow-hidden rounded-lg border xl:w-[calc(100%+4px)]">
@@ -620,19 +603,12 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
               </table>
             </div>
 
-            <div className="site-panel flex flex-col gap-3 border-t border-[var(--site-border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="site-muted text-xs">
-                Page {pagination?.page ?? page} of {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => setPage((current) => Math.max(current - 1, 1))} disabled={page <= 1 || isLoading} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
-                  Previous
-                </button>
-                <button type="button" onClick={() => setPage((current) => Math.min(current + 1, totalPages))} disabled={page >= totalPages || isLoading} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
-                  Next
-                </button>
-              </div>
-            </div>
+            <PaginationControls
+              currentPage={pagination?.page ?? page}
+              totalPages={totalPages}
+              isLoading={isLoading}
+              onPageChange={setPage}
+            />
           </div>
 
           <aside className="site-border site-card self-start rounded-lg border">
@@ -747,123 +723,29 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
         </div>
       </div>
 
-      {userPendingDelete ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="delete-user-title" aria-describedby="delete-user-description">
-          <div className="site-border site-card w-full max-w-md rounded-lg border">
-            <div className="flex items-start gap-3 border-b border-[var(--site-border)] p-5">
-              <span className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] p-2 text-[var(--site-danger-text)]">
-                <Icon name="trash"/>
-              </span>
-              <div className="min-w-0">
-                <h2 id="delete-user-title" className="text-lg font-semibold">
-                  Delete user?
-                </h2>
-                <p id="delete-user-description" className="site-muted mt-1 text-sm leading-6">
-                  This will permanently delete{" "}
-                  <span className="font-semibold text-[var(--site-fg)]">
-                    {userPendingDelete.username ??
-                userPendingDelete.email ??
-                "this user"}
-                  </span>
-                  . This action cannot be undone.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col-reverse gap-2 p-5 sm:flex-row sm:justify-end">
-              <button type="button" onClick={() => setUserPendingDelete(null)} disabled={deletingUserId === getUserId(userPendingDelete)} className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-60">
-                Cancel
-              </button>
-              <button type="button" onClick={confirmDelete} disabled={deletingUserId === getUserId(userPendingDelete)} className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-4 py-2 text-sm font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
-                <Icon name="trash"/>
-                {deletingUserId === getUserId(userPendingDelete)
-                ? "Deleting..."
-                : "Delete User"}
-              </button>
-            </div>
-          </div>
-        </div>) : null}
-      {statusPendingChange ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="status-change-title" aria-describedby="status-change-description">
-          <div className="site-border site-card w-full max-w-md rounded-lg border">
-            <div className="flex items-start gap-3 border-b border-[var(--site-border)] p-5">
-              <span className={statusPendingChange.nextStatus === "suspended"
-                ? "rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] p-2 text-[var(--site-danger-text)]"
-                : "site-badge rounded-md p-2"}>
-                <Icon name={statusPendingChange.nextStatus === "suspended" ? "x" : "check"}/>
-              </span>
-              <div className="min-w-0">
-                <h2 id="status-change-title" className="text-lg font-semibold">
-                  {statusPendingChange.nextStatus === "suspended"
-                ? "Suspend user?"
-                : "Activate user?"}
-                </h2>
-                <p id="status-change-description" className="site-muted mt-1 text-sm leading-6">
-                  {statusPendingChange.nextStatus === "suspended"
-                ? "Suspending"
-                : "Activating"}{" "}
-                  <span className="font-semibold text-[var(--site-fg)]">
-                    {statusPendingChange.user.username ??
-                statusPendingChange.user.email ??
-                "this user"}
-                  </span>
-                  {statusPendingChange.nextStatus === "suspended"
-                ? " will block them from signing in until the account is activated again."
-                : " will allow them to sign in again."}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col-reverse gap-2 p-5 sm:flex-row sm:justify-end">
-              <button type="button" onClick={() => setStatusPendingChange(null)} disabled={statusUpdatingUserId === getUserId(statusPendingChange.user)} className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-60">
-                Cancel
-              </button>
-              <button type="button" onClick={confirmStatusChange} disabled={statusUpdatingUserId === getUserId(statusPendingChange.user)} className={statusPendingChange.nextStatus === "suspended"
-                ? "inline-flex items-center justify-center gap-2 rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-4 py-2 text-sm font-semibold text-[var(--site-danger-text)] disabled:opacity-60"
-                : "site-button inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-60"}>
-                <Icon name={statusPendingChange.nextStatus === "suspended" ? "x" : "check"}/>
-                {statusUpdatingUserId === getUserId(statusPendingChange.user)
-                ? "Updating..."
-                : statusPendingChange.nextStatus === "suspended"
-                    ? "Suspend User"
-                    : "Activate User"}
-              </button>
-            </div>
-          </div>
-        </div>) : null}
-      {rolePendingChange ? (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="role-change-title" aria-describedby="role-change-description">
-          <div className="site-border site-card w-full max-w-md rounded-lg border">
-            <div className="flex items-start gap-3 border-b border-[var(--site-border)] p-5">
-              <span className="site-badge rounded-md p-2">
-                <Icon name="user"/>
-              </span>
-              <div className="min-w-0">
-                <h2 id="role-change-title" className="text-lg font-semibold">
-                  Change user role?
-                </h2>
-                <p id="role-change-description" className="site-muted mt-1 text-sm leading-6">
-                  Change{" "}
-                  <span className="font-semibold text-[var(--site-fg)]">
-                    {rolePendingChange.user.username ??
-                rolePendingChange.user.email ??
-                "this user"}
-                  </span>{" "}
-                  from {formatRole(rolePendingChange.user.role)} to{" "}
-                  {formatRole(rolePendingChange.nextRole)}.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col-reverse gap-2 p-5 sm:flex-row sm:justify-end">
-              <button type="button" onClick={() => setRolePendingChange(null)} disabled={roleUpdatingUserId === getUserId(rolePendingChange.user)} className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-60">
-                Cancel
-              </button>
-              <button type="button" onClick={confirmRoleChange} disabled={roleUpdatingUserId === getUserId(rolePendingChange.user)} className="site-button inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-60">
-                <Icon name="check"/>
-                {roleUpdatingUserId === getUserId(rolePendingChange.user)
-                ? "Updating..."
-                : "Confirm Change"}
-              </button>
-            </div>
-          </div>
-        </div>) : null}
+      {userPendingDelete ? (<ConfirmDialog title="Delete user?" icon="trash" tone="danger" confirmLabel="Delete User" pendingLabel="Deleting..." isPending={deletingUserId === getUserId(userPendingDelete)} onCancel={() => setUserPendingDelete(null)} onConfirm={confirmDelete}>
+          This will permanently delete{" "}
+          <span className="font-semibold text-[var(--site-fg)]">
+            {userPendingDelete.username ?? userPendingDelete.email ?? "this user"}
+          </span>
+          . This action cannot be undone.
+        </ConfirmDialog>) : null}
+      {statusPendingChange ? (<ConfirmDialog title={statusPendingChange.nextStatus === "suspended" ? "Suspend user?" : "Activate user?"} icon={statusPendingChange.nextStatus === "suspended" ? "x" : "check"} tone={statusPendingChange.nextStatus === "suspended" ? "danger" : "default"} confirmLabel={statusPendingChange.nextStatus === "suspended" ? "Suspend User" : "Activate User"} pendingLabel="Updating..." isPending={statusUpdatingUserId === getUserId(statusPendingChange.user)} onCancel={() => setStatusPendingChange(null)} onConfirm={confirmStatusChange}>
+          {statusPendingChange.nextStatus === "suspended" ? "Suspending" : "Activating"}{" "}
+          <span className="font-semibold text-[var(--site-fg)]">
+            {statusPendingChange.user.username ?? statusPendingChange.user.email ?? "this user"}
+          </span>
+          {statusPendingChange.nextStatus === "suspended"
+            ? " will block them from signing in until the account is activated again."
+            : " will allow them to sign in again."}
+        </ConfirmDialog>) : null}
+      {rolePendingChange ? (<ConfirmDialog title="Change user role?" icon="user" confirmLabel="Confirm Change" pendingLabel="Updating..." isPending={roleUpdatingUserId === getUserId(rolePendingChange.user)} onCancel={() => setRolePendingChange(null)} onConfirm={confirmRoleChange}>
+          Change{" "}
+          <span className="font-semibold text-[var(--site-fg)]">
+            {rolePendingChange.user.username ?? rolePendingChange.user.email ?? "this user"}
+          </span>{" "}
+          from {formatRole(rolePendingChange.user.role)} to{" "}
+          {formatRole(rolePendingChange.nextRole)}.
+        </ConfirmDialog>) : null}
     </section>);
 }
