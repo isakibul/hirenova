@@ -1,6 +1,9 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import StatusNotice from "@components/StatusNotice";
+import { requestJson } from "@lib/clientApi";
 import { getVisibleErrors, hasValidationErrors, passwordError, touchAll, } from "@lib/formValidation";
+import { getApiMessage } from "@lib/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,10 +12,6 @@ const initialState = {
     newPassword: "",
     confirmPassword: "",
 };
-
-function getMessage(body, fallback) {
-    return body.error ?? body.message ?? fallback;
-}
 
 function validateResetPasswordForm(form) {
     return {
@@ -64,7 +63,7 @@ export default function ResetPasswordForm({ token }) {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch(`/api/auth/reset-password?token=${encodeURIComponent(token)}`, {
+            const body = await requestJson(`/api/auth/reset-password?token=${encodeURIComponent(token)}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -72,15 +71,9 @@ export default function ResetPasswordForm({ token }) {
                 body: JSON.stringify({
                     newPassword: form.newPassword,
                 }),
-            });
-            const body = await response.json();
+            }, "Unable to reset password.");
 
-            if (!response.ok) {
-                setError(getMessage(body, "Unable to reset password."));
-                return;
-            }
-
-            setSuccess(getMessage(body, "Password has been reset successfully."));
+            setSuccess(getApiMessage(body, "Password has been reset successfully."));
             setForm(initialState);
             setTouched({});
             setSubmitAttempted(false);
@@ -88,8 +81,8 @@ export default function ResetPasswordForm({ token }) {
                 router.push("/login");
             }, 1200);
         }
-        catch {
-            setError("Unable to reach the server. Please try again.");
+        catch (caughtError) {
+            setError(caughtError instanceof Error ? caughtError.message : "Unable to reach the server. Please try again.");
         }
         finally {
             setIsSubmitting(false);
@@ -97,9 +90,7 @@ export default function ResetPasswordForm({ token }) {
     }
 
     return (<form onSubmit={handleSubmit} noValidate className="site-border site-card site-elevated rounded-lg border p-4">
-      {!token ? (<p className="site-danger mb-4 rounded-md border px-3 py-2 text-xs">
-          Reset token is missing. Please request a new reset link.
-        </p>) : null}
+      <StatusNotice className="mb-4 text-xs">{!token ? "Reset token is missing. Please request a new reset link." : ""}</StatusNotice>
 
       <label className="site-soft block text-xs font-medium">
         New Password
@@ -113,13 +104,8 @@ export default function ResetPasswordForm({ token }) {
         <FieldError id="reset-confirm-password-error" message={visibleErrors.confirmPassword}/>
       </label>
 
-      {error ? (<p className="site-danger mt-4 rounded-md border px-3 py-2 text-xs">
-          {error}
-        </p>) : null}
-
-      {success ? (<p className="site-success mt-4 rounded-md border px-3 py-2 text-xs">
-          {success}
-        </p>) : null}
+      <StatusNotice className="mt-4 text-xs">{error}</StatusNotice>
+      <StatusNotice className="mt-4 text-xs" tone="success">{success}</StatusNotice>
 
       <button type="submit" disabled={isSubmitting || !token} className="site-button mt-5 w-full rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed">
         {isSubmitting ? "Resetting..." : "Reset Password"}

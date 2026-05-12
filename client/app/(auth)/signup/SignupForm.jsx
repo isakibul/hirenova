@@ -1,7 +1,10 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
 import SelectField from "@components/forms/SelectField";
+import StatusNotice from "@components/StatusNotice";
+import { requestJson } from "@lib/clientApi";
 import { emailError, getVisibleErrors, hasValidationErrors, passwordError, touchAll, usernameError, } from "@lib/formValidation";
+import { getApiMessage } from "@lib/ui";
 import Link from "next/link";
 import { useState } from "react";
 const initialState = {
@@ -14,9 +17,6 @@ const accountTypeOptions = [
     { value: "jobseeker", label: "Job seeker" },
     { value: "employer", label: "Employer" },
 ];
-function getMessage(body, fallback) {
-    return body.error ?? body.message ?? fallback;
-}
 function validateSignupForm(form) {
     return {
         username: usernameError(form.username),
@@ -68,26 +68,21 @@ export default function SignupForm({ initialEmail = "", }) {
         }
         setIsSubmitting(true);
         try {
-            const response = await fetch("/api/auth/signup", {
+            const body = await requestJson("/api/auth/signup", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(form),
-            });
-            const body = (await response.json());
-            if (!response.ok) {
-                setError(getMessage(body, "Unable to create account"));
-                return;
-            }
+            }, "Unable to create account");
             setCreatedEmail(form.email.trim().toLowerCase());
-            setSuccess(getMessage(body, "Account created. Please confirm your email."));
+            setSuccess(getApiMessage(body, "Account created. Please confirm your email."));
             setForm(initialState);
             setTouched({});
             setSubmitAttempted(false);
         }
-        catch {
-            setError("Unable to reach the server. Please try again.");
+        catch (caughtError) {
+            setError(caughtError instanceof Error ? caughtError.message : "Unable to reach the server. Please try again.");
         }
         finally {
             setIsSubmitting(false);
@@ -101,18 +96,14 @@ export default function SignupForm({ initialEmail = "", }) {
         setError("");
         setResendNotice("");
         try {
-            const response = await fetch("/api/auth/resend-confirmation", {
+            const body = await requestJson("/api/auth/resend-confirmation", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ email: createdEmail }),
-            });
-            const body = await response.json();
-            if (!response.ok) {
-                throw new Error(getMessage(body, "Unable to resend confirmation email."));
-            }
-            setResendNotice(getMessage(body, "Confirmation email sent."));
+            }, "Unable to resend confirmation email.");
+            setResendNotice(getApiMessage(body, "Confirmation email sent."));
         }
         catch (caughtError) {
             setError(caughtError instanceof Error ? caughtError.message : "Unable to resend confirmation email.");
@@ -146,20 +137,13 @@ export default function SignupForm({ initialEmail = "", }) {
         <FieldError id="signup-role-error" message={visibleErrors.role}/>
       </label>
 
-      {error ? (<p className="site-danger mt-4 rounded-md border px-3 py-2 text-xs">
-          {error}
-        </p>) : null}
-
-      {success ? (<p className="site-success mt-4 rounded-md border px-3 py-2 text-xs">
-          {success}
-        </p>) : null}
+      <StatusNotice className="mt-4 text-xs">{error}</StatusNotice>
+      <StatusNotice className="mt-4 text-xs" tone="success">{success}</StatusNotice>
       {createdEmail ? (<div className="mt-3">
           <button type="button" onClick={resendConfirmation} disabled={isResending} className="site-border site-field w-full rounded-md border px-3 py-2 text-xs font-semibold disabled:opacity-70">
             {isResending ? "Sending..." : "Resend verification email"}
           </button>
-          {resendNotice ? (<p className="site-success mt-2 rounded-md border px-3 py-2 text-xs">
-              {resendNotice}
-            </p>) : null}
+          <StatusNotice className="mt-2 text-xs" tone="success">{resendNotice}</StatusNotice>
         </div>) : null}
 
       <button type="submit" disabled={isSubmitting} className="site-button mt-5 w-full rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed">

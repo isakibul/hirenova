@@ -1,6 +1,7 @@
 import Icon from "@components/Icon";
 import SelectField from "@components/forms/SelectField";
 import { getFromBackend } from "@lib/backend";
+import { formatDate, getApiMessage } from "@lib/ui";
 import Link from "next/link";
 import ClearFiltersButton from "./ClearFiltersButton";
 import ExperienceRangeFilter from "./ExperienceRangeFilter";
@@ -48,18 +49,8 @@ function getPositiveNumber(value, fallback) {
   }
   return parsed;
 }
-function formatDate(value) {
-  if (!value) {
-    return "Recently posted";
-  }
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
 function getErrorMessage(response) {
-  return response.error ?? response.message ?? "Unable to load jobs right now.";
+  return getApiMessage(response, "Unable to load jobs right now.");
 }
 function formatJobType(value) {
   if (!value) {
@@ -368,7 +359,7 @@ export default async function JobsPage({ searchParams }) {
 
                         <div className="flex shrink-0 flex-col gap-2 md:items-end">
                           <p className="site-muted text-xs">
-                            Posted {formatDate(job.createdAt)}
+                            Posted {formatDate(job.createdAt, "Recently posted")}
                           </p>
                           <Link
                             href={`/jobs/${job.id}`}

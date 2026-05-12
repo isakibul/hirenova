@@ -1,7 +1,9 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
 import Icon from "@components/Icon";
+import StatusNotice from "@components/StatusNotice";
 import { emailError, getVisibleErrors, hasValidationErrors, passwordError, touchAll, usernameError, } from "@lib/formValidation";
+import { formatDate, getApiMessage as getMessage } from "@lib/ui";
 import { useCallback, useEffect, useState } from "react";
 const roleLabels = {
     jobseeker: "Job Seeker",
@@ -19,22 +21,6 @@ const emptyPasswordForm = {
     newPassword: "",
     confirmPassword: "",
 };
-function getMessage(response, fallback = "Something went wrong.") {
-    if (response.errors?.length) {
-        return response.errors.join(" ");
-    }
-    return response.error ?? response.message ?? fallback;
-}
-function formatDate(value) {
-    if (!value) {
-        return "Not available";
-    }
-    return new Intl.DateTimeFormat("en", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-    }).format(new Date(value));
-}
 function formatRole(value) {
     return value ? roleLabels[value] : "Member";
 }
@@ -279,9 +265,8 @@ export default function ProfileClient() {
           </div>
         </div>
 
-        {(notice || error) && (<div className={`mt-5 rounded-lg border px-4 py-3 text-sm ${error ? "site-danger" : "site-success"}`}>
-            {error ?? notice}
-          </div>)}
+        <StatusNotice tone="success">{notice}</StatusNotice>
+        <StatusNotice>{error}</StatusNotice>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_414px]">
           <div className="site-border site-card rounded-lg border">

@@ -4,85 +4,26 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { acquireRealtimeSocket } from "../_lib/realtime";
+import {
+  formatDateTime,
+  formatPresence,
+  getApiMessage,
+  getCandidateProfileHref,
+  getDisplayName,
+  getOtherParticipant,
+  getRecordId,
+  isOnline,
+} from "../_lib/ui";
 import ConfirmDialog from "./ConfirmDialog";
 import Icon from "./Icon";
 import Modal from "./Modal";
-
-function getMessage(body, fallback) {
-  return body?.error ?? body?.message ?? fallback;
-}
-
-function getConversationId(conversation) {
-  return conversation?.id ?? conversation?._id ?? "";
-}
-
-function getUserId(user) {
-  return user?.id ?? user?._id ?? "";
-}
-
-function getDisplayName(user) {
-  return user?.username || user?.email || "User";
-}
-
-function getOtherParticipant(conversation, currentUserId) {
-  return conversation?.participants?.find(
-    (participant) => getUserId(participant) !== currentUserId,
-  );
-}
-
-function getProfileHref(user) {
-  const userId = getUserId(user);
-  return user?.role === "jobseeker" && userId
-    ? `/candidates?candidate=${userId}`
-    : "";
-}
-
-function formatTime(value) {
-  if (!value) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function formatPresence(value) {
-  if (!value) {
-    return "Last seen not available";
-  }
-
-  const lastSeen = new Date(value);
-  const diffMs = Date.now() - lastSeen.getTime();
-
-  if (diffMs < 2 * 60 * 1000) {
-    return "Online";
-  }
-  if (diffMs < 60 * 60 * 1000) {
-    const minutes = Math.max(1, Math.floor(diffMs / (60 * 1000)));
-    return `Last seen ${minutes} min ago`;
-  }
-  if (diffMs < 24 * 60 * 60 * 1000) {
-    const hours = Math.max(1, Math.floor(diffMs / (60 * 60 * 1000)));
-    return `Last seen ${hours} hr ago`;
-  }
-
-  return `Last seen ${formatTime(value)}`;
-}
-
-function isOnline(value) {
-  return value ? Date.now() - new Date(value).getTime() < 2 * 60 * 1000 : false;
-}
 
 function getUnreadSignature(conversations = []) {
   return conversations
     .filter((conversation) => conversation.isUnread)
     .map(
       (conversation) =>
-        `${getConversationId(conversation)}:${conversation.lastMessageAt ?? ""}`,
+        `${getRecordId(conversation)}:${conversation.lastMessageAt ?? ""}`,
     )
     .sort()
     .join("|");
@@ -116,7 +57,7 @@ export default function MessagesMenu({
   const selectedConversation = useMemo(
     () =>
       conversations.find(
-        (conversation) => getConversationId(conversation) === selectedId,
+        (conversation) => getRecordId(conversation) === selectedId,
       ) ?? conversations[0],
     [conversations, selectedId],
   );
@@ -189,14 +130,14 @@ export default function MessagesMenu({
       }
 
       setConversations((current) => {
-        const updatedId = getConversationId(updatedConversation);
+        const updatedId = getRecordId(updatedConversation);
         const hasConversation = current.some(
-          (conversation) => getConversationId(conversation) === updatedId,
+          (conversation) => getRecordId(conversation) === updatedId,
         );
         const nextConversations = (
           hasConversation
             ? current.map((conversation) =>
-                getConversationId(conversation) === updatedId
+                getRecordId(conversation) === updatedId
                   ? updatedConversation
                   : conversation,
               )
@@ -218,11 +159,11 @@ export default function MessagesMenu({
     (conversationId) => {
       setConversations((current) => {
         const nextConversations = current.filter(
-          (conversation) => getConversationId(conversation) !== conversationId,
+          (conversation) => getRecordId(conversation) !== conversationId,
         );
 
         if (selectedIdRef.current === conversationId) {
-          const nextSelectedId = getConversationId(nextConversations[0]);
+          const nextSelectedId = getRecordId(nextConversations[0]);
           selectedIdRef.current = nextSelectedId;
           setSelectedId(nextSelectedId);
         }
@@ -240,17 +181,17 @@ export default function MessagesMenu({
     });
     const body = await response.json();
     if (!response.ok) {
-      throw new Error(getMessage(body, "Unable to load messages."));
+      throw new Error(getApiMessage(body, "Unable to load messages."));
     }
 
     const nextConversations = body.data ?? [];
     const nextSelectedId =
       selectedId &&
       nextConversations.some(
-        (conversation) => getConversationId(conversation) === selectedId,
+        (conversation) => getRecordId(conversation) === selectedId,
       )
         ? selectedId
-        : getConversationId(nextConversations[0]);
+        : getRecordId(nextConversations[0]);
 
     setSelectedId(nextSelectedId);
 
@@ -261,7 +202,7 @@ export default function MessagesMenu({
     }
 
     const mappedConversations = nextConversations.map((conversation) =>
-      markSelectedRead && getConversationId(conversation) === nextSelectedId
+      markSelectedRead && getRecordId(conversation) === nextSelectedId
         ? { ...conversation, isUnread: false }
         : conversation,
     );
@@ -350,7 +291,7 @@ export default function MessagesMenu({
 
     function handleConversationUpdated(payload) {
       const updatedConversation = payload?.conversation;
-      const updatedId = getConversationId(updatedConversation);
+      const updatedId = getRecordId(updatedConversation);
 
       if (!updatedConversation || !updatedId) {
         return;
@@ -446,7 +387,7 @@ export default function MessagesMenu({
     setSelectedId(conversationId);
     setConversations((current) =>
       current.map((conversation) =>
-        getConversationId(conversation) === conversationId
+        getRecordId(conversation) === conversationId
           ? { ...conversation, isUnread: false }
           : conversation,
       ),
@@ -462,7 +403,7 @@ export default function MessagesMenu({
       if (response.ok && body.data) {
         setConversations((current) =>
           current.map((conversation) =>
-            getConversationId(conversation) === conversationId
+            getRecordId(conversation) === conversationId
               ? body.data
               : conversation,
           ),
@@ -477,7 +418,7 @@ export default function MessagesMenu({
 
   async function sendMessage(event) {
     event.preventDefault();
-    const conversationId = getConversationId(selectedConversation);
+    const conversationId = getRecordId(selectedConversation);
     const bodyText = draft.trim();
 
     if (!conversationId || !bodyText) {
@@ -499,12 +440,12 @@ export default function MessagesMenu({
       );
       const body = await response.json();
       if (!response.ok) {
-        throw new Error(getMessage(body, "Unable to send message."));
+        throw new Error(getApiMessage(body, "Unable to send message."));
       }
       setConversations((current) =>
         current
           .map((conversation) =>
-            getConversationId(conversation) === conversationId
+            getRecordId(conversation) === conversationId
               ? body.data
               : conversation,
           )
@@ -528,7 +469,7 @@ export default function MessagesMenu({
   }
 
   async function deleteConversation() {
-    const conversationId = getConversationId(selectedConversation);
+    const conversationId = getRecordId(selectedConversation);
 
     if (!conversationId) {
       return;
@@ -545,7 +486,7 @@ export default function MessagesMenu({
       );
       const body = await response.json();
       if (!response.ok) {
-        throw new Error(getMessage(body, "Unable to delete conversation."));
+        throw new Error(getApiMessage(body, "Unable to delete conversation."));
       }
       removeConversation(conversationId);
       setIsDeleteModalOpen(false);
@@ -651,14 +592,14 @@ export default function MessagesMenu({
                     </div>
                   ) : (
                     conversations.map((conversation) => {
-                      const conversationId = getConversationId(conversation);
+                      const conversationId = getRecordId(conversation);
                       const other = getOtherParticipant(
                         conversation,
                         currentUserId,
                       );
                       const isSelected =
                         conversationId ===
-                        getConversationId(selectedConversation);
+                        getRecordId(selectedConversation);
                       return (
                         <button
                           key={conversationId}
@@ -694,9 +635,9 @@ export default function MessagesMenu({
               <section className="flex min-h-0 flex-col">
                 <div className="site-panel flex items-center justify-between gap-3 border-b border-(--site-border) px-4 py-3">
                   <div className="min-w-0">
-                    {selectedOther && getProfileHref(selectedOther) ? (
+                    {selectedOther && getCandidateProfileHref(selectedOther) ? (
                       <Link
-                        href={getProfileHref(selectedOther)}
+                        href={getCandidateProfileHref(selectedOther)}
                         onClick={() => setIsOpen(false)}
                         className="font-semibold transition hover:text-(--site-accent)"
                       >
@@ -758,7 +699,7 @@ export default function MessagesMenu({
                           >
                             <p>{message.body}</p>
                             <p className="mt-1 text-[11px] opacity-75">
-                              {formatTime(message.createdAt)}
+                              {formatDateTime(message.createdAt)}
                             </p>
                           </div>
                         </div>

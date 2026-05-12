@@ -1,7 +1,7 @@
 "use client";
 
 import { classNames } from "@lib/ui";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 let openModalCount = 0;
 let previousBodyOverflow = "";
@@ -17,6 +17,8 @@ export default function Modal({
   panelClassName,
   position = "center",
 }) {
+  const panelRef = useRef(null);
+
   useEffect(() => {
     if (openModalCount === 0) {
       previousBodyOverflow = document.body.style.overflow;
@@ -34,6 +36,73 @@ export default function Modal({
       }
     };
   }, []);
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    const previousActiveElement = document.activeElement;
+    const focusableSelector = [
+      "a[href]",
+      "button:not([disabled])",
+      "textarea:not([disabled])",
+      "input:not([disabled])",
+      "select:not([disabled])",
+      "[tabindex]:not([tabindex='-1'])",
+    ].join(",");
+
+    function getFocusableElements() {
+      return Array.from(panel?.querySelectorAll(focusableSelector) ?? []).filter(
+        (element) =>
+          !element.hasAttribute("disabled") &&
+          element.getAttribute("aria-hidden") !== "true",
+      );
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape" && onClose) {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const focusableElements = getFocusableElements();
+
+      if (!focusableElements.length) {
+        event.preventDefault();
+        panel?.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    }
+
+    const firstFocusableElement = getFocusableElements()[0];
+    window.setTimeout(() => {
+      (firstFocusableElement ?? panel)?.focus();
+    }, 0);
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+
+      if (previousActiveElement instanceof HTMLElement) {
+        previousActiveElement.focus();
+      }
+    };
+  }, [onClose]);
 
   const alignment =
     position === "top"
@@ -59,10 +128,12 @@ export default function Modal({
       onMouseDown={handleMouseDown}
     >
       <div
+        ref={panelRef}
         className={classNames(
           "site-border site-card w-full rounded-lg border",
           panelClassName,
         )}
+        tabIndex={-1}
         onMouseDown={(event) => event.stopPropagation()}
       >
         {children}

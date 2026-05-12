@@ -1,3 +1,4 @@
+import FormattedText from "@components/FormattedText";
 import Icon from "@components/Icon";
 import { getFromBackend } from "@lib/backend";
 import { notFound } from "next/navigation";
@@ -121,10 +122,9 @@ export default async function JobDetailsPage({ params }) {
 
             <div className="site-border mt-6 border-t pt-6">
               <h2 className="text-lg font-semibold">Description</h2>
-              <p className="site-muted mt-3 whitespace-pre-line text-sm leading-7">
-                {job.description?.trim() ||
-            "No detailed description has been added for this role yet."}
-              </p>
+              <div className="site-muted mt-3 text-sm">
+                <FormattedText value={job.description} emptyText="No detailed description has been added for this role yet."/>
+              </div>
             </div>
           </article>
 

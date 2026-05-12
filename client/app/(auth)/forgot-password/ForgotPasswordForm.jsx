@@ -1,12 +1,11 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import StatusNotice from "@components/StatusNotice";
+import { requestJson } from "@lib/clientApi";
 import { emailError, getVisibleErrors, hasValidationErrors, touchAll, } from "@lib/formValidation";
+import { getApiMessage } from "@lib/ui";
 import Link from "next/link";
 import { useState } from "react";
-
-function getMessage(body, fallback) {
-    return body.error ?? body.message ?? fallback;
-}
 
 function validateForgotPasswordForm(form) {
     return {
@@ -44,7 +43,7 @@ export default function ForgotPasswordForm() {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch("/api/auth/forgot-password", {
+            const body = await requestJson("/api/auth/forgot-password", {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -52,21 +51,15 @@ export default function ForgotPasswordForm() {
                 body: JSON.stringify({
                     email: form.email.trim().toLowerCase(),
                 }),
-            });
-            const body = await response.json();
+            }, "Unable to send reset link.");
 
-            if (!response.ok) {
-                setError(getMessage(body, "Unable to send reset link."));
-                return;
-            }
-
-            setSuccess(getMessage(body, "Password reset link sent to your email."));
+            setSuccess(getApiMessage(body, "Password reset link sent to your email."));
             setForm({ email: "" });
             setTouched({});
             setSubmitAttempted(false);
         }
-        catch {
-            setError("Unable to reach the server. Please try again.");
+        catch (caughtError) {
+            setError(caughtError instanceof Error ? caughtError.message : "Unable to reach the server. Please try again.");
         }
         finally {
             setIsSubmitting(false);
@@ -80,13 +73,8 @@ export default function ForgotPasswordForm() {
         <FieldError id="forgot-email-error" message={visibleErrors.email}/>
       </label>
 
-      {error ? (<p className="site-danger mt-4 rounded-md border px-3 py-2 text-xs">
-          {error}
-        </p>) : null}
-
-      {success ? (<p className="site-success mt-4 rounded-md border px-3 py-2 text-xs">
-          {success}
-        </p>) : null}
+      <StatusNotice className="mt-4 text-xs">{error}</StatusNotice>
+      <StatusNotice className="mt-4 text-xs" tone="success">{success}</StatusNotice>
 
       <button type="submit" disabled={isSubmitting} className="site-button mt-5 w-full rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed">
         {isSubmitting ? "Sending..." : "Send Reset Link"}

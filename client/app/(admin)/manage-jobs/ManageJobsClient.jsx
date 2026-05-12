@@ -1,257 +1,16 @@
 "use client";
 import ConfirmDialog from "@components/ConfirmDialog";
 import Modal from "@components/Modal";
-import FieldError from "@components/forms/FieldError";
+import PaginationControls from "@components/PaginationControls";
+import StatusNotice from "@components/StatusNotice";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
-import { getVisibleErrors, hasValidationErrors, maxLengthError, minLengthError, optionalNumberError, touchAll, } from "@lib/formValidation";
+import { getVisibleErrors, hasValidationErrors, touchAll } from "@lib/formValidation";
+import { formatDate, formatDateTime, getApiMessage as getMessage, getRecordId as getJobId } from "@lib/ui";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-const emptyForm = {
-    title: "",
-    description: "",
-    location: "",
-    jobType: "",
-    skillsRequired: "",
-    experienceMin: "",
-    experienceMax: "",
-    salary: "",
-    expiresAt: "",
-};
-const jobTypes = [
-    { value: "full-time", label: "Full Time" },
-    { value: "part-time", label: "Part Time" },
-    { value: "remote", label: "Remote" },
-    { value: "contract", label: "Contract" },
-];
-const jobSortOptions = [
-    { value: "updatedAt", label: "Updated Date" },
-    { value: "createdAt", label: "Created Date" },
-    { value: "title", label: "Title" },
-    { value: "salary", label: "Salary" },
-];
-const jobTypeOptions = [
-    { value: "", label: "Select type" },
-    ...jobTypes,
-];
-const statusFilterOptions = [
-    { value: "all", label: "All statuses" },
-    { value: "open", label: "Open" },
-    { value: "closed", label: "Closed" },
-];
-const approvalFilterOptions = [
-    { value: "all", label: "All approvals" },
-    { value: "pending", label: "Pending" },
-    { value: "approved", label: "Approved" },
-    { value: "declined", label: "Declined" },
-];
-function getMessage(response) {
-    if (response.errors?.length) {
-        return response.errors.join(" ");
-    }
-    return response.error ?? response.message ?? "Something went wrong.";
-}
-function formatDate(value) {
-    if (!value) {
-        return "Not available";
-    }
-    return new Intl.DateTimeFormat("en", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-    }).format(new Date(value));
-}
-function formatDateTime(value) {
-    if (!value) {
-        return "Not available";
-    }
-    return new Intl.DateTimeFormat("en", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-    }).format(new Date(value));
-}
-function formatSalary(value) {
-    if (typeof value !== "number") {
-        return "Not disclosed";
-    }
-    return new Intl.NumberFormat("en", {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: 0,
-    }).format(value);
-}
-function formatJobStatus(job) {
-    if (job.expiresAt && new Date(job.expiresAt) <= new Date()) {
-        return "Expired";
-    }
-    return job.status === "closed" ? "Closed" : "Open";
-}
-function getStatusClass(job) {
-    const status = formatJobStatus(job);
-    return status === "Open" ? "site-success" : "site-danger";
-}
-function formatApprovalStatus(value) {
-    if (value === "declined") {
-        return "Declined";
-    }
-    if (value === "pending") {
-        return "Pending";
-    }
-    return "Approved";
-}
-function formatApprovalHistoryAction(value) {
-    if (value === "resubmitted") {
-        return "Resubmitted";
-    }
-    if (value === "submitted") {
-        return "Submitted";
-    }
-    if (value === "declined") {
-        return "Declined";
-    }
-    return "Approved";
-}
-function getApprovalHistoryClass(value) {
-    if (value === "declined") {
-        return "site-danger";
-    }
-    if (value === "approved") {
-        return "site-success";
-    }
-    return "site-badge";
-}
-function formatApprovalStatusRole(value) {
-    if (value === "superadmin") {
-        return "super admin";
-    }
-    if (value === "jobseeker") {
-        return "jobseeker";
-    }
-    return value ?? "user";
-}
-function getApprovalClass(value) {
-    if (value === "declined") {
-        return "site-danger";
-    }
-    if (value === "pending") {
-        return "site-badge";
-    }
-    return "site-success";
-}
-function formatJobType(value) {
-    if (!value) {
-        return "Not set";
-    }
-    return value
-        .split("-")
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(" ");
-}
-function formatExperience(job) {
-    const min = typeof job.experienceMin === "number"
-        ? job.experienceMin
-        : job.experienceRequired;
-    const max = job.experienceMax;
-    if (typeof min === "number" && typeof max === "number") {
-        return min === max ? `${min} years` : `${min}-${max} years`;
-    }
-    if (typeof min === "number") {
-        return `${min}+ years`;
-    }
-    if (typeof max === "number") {
-        return `Up to ${max} years`;
-    }
-    return "Experience not set";
-}
-function getJobId(job) {
-    return job.id ?? job._id ?? "";
-}
-function validateJobForm(form) {
-    const minExperience = form.experienceMin.trim() === ""
-        ? undefined
-        : Number(form.experienceMin);
-    const maxExperience = form.experienceMax.trim() === ""
-        ? undefined
-        : Number(form.experienceMax);
-    const errors = {
-        title: minLengthError(form.title, "Title", 10) ||
-            maxLengthError(form.title, "Title", 150),
-        description: maxLengthError(form.description, "Description", 5000),
-        location: maxLengthError(form.location, "Location", 100),
-        jobType: form.jobType && !jobTypes.some((type) => type.value === form.jobType)
-            ? "Choose a valid job type."
-            : "",
-        experienceMin: optionalNumberError(form.experienceMin, "Minimum experience", { min: 0 }),
-        experienceMax: optionalNumberError(form.experienceMax, "Maximum experience", { min: 0 }),
-        salary: optionalNumberError(form.salary, "Salary", { min: 0 }),
-        skillsRequired: maxLengthError(form.skillsRequired, "Skills", 500),
-        expiresAt: form.expiresAt &&
-            Number.isNaN(new Date(form.expiresAt).getTime())
-            ? "Choose a valid expiry date."
-            : "",
-    };
-    if (!errors.experienceMin &&
-        !errors.experienceMax &&
-        typeof minExperience === "number" &&
-        typeof maxExperience === "number" &&
-        minExperience > maxExperience) {
-        errors.experienceMax =
-            "Maximum experience must be greater than or equal to minimum experience.";
-    }
-    return errors;
-}
-function buildPayload(form) {
-    return {
-        title: form.title.trim(),
-        description: form.description.trim() || undefined,
-        location: form.location.trim() || undefined,
-        jobType: form.jobType || undefined,
-        skillsRequired: form.skillsRequired
-            .split(",")
-            .map((skill) => skill.trim())
-            .filter(Boolean),
-        experienceMin: form.experienceMin.trim() === ""
-            ? undefined
-            : Number(form.experienceMin),
-        experienceMax: form.experienceMax.trim() === ""
-            ? undefined
-            : Number(form.experienceMax),
-        salary: form.salary.trim() === "" ? undefined : Number(form.salary),
-        expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
-    };
-}
-function getDateInputValue(value) {
-    if (!value) {
-        return "";
-    }
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return "";
-    }
-    return date.toISOString().slice(0, 10);
-}
-function getFormFromJob(job) {
-    return {
-        title: job.title ?? "",
-        description: job.description ?? "",
-        location: job.location ?? "",
-        jobType: job.jobType ?? "",
-        skillsRequired: job.skillsRequired?.join(", ") ?? "",
-        experienceMin: typeof job.experienceMin === "number"
-            ? String(job.experienceMin)
-            : typeof job.experienceRequired === "number"
-            ? String(job.experienceRequired)
-            : "",
-        experienceMax: typeof job.experienceMax === "number"
-            ? String(job.experienceMax)
-            : "",
-        salary: typeof job.salary === "number" ? String(job.salary) : "",
-        expiresAt: getDateInputValue(job.expiresAt),
-    };
-}
+import JobFormPanel from "./JobFormPanel";
+import { approvalFilterOptions, buildPayload, emptyForm, formatApprovalHistoryAction, formatApprovalStatus, formatApprovalStatusRole, formatExperience, formatJobStatus, formatJobType, formatSalary, getApprovalClass, getApprovalHistoryClass, getFormFromJob, getStatusClass, jobSortOptions, statusFilterOptions, validateJobForm, } from "./jobUtils";
 export default function ManageJobsClient({ currentRole = "admin", initialApprovalFilter = "all" }) {
     const [jobs, setJobs] = useState([]);
     const [pagination, setPagination] = useState();
@@ -645,9 +404,8 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
           </div>
         </div>
 
-        {(notice || error) && (<div className={`mt-5 rounded-lg border px-4 py-3 text-sm ${error ? "site-danger" : "site-success"}`}>
-            {error ?? notice}
-          </div>)}
+        <StatusNotice tone="success">{notice}</StatusNotice>
+        <StatusNotice>{error}</StatusNotice>
 
         <div className="mt-6 grid gap-6 2xl:grid-cols-[minmax(0,1fr)_415px]">
           <div className="site-border site-card min-w-0 overflow-hidden rounded-lg border">
@@ -821,124 +579,28 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
               </table>
             </div>
 
-            <div className="site-panel flex flex-col gap-3 border-t border-[var(--site-border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="site-muted text-xs">
-                Page {pagination?.page ?? page} of {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => setPage((current) => Math.max(current - 1, 1))} disabled={page <= 1 || isLoading} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
-                  Previous
-                </button>
-                <button type="button" onClick={() => setPage((current) => Math.min(current + 1, totalPages))} disabled={page >= totalPages || isLoading} className="site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
-                  Next
-                </button>
-              </div>
-            </div>
+            <PaginationControls
+              currentPage={pagination?.page ?? page}
+              totalPages={totalPages}
+              isLoading={isLoading}
+              onPageChange={setPage}
+            />
           </div>
 
-          <aside className="site-border site-card self-start rounded-lg border">
-            <div className="flex items-center justify-between border-b border-[var(--site-border)] px-4 py-3">
-              <div>
-                <h2 className="font-semibold">
-                  {editingJobId ? "Edit Job" : "Create Job"}
-                </h2>
-                <p className="site-muted mt-1 text-xs">
-                  {editingJobId
-            ? (selectedJob?.title ?? "Update selected listing")
-            : isAdmin
-                ? "Publish a new listing"
-                : "Submit a new listing for admin approval"}
-                </p>
-              </div>
-              <button type="button" onClick={() => setIsFormOpen((current) => !current)} className="site-border site-field rounded-md border p-2" aria-label={isFormOpen ? "Collapse form" : "Expand form"}>
-                <Icon name={isFormOpen ? "x" : "plus"}/>
-              </button>
-            </div>
-
-            {isFormOpen ? (<form onSubmit={handleSubmit} noValidate className="space-y-4 p-4">
-                {!isAdmin ? (<div className="site-border site-panel rounded-lg border p-3 text-xs leading-5">
-                    New and edited jobs enter admin review before appearing in public job search.
-                  </div>) : null}
-                {selectedJob?.approvalStatus === "declined" && selectedJob.rejectionNote ? (<div className="site-danger rounded-lg border p-3 text-xs leading-5">
-                    <span className="font-semibold">Admin note: </span>
-                    {selectedJob.rejectionNote}
-                    {!isAdmin ? (<p className="mt-2 font-semibold">
-                        Update the job details and resubmit it for admin review.
-                      </p>) : null}
-                  </div>) : null}
-                <label className="block">
-                  <span className="text-sm font-medium">Title</span>
-                  <input value={form.title} onChange={(event) => updateFormField("title", event.target.value)} onBlur={() => markFormTouched("title")} aria-invalid={Boolean(visibleErrors.title)} aria-describedby={visibleErrors.title ? "job-title-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={10} maxLength={150} required placeholder="Senior Product Designer"/>
-                  <FieldError id="job-title-error" message={visibleErrors.title}/>
-                </label>
-
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-                  <label className="block">
-                    <span className="text-sm font-medium">Location</span>
-                    <input value={form.location} onChange={(event) => updateFormField("location", event.target.value)} onBlur={() => markFormTouched("location")} aria-invalid={Boolean(visibleErrors.location)} aria-describedby={visibleErrors.location ? "job-location-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" maxLength={100} placeholder="Dhaka or Remote"/>
-                    <FieldError id="job-location-error" message={visibleErrors.location}/>
-                  </label>
-
-                  <label className="block">
-                    <span className="text-sm font-medium">Job Type</span>
-                    <SelectField value={form.jobType} onChange={(nextValue) => updateFormField("jobType", nextValue)} onBlur={() => markFormTouched("jobType")} options={jobTypeOptions} className="site-field mt-1 min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" ariaInvalid={Boolean(visibleErrors.jobType)} ariaDescribedBy={visibleErrors.jobType ? "job-type-error" : undefined}/>
-                    <FieldError id="job-type-error" message={visibleErrors.jobType}/>
-                  </label>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-                  <div>
-                    <span className="text-sm font-medium">Experience Range</span>
-                    <div className="mt-1 grid gap-3 sm:grid-cols-2">
-                      <input value={form.experienceMin} onChange={(event) => updateFormField("experienceMin", event.target.value)} onBlur={() => markFormTouched("experienceMin")} aria-invalid={Boolean(visibleErrors.experienceMin)} aria-describedby={visibleErrors.experienceMin ? "job-experience-min-error" : undefined} className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" min={0} type="number" placeholder="Min"/>
-                      <input value={form.experienceMax} onChange={(event) => updateFormField("experienceMax", event.target.value)} onBlur={() => markFormTouched("experienceMax")} aria-invalid={Boolean(visibleErrors.experienceMax)} aria-describedby={visibleErrors.experienceMax ? "job-experience-max-error" : undefined} className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" min={0} type="number" placeholder="Max"/>
-                    </div>
-                    <FieldError id="job-experience-min-error" message={visibleErrors.experienceMin}/>
-                    <FieldError id="job-experience-max-error" message={visibleErrors.experienceMax}/>
-                  </div>
-
-                  <label className="block">
-                    <span className="text-sm font-medium">Salary</span>
-                    <input value={form.salary} onChange={(event) => updateFormField("salary", event.target.value)} onBlur={() => markFormTouched("salary")} aria-invalid={Boolean(visibleErrors.salary)} aria-describedby={visibleErrors.salary ? "job-salary-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" min={0} type="number" placeholder="90000"/>
-                    <FieldError id="job-salary-error" message={visibleErrors.salary}/>
-                  </label>
-                </div>
-
-                <label className="block">
-                  <span className="text-sm font-medium">Expiry Date</span>
-                  <input value={form.expiresAt} onChange={(event) => updateFormField("expiresAt", event.target.value)} onBlur={() => markFormTouched("expiresAt")} aria-invalid={Boolean(visibleErrors.expiresAt)} aria-describedby={visibleErrors.expiresAt ? "job-expires-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" type="date"/>
-                  <FieldError id="job-expires-error" message={visibleErrors.expiresAt}/>
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-medium">Skills Required</span>
-                  <input value={form.skillsRequired} onChange={(event) => updateFormField("skillsRequired", event.target.value)} onBlur={() => markFormTouched("skillsRequired")} aria-invalid={Boolean(visibleErrors.skillsRequired)} aria-describedby={visibleErrors.skillsRequired ? "job-skills-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="React, Node.js, Product Design"/>
-                  <FieldError id="job-skills-error" message={visibleErrors.skillsRequired}/>
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-medium">Description</span>
-                  <textarea value={form.description} onChange={(event) => updateFormField("description", event.target.value)} onBlur={() => markFormTouched("description")} aria-invalid={Boolean(visibleErrors.description)} aria-describedby={visibleErrors.description ? "job-description-error" : undefined} className="site-field mt-1 min-h-36 w-full resize-y rounded-md border px-3 py-2 text-sm leading-6 focus:outline-none" maxLength={5000} placeholder="Describe responsibilities, outcomes, and requirements."/>
-                  <FieldError id="job-description-error" message={visibleErrors.description}/>
-                </label>
-
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <button type="submit" disabled={isSubmitting} className="site-button inline-flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-70">
-                    <Icon name="check"/>
-                    {isSubmitting
-                ? "Saving..."
-                : editingJobId
-                    ? !isAdmin && selectedJob?.approvalStatus === "declined"
-                        ? "Resubmit for Review"
-                        : "Save Changes"
-                    : "Create Job"}
-                  </button>
-                  {editingJobId ? (<button type="button" onClick={resetForm} className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold">
-                      Cancel
-                    </button>) : null}
-                </div>
-              </form>) : null}
-          </aside>
+          <JobFormPanel
+            editingJobId={editingJobId}
+            form={form}
+            isAdmin={isAdmin}
+            isFormOpen={isFormOpen}
+            isSubmitting={isSubmitting}
+            onCancel={resetForm}
+            onSubmit={handleSubmit}
+            onToggleOpen={() => setIsFormOpen((current) => !current)}
+            onTouchField={markFormTouched}
+            onUpdateField={updateFormField}
+            selectedJob={selectedJob}
+            visibleErrors={visibleErrors}
+          />
         </div>
       </div>
 

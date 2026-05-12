@@ -2,10 +2,9 @@
 import ConfirmDialog from "@components/ConfirmDialog";
 import PaginationControls from "@components/PaginationControls";
 import StatusNotice from "@components/StatusNotice";
-import FieldError from "@components/forms/FieldError";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
-import { emailError, getVisibleErrors, hasValidationErrors, passwordError, touchAll, usernameError, } from "@lib/formValidation";
+import { getVisibleErrors, hasValidationErrors, touchAll } from "@lib/formValidation";
 import {
     formatDate,
     formatTitle as formatStatus,
@@ -13,57 +12,8 @@ import {
     getRecordId as getUserId,
 } from "@lib/ui";
 import { useCallback, useEffect, useState } from "react";
-const emptyForm = {
-    username: "",
-    email: "",
-    password: "",
-    role: "jobseeker",
-};
-const roles = [
-    { value: "jobseeker", label: "Job Seeker" },
-    { value: "employer", label: "Employer" },
-    { value: "admin", label: "Admin" },
-    { value: "superadmin", label: "Super Admin" },
-];
-const roleTabs = [
-    { value: "all", label: "All" },
-    { value: "jobseeker", label: "Job Seeker" },
-    { value: "employer", label: "Employer" },
-    { value: "admin", label: "Admin" },
-    { value: "superadmin", label: "Super Admin" },
-];
-const adminManagedRoles = roles.filter((role) => ["jobseeker", "employer"].includes(role.value));
-const userSortOptions = [
-    { value: "createdAt", label: "Created Date" },
-    { value: "updatedAt", label: "Updated Date" },
-    { value: "username", label: "Username" },
-    { value: "email", label: "Email" },
-    { value: "role", label: "Role" },
-];
-function formatRole(value) {
-    return roles.find((role) => role.value === value)?.label ?? "Not set";
-}
-function isAdminLevelRole(role) {
-    return role === "admin" || role === "superadmin";
-}
-function buildPayload(form) {
-    return {
-        username: form.username.trim(),
-        email: form.email.trim().toLowerCase(),
-        password: form.password,
-        role: form.role,
-    };
-}
-function validateUserForm(form, roleOptions = roles) {
-    return {
-        username: usernameError(form.username),
-        email: emailError(form.email),
-        password: passwordError(form.password),
-        role: roleOptions.some((role) => role.value === form.role)
-            ? ""
-            : "Choose a valid role.",
-    };
-}
+import UserSidePanel from "./UserSidePanel";
+import { adminManagedRoles, buildPayload, emptyForm, formatRole, isAdminLevelRole, roleTabs, roles, userSortOptions, validateUserForm, } from "./userUtils";
 export default function ManageUsersClient({ currentUserId, currentUserRole = "admin", }) {
     const [users, setUsers] = useState([]);
     const [pagination, setPagination] = useState();
@@ -611,115 +561,28 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
             />
           </div>
 
-          <aside className="site-border site-card self-start rounded-lg border">
-            <div className="flex items-center justify-between border-b border-[var(--site-border)] px-4 py-3">
-              <div>
-                <h2 className="font-semibold">Create User</h2>
-                <p className="site-muted mt-1 text-xs">
-                  {isSuperAdmin
-                ? "Add a job seeker, employer, admin, or super admin account."
-                : "Add a job seeker or employer account."}
-                </p>
-              </div>
-              <button type="button" onClick={() => setIsFormOpen((current) => !current)} className="site-border site-field rounded-md border p-2" aria-label={isFormOpen ? "Collapse form" : "Expand form"}>
-                <Icon name={isFormOpen ? "x" : "plus"}/>
-              </button>
-            </div>
-
-            {isFormOpen ? (<form onSubmit={handleSubmit} noValidate className="space-y-4 p-4">
-                <label className="block">
-                  <span className="text-sm font-medium">Username</span>
-                  <input value={form.username} onChange={(event) => updateFormField("username", event.target.value)} onBlur={() => markFormTouched("username")} aria-invalid={Boolean(visibleErrors.username)} aria-describedby={visibleErrors.username ? "user-username-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={3} maxLength={50} autoComplete="username" required placeholder="newuser"/>
-                  <FieldError id="user-username-error" message={visibleErrors.username}/>
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-medium">Email</span>
-                  <input type="email" value={form.email} onChange={(event) => updateFormField("email", event.target.value)} onBlur={() => markFormTouched("email")} aria-invalid={Boolean(visibleErrors.email)} aria-describedby={visibleErrors.email ? "user-email-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" autoComplete="email" required placeholder="newuser@example.com"/>
-                  <FieldError id="user-email-error" message={visibleErrors.email}/>
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-medium">Password</span>
-                  <input type="password" value={form.password} onChange={(event) => updateFormField("password", event.target.value)} onBlur={() => markFormTouched("password")} aria-invalid={Boolean(visibleErrors.password)} aria-describedby={visibleErrors.password ? "user-password-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={8} maxLength={50} autoComplete="new-password" required placeholder="At least 8 characters"/>
-                  <FieldError id="user-password-error" message={visibleErrors.password}/>
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-medium">Role</span>
-                  <SelectField value={form.role} onChange={(nextValue) => updateFormField("role", nextValue)} onBlur={() => markFormTouched("role")} options={createRoleOptions} className="site-field mt-1 min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" ariaInvalid={Boolean(visibleErrors.role)} ariaDescribedBy={visibleErrors.role ? "user-role-error" : undefined}/>
-                  <FieldError id="user-role-error" message={visibleErrors.role}/>
-                </label>
-
-                <button type="submit" disabled={isSubmitting} className="site-button inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-70">
-                  <Icon name="check"/>
-                  {isSubmitting ? "Creating..." : "Create User"}
-                </button>
-              </form>) : null}
-
-            <div className="border-t border-[var(--site-border)]">
-              <div className="px-4 py-3">
-                <h3 className="font-semibold">User Details</h3>
-                <p className="site-muted mt-1 text-xs">
-                  Select a user from the list to inspect the account data.
-                </p>
-              </div>
-
-              {selectedUser ? (<div className="space-y-4 p-4 text-sm">
-                  <div>
-                    <p className="site-muted text-xs font-medium">Username</p>
-                    <p className="mt-1 font-semibold">
-                      {selectedUser.username ?? "Not set"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="site-muted text-xs font-medium">Email</p>
-                    <p className="mt-1 break-all font-semibold">
-                      {selectedUser.email ?? "Not set"}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <p className="site-muted text-xs font-medium">Role</p>
-                      <SelectField value={selectedUser.role} onChange={(nextRole) => requestRoleChange(selectedUser, nextRole)} options={getRoleOptionsForUser(selectedUser)} disabled={roleUpdatingUserId === selectedUserId ||
-                    currentUserId === selectedUserId ||
-                    !canChangeUserRole(selectedUser)} className="site-field mt-1 min-h-10 w-full rounded-md border px-3 py-2 text-sm font-semibold focus:outline-none"/>
-                    </div>
-                    <div>
-                      <p className="site-muted text-xs font-medium">Status</p>
-                      <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <p className="font-semibold">
-                          {formatStatus(selectedUser.status)}
-                        </p>
-                        <button type="button" onClick={() => requestStatusChange(selectedUser)} disabled={statusUpdatingUserId === selectedUserId ||
-                    currentUserId === selectedUserId ||
-                    !canChangeUserStatus(selectedUser)} className={selectedUser.status === "suspended"
-                    ? "site-button rounded-md px-2.5 py-1 text-xs font-semibold transition disabled:opacity-50"
-                    : "rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-50"}>
-                          {selectedUser.status === "suspended"
-                    ? "Activate"
-                    : "Suspend"}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <p className="site-muted text-xs font-medium">Created</p>
-                      <p className="mt-1 font-semibold">
-                        {formatDate(selectedUser.createdAt)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="site-muted text-xs font-medium">Updated</p>
-                      <p className="mt-1 font-semibold">
-                        {formatDate(selectedUser.updatedAt)}
-                      </p>
-                    </div>
-                  </div>
-                </div>) : (<div className="site-muted p-4 text-sm">No user selected.</div>)}
-            </div>
-          </aside>
+          <UserSidePanel
+            canChangeUserRole={canChangeUserRole}
+            canChangeUserStatus={canChangeUserStatus}
+            createRoleOptions={createRoleOptions}
+            currentUserId={currentUserId}
+            form={form}
+            isFormOpen={isFormOpen}
+            isSubmitting={isSubmitting}
+            isSuperAdmin={isSuperAdmin}
+            onRequestRoleChange={requestRoleChange}
+            onRequestStatusChange={requestStatusChange}
+            onSubmit={handleSubmit}
+            onToggleOpen={() => setIsFormOpen((current) => !current)}
+            onTouchField={markFormTouched}
+            onUpdateField={updateFormField}
+            roleOptionsForUser={getRoleOptionsForUser}
+            roleUpdatingUserId={roleUpdatingUserId}
+            selectedUser={selectedUser}
+            selectedUserId={selectedUserId}
+            statusUpdatingUserId={statusUpdatingUserId}
+            visibleErrors={visibleErrors}
+          />
         </div>
       </div>
 
