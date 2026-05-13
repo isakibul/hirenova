@@ -86,6 +86,15 @@ export default function AuthProvider({ children }) {
     return undefined;
   }, [persistAuth]);
 
+  const authenticateWithToken = useCallback(
+    (accessToken, fallbackEmail) => {
+      const user = getUserFromAccessToken(accessToken, fallbackEmail);
+      persistAuth({ accessToken, user });
+      return { accessToken, user };
+    },
+    [persistAuth],
+  );
+
   const login = useCallback(
     async ({ email, password }) => {
       const body = await requestBackendJson("/auth/login", {
@@ -98,12 +107,9 @@ export default function AuthProvider({ children }) {
         throw new Error("Login succeeded, but no access token was returned.");
       }
 
-      const user = getUserFromAccessToken(accessToken, email);
-      persistAuth({ accessToken, user });
-
-      return { accessToken, user };
+      return authenticateWithToken(accessToken, email);
     },
-    [persistAuth],
+    [authenticateWithToken],
   );
 
   const logout = useCallback(async () => {
@@ -122,13 +128,14 @@ export default function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       accessToken: auth.accessToken,
+      authenticateWithToken,
       isAuthenticated: status === "authenticated",
       login,
       logout,
       status,
       user: auth.user,
     }),
-    [auth.accessToken, auth.user, login, logout, status],
+    [auth.accessToken, auth.user, authenticateWithToken, login, logout, status],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

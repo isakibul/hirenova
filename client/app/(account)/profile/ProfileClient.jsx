@@ -626,7 +626,7 @@ export default function ProfileClient() {
               </form>)}
           </div>
 
-          <aside className="site-border site-card rounded-lg border">
+          <aside className="site-border site-card self-start rounded-lg border">
             <div className="border-b border-[var(--site-border)] px-4 py-3">
               <h2 className="font-semibold">Change Password</h2>
               <p className="site-muted mt-1 text-xs">

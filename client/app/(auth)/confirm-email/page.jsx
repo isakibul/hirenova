@@ -4,12 +4,14 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import StatusNotice from "@components/StatusNotice";
-import { getAccessToken, getUserFromAccessToken } from "@lib/backendToken";
+import { useAuth } from "@components/auth/AuthProvider";
+import { getAccessToken } from "@lib/backendToken";
 import { requestBackendJson } from "@lib/clientApi";
 
 function ConfirmEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { authenticateWithToken } = useAuth();
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -28,11 +30,7 @@ function ConfirmEmailContent() {
         const accessToken = getAccessToken(body);
 
         if (accessToken) {
-          const user = getUserFromAccessToken(accessToken);
-          window.localStorage.setItem(
-            "hirenova-auth",
-            JSON.stringify({ accessToken, user }),
-          );
+          authenticateWithToken(accessToken);
         }
 
         router.replace("/jobs");
@@ -46,7 +44,7 @@ function ConfirmEmailContent() {
     }
 
     void confirmEmail();
-  }, [router, searchParams]);
+  }, [authenticateWithToken, router, searchParams]);
 
   return <StatusNotice>{error}</StatusNotice>;
 }

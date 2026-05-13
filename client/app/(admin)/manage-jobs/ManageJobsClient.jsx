@@ -457,7 +457,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1420px] table-fixed border-collapse text-left text-sm">
+              <table className="w-full min-w-[1540px] table-fixed border-collapse text-left text-sm">
                 <thead className="site-panel text-xs uppercase tracking-wide">
                   <tr>
                     <th className="w-[30%] px-4 py-3 font-semibold">Job</th>
@@ -473,7 +473,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
                     <th className="w-[170px] whitespace-nowrap px-4 py-3 font-semibold">
                       Approval
                     </th>
-                    <th className="w-[500px] whitespace-nowrap px-4 py-3 font-semibold">
+                    <th className="w-[620px] whitespace-nowrap px-4 py-3 font-semibold">
                       Actions
                     </th>
                   </tr>
@@ -535,8 +535,8 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
                                 {job.rejectionNote}
                               </p>) : null}
                           </td>
-                          <td className="border-t border-[var(--site-border)] px-4 py-3 pr-8 align-top">
-                            <div className="flex flex-wrap justify-start gap-2">
+                          <td className="border-t border-[var(--site-border)] px-4 py-3 align-top">
+                            <div className="flex flex-nowrap justify-start gap-2">
                               <Link href={`/jobs/${jobId}`} className="site-border site-field inline-flex min-w-[64px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold">
                                 View
                               </Link>
