@@ -85,10 +85,14 @@ const count = async ({ search = "", role = "" }) => {
   return User.countDocuments(filter);
 };
 
-const getJobseekerFilter = ({ search = "" }) => {
+const getJobseekerFilter = ({ search = "", statuses = ["active"] }) => {
+  const allowedStatuses = ["pending", "active", "suspended"];
+  const nextStatuses = Array.isArray(statuses)
+    ? statuses.filter((status) => allowedStatuses.includes(status))
+    : [];
   const filter = {
     role: "jobseeker",
-    status: "active",
+    status: { $in: nextStatuses.length ? nextStatuses : ["active"] },
   };
 
   if (search) {
@@ -103,9 +107,9 @@ const getJobseekerFilter = ({ search = "" }) => {
   return filter;
 };
 
-const getJobseekers = async ({ page, limit, sortType, sortBy, search }) => {
+const getJobseekers = async ({ page, limit, sortType, sortBy, search, statuses }) => {
   const sortStr = `${sortType === "dsc" ? "-" : ""}${sortBy}`;
-  const filter = getJobseekerFilter({ search });
+  const filter = getJobseekerFilter({ search, statuses });
 
   const users = await User.find(filter)
     .select(
@@ -121,17 +125,18 @@ const getJobseekers = async ({ page, limit, sortType, sortBy, search }) => {
   }));
 };
 
-const countJobseekers = async ({ search = "" }) => {
-  const filter = getJobseekerFilter({ search });
+const countJobseekers = async ({ search = "", statuses }) => {
+  const filter = getJobseekerFilter({ search, statuses });
 
   return User.countDocuments(filter);
 };
 
-const getJobseekerProfile = async (id) => {
+const getJobseekerProfile = async (id, { statuses = ["active"] } = {}) => {
+  const filter = getJobseekerFilter({ statuses });
   const user = await User.findOne({
     _id: id,
-    role: "jobseeker",
-    status: "active",
+    role: filter.role,
+    status: filter.status,
   }).select(
     "username email role status skills resumeUrl experience preferredLocation createdAt updatedAt"
   );

@@ -2,6 +2,7 @@
 
 import ConfirmDialog from "@components/ConfirmDialog";
 import Icon from "@components/Icon";
+import { RowListSkeleton } from "@components/Skeleton";
 import { useAuth } from "@components/auth/AuthProvider";
 import { acquireRealtimeSocket } from "@lib/realtime";
 import {
@@ -386,7 +387,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
             </div>
             <div className="h-[calc(100%-49px)] overflow-y-auto">
               {isLoading ? (
-                <div className="site-muted p-4 text-sm">Loading inbox...</div>
+                <RowListSkeleton count={6} />
               ) : conversations.length === 0 ? (
                 <div className="p-4 text-sm">
                   <div className="site-badge inline-flex h-10 w-10 items-center justify-center rounded-md">

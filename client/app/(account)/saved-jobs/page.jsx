@@ -1,6 +1,7 @@
 "use client";
 
 import Icon from "@components/Icon";
+import { CardListSkeleton, MetricSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
 import { formatDate, getApiMessage } from "@lib/ui";
 import Link from "next/link";
@@ -17,10 +18,12 @@ function formatSalary(value) {
 
 export default function SavedJobsPage() {
   const [savedJobs, setSavedJobs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     async function loadSavedJobs() {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/saved-jobs/me");
         const body = await response.json();
@@ -36,6 +39,8 @@ export default function SavedJobsPage() {
             ? caughtError.message
             : "Unable to load saved jobs.",
         );
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -54,26 +59,34 @@ export default function SavedJobsPage() {
         </p>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="site-border site-panel rounded-lg border p-4">
-            <p className="site-muted text-xs font-medium">Saved Roles</p>
-            <p className="mt-2 text-2xl font-semibold">{savedJobs.length}</p>
-          </div>
-          <div className="site-border site-panel rounded-lg border p-4">
-            <p className="site-muted text-xs font-medium">Latest Save</p>
-            <p className="mt-2 text-2xl font-semibold">
-              {savedJobs[0] ? formatDate(savedJobs[0].createdAt) : "None"}
-            </p>
-          </div>
-          <div className="site-border site-panel rounded-lg border p-4">
-            <p className="site-muted text-xs font-medium">Next Step</p>
-            <p className="mt-2 text-2xl font-semibold">Apply</p>
-          </div>
+          {isLoading ? (
+            <MetricSkeleton count={3} />
+          ) : (
+            <>
+              <div className="site-border site-panel rounded-lg border p-4">
+                <p className="site-muted text-xs font-medium">Saved Roles</p>
+                <p className="mt-2 text-2xl font-semibold">{savedJobs.length}</p>
+              </div>
+              <div className="site-border site-panel rounded-lg border p-4">
+                <p className="site-muted text-xs font-medium">Latest Save</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {savedJobs[0] ? formatDate(savedJobs[0].createdAt) : "None"}
+                </p>
+              </div>
+              <div className="site-border site-panel rounded-lg border p-4">
+                <p className="site-muted text-xs font-medium">Next Step</p>
+                <p className="mt-2 text-2xl font-semibold">Apply</p>
+              </div>
+            </>
+          )}
         </div>
 
         <StatusNotice>{error}</StatusNotice>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {savedJobs.length === 0 ? (
+          {isLoading ? (
+            <CardListSkeleton count={4} />
+          ) : savedJobs.length === 0 ? (
             <div className="site-border site-card rounded-lg border p-6 md:col-span-2">
               <div className="site-badge inline-flex h-10 w-10 items-center justify-center rounded-md">
                 <Icon name="bell" />

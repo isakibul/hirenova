@@ -179,6 +179,26 @@ body {
   background: var(--site-border);
 }
 
+.site-skeleton {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--site-border) 55%, transparent) 0%,
+    color-mix(in srgb, var(--site-panel) 75%, var(--site-border)) 45%,
+    color-mix(in srgb, var(--site-border) 55%, transparent) 100%
+  );
+  background-size: 220% 100%;
+  animation: site-skeleton-pulse 1.35s ease-in-out infinite;
+}
+
+@keyframes site-skeleton-pulse {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
 .range-filter-track {
   position: absolute;
   left: 0;

@@ -17,6 +17,10 @@ const findAll = async (req, res, next) => {
     ? requestedSortBy
     : "updatedAt";
   const search = req.query.search || "";
+  const statuses =
+    req.user?.role === "admin" || req.user?.role === "superadmin"
+      ? ["active", "pending"]
+      : ["active"];
 
   try {
     const users = await userService.getJobseekers({
@@ -25,8 +29,9 @@ const findAll = async (req, res, next) => {
       sortType,
       sortBy,
       search,
+      statuses,
     });
-    const totalItems = await userService.countJobseekers({ search });
+    const totalItems = await userService.countJobseekers({ search, statuses });
     const pagination = getPagination({ totalItems, limit, page });
     const data = getTransformedItems({
       items: users,

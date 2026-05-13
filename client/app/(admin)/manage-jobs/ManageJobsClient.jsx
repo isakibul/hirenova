@@ -2,6 +2,7 @@
 import ConfirmDialog from "@components/ConfirmDialog";
 import Modal from "@components/Modal";
 import PaginationControls from "@components/PaginationControls";
+import { TableRowsSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
 import { useAuth } from "@components/auth/AuthProvider";
 import SelectField from "@components/forms/SelectField";
@@ -478,11 +479,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
                   </tr>
                 </thead>
                 <tbody>
-                  {isLoading ? (<tr>
-                      <td colSpan={6} className="site-muted px-4 py-10 text-center">
-                        Loading jobs...
-                      </td>
-                    </tr>) : jobs.length === 0 ? (<tr>
+                  {isLoading ? (<TableRowsSkeleton columns={6} rows={6} />) : jobs.length === 0 ? (<tr>
                       <td colSpan={6} className="px-4 py-10 text-center">
                         <p className="font-semibold">No jobs found</p>
                         <p className="site-muted mt-1 text-xs">

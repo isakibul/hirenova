@@ -8,6 +8,17 @@ const newsletterService = require("../newsletter");
 const { generateHash, hashMatched } = require("../../utils/hashing");
 const { generateToken } = require("../token/");
 
+const subscribeAuthEmail = async (email, source) => {
+  try {
+    await newsletterService.subscribe({
+      email,
+      source,
+    });
+  } catch (error) {
+    console.error("Unable to save newsletter subscription:", error.message);
+  }
+};
+
 const register = async ({ username, email, password, role, status }) => {
   const normalizedEmail = email.trim().toLowerCase();
   const hasUserByEmail = await userExitsByEmail(normalizedEmail);
@@ -26,6 +37,8 @@ const register = async ({ username, email, password, role, status }) => {
     role,
     status,
   });
+
+  await subscribeAuthEmail(user.email, "auth-signup");
 
   return user;
 };
@@ -54,10 +67,7 @@ const login = async ({ email, password }) => {
     role: user.role,
   };
 
-  await newsletterService.subscribe({
-    email: user.email,
-    source: "auth-login",
-  });
+  await subscribeAuthEmail(user.email, "auth-login");
 
   return generateToken({ payload });
 };

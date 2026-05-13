@@ -1,6 +1,7 @@
 "use client";
 
 import Icon from "@components/Icon";
+import { CardListSkeleton } from "@components/Skeleton";
 import { useAuth } from "@components/auth/AuthProvider";
 import { getApiMessage } from "@lib/ui";
 import Link from "next/link";
@@ -29,9 +30,11 @@ function MetricCard({ href, icon, label, value, description }) {
 export default function MyJobsPage() {
   const { user } = useAuth();
   const [summary, setSummary] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadSummary() {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/dashboard");
         const body = await response.json();
@@ -43,6 +46,8 @@ export default function MyJobsPage() {
         setSummary(body.data ?? {});
       } catch {
         setSummary({});
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -61,20 +66,26 @@ export default function MyJobsPage() {
         </p>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
-          <MetricCard
-            href="/applications"
-            icon="file"
-            label="Applications"
-            value={summary.totalApplications ?? 0}
-            description="Submitted roles and employer review status."
-          />
-          <MetricCard
-            href="/saved-jobs"
-            icon="bell"
-            label="Saved Jobs"
-            value={summary.totalSavedJobs ?? 0}
-            description="Roles you marked for later comparison."
-          />
+          {isLoading ? (
+            <CardListSkeleton count={2} />
+          ) : (
+            <>
+              <MetricCard
+                href="/applications"
+                icon="file"
+                label="Applications"
+                value={summary.totalApplications ?? 0}
+                description="Submitted roles and employer review status."
+              />
+              <MetricCard
+                href="/saved-jobs"
+                icon="bell"
+                label="Saved Jobs"
+                value={summary.totalSavedJobs ?? 0}
+                description="Roles you marked for later comparison."
+              />
+            </>
+          )}
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_340px]">

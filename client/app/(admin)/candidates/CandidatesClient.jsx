@@ -2,12 +2,13 @@
 
 import Icon from "@components/Icon";
 import PaginationControls from "@components/PaginationControls";
+import SkeletonBlock, { RowListSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
 import SelectField from "@components/forms/SelectField";
+import { requestJson } from "@lib/clientApi";
 import {
     formatDate,
     formatExperienceYears,
-    getApiMessage,
     getRecordId,
 } from "@lib/ui";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -56,11 +57,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
             params.set("search", search);
         }
         try {
-            const response = await fetch(`/api/candidates?${params.toString()}`);
-            const body = await response.json();
-            if (!response.ok) {
-                throw new Error(getApiMessage(body, "Unable to load candidates."));
-            }
+            const body = await requestJson(`/api/candidates?${params.toString()}`, {}, "Unable to load candidates.");
             const nextCandidates = body.data ?? [];
             setCandidates(nextCandidates);
             setPagination(body.pagination);
@@ -81,9 +78,6 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
     }, [page, search, sortBy, sortType]);
 
     useEffect(() => {
-        if (page === 1 && !search && sortBy === "updatedAt" && sortType === "dsc") {
-            return;
-        }
         const timeoutId = window.setTimeout(() => {
             void loadCandidates();
         }, 0);
@@ -112,11 +106,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
         setLoadingCandidateId(candidateId);
         setError("");
         try {
-            const response = await fetch(`/api/candidates/${candidateId}`);
-            const body = await response.json();
-            if (!response.ok || !body.data) {
-                throw new Error(getApiMessage(body, "Unable to load candidate profile."));
-            }
+            const body = await requestJson(`/api/candidates/${candidateId}`, {}, "Unable to load candidate profile.");
             setSelectedCandidate(body.data);
         }
         catch (caughtError) {
@@ -213,7 +203,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
             </div>
 
             <div className="divide-y divide-[var(--site-border)]">
-              {isLoading ? (<div className="site-muted px-4 py-10 text-center text-sm">Loading candidates...</div>) : candidates.length === 0 ? (<div className="px-4 py-10 text-center">
+              {isLoading ? (<RowListSkeleton count={5} />) : candidates.length === 0 ? (<div className="px-4 py-10 text-center">
                   <p className="font-semibold">No job seekers found</p>
                   <p className="site-muted mt-1 text-xs">Try another skill, location, or name.</p>
                 </div>) : candidates.map((candidate) => {
@@ -231,7 +221,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
                       <div className="site-muted shrink-0 text-xs md:text-right">
                         <p>{formatExperienceYears(candidate.experience)}</p>
                         <p className="mt-1">{candidate.preferredLocation || "Location not set"}</p>
-                        {loadingCandidateId === candidateId ? <p className="mt-1">Loading profile...</p> : null}
+                        {loadingCandidateId === candidateId ? <SkeletonBlock className="mt-2 h-3 w-24" /> : null}
                       </div>
                     </div>
                   </button>);

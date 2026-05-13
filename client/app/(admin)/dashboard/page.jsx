@@ -1,6 +1,7 @@
 "use client";
 
 import Icon from "@components/Icon";
+import { MetricSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
 import { getApiMessage } from "@lib/ui";
 import Link from "next/link";
@@ -42,10 +43,12 @@ function QuickAction({ href, icon, title, description }) {
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     async function loadDashboard() {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/dashboard");
         const body = await response.json();
@@ -61,6 +64,8 @@ export default function DashboardPage() {
             ? caughtError.message
             : "Unable to load dashboard.",
         );
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -81,10 +86,16 @@ export default function DashboardPage() {
         <StatusNotice>{error}</StatusNotice>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Metric label="Jobs" value={summary.totalJobs} helper="Created job listings." icon="briefcase" />
-          <Metric label="Applications" value={summary.totalApplications} helper="Submitted applications." icon="file" />
-          <Metric label="Saved Jobs" value={summary.totalSavedJobs} helper="Saved roles." icon="bell" />
-          <Metric label="Users" value={summary.totalUsers} helper="Platform accounts." icon="user" />
+          {isLoading ? (
+            <MetricSkeleton count={4} />
+          ) : (
+            <>
+              <Metric label="Jobs" value={summary.totalJobs} helper="Created job listings." icon="briefcase" />
+              <Metric label="Applications" value={summary.totalApplications} helper="Submitted applications." icon="file" />
+              <Metric label="Saved Jobs" value={summary.totalSavedJobs} helper="Saved roles." icon="bell" />
+              <Metric label="Users" value={summary.totalUsers} helper="Platform accounts." icon="user" />
+            </>
+          )}
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">

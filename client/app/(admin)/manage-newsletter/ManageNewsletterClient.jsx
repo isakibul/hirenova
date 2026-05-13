@@ -3,9 +3,11 @@
 import ConfirmDialog from "@components/ConfirmDialog";
 import Icon from "@components/Icon";
 import PaginationControls from "@components/PaginationControls";
+import { RowListSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
 import SelectField from "@components/forms/SelectField";
-import { formatDate, getApiMessage, getRecordId } from "@lib/ui";
+import { requestJson } from "@lib/clientApi";
+import { formatDate, getRecordId } from "@lib/ui";
 import { useCallback, useEffect, useState } from "react";
 
 const sortOptions = [
@@ -65,15 +67,11 @@ export default function ManageNewsletterClient({
     }
 
     try {
-      const response = await fetch(
+      const body = await requestJson(
         `/api/manage-newsletter?${params.toString()}`,
+        {},
+        "Unable to load newsletter subscriptions.",
       );
-      const body = await response.json();
-      if (!response.ok) {
-        throw new Error(
-          getApiMessage(body, "Unable to load newsletter subscriptions."),
-        );
-      }
       setSubscriptions(body.data ?? []);
       setPagination(body.pagination);
     } catch (caughtError) {
@@ -90,16 +88,6 @@ export default function ManageNewsletterClient({
   }, [page, search, sortBy, sortType, status]);
 
   useEffect(() => {
-    if (
-      page === 1 &&
-      !search &&
-      !status &&
-      sortBy === "createdAt" &&
-      sortType === "dsc"
-    ) {
-      return;
-    }
-
     const timeoutId = window.setTimeout(() => {
       void loadSubscriptions();
     }, 0);
@@ -151,13 +139,11 @@ export default function ManageNewsletterClient({
     setError("");
 
     try {
-      const response = await fetch(`/api/manage-newsletter/${subscriptionId}`, {
-        method: "DELETE",
-      });
-      const body = await response.json();
-      if (!response.ok) {
-        throw new Error(getApiMessage(body, "Unable to remove subscription."));
-      }
+      await requestJson(
+        `/api/manage-newsletter/${subscriptionId}`,
+        { method: "DELETE" },
+        "Unable to remove subscription.",
+      );
 
       setNotice(
         `${subscriptionPendingDelete.email} removed from the newsletter list.`,
@@ -275,9 +261,7 @@ export default function ManageNewsletterClient({
 
           <div className="divide-y divide-[var(--site-border)]">
             {isLoading ? (
-              <div className="site-muted px-4 py-10 text-center text-sm">
-                Loading subscriptions...
-              </div>
+              <RowListSkeleton count={5} />
             ) : subscriptions.length === 0 ? (
               <div className="px-4 py-10 text-center">
                 <p className="font-semibold">No newsletter emails found</p>

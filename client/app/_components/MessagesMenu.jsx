@@ -16,6 +16,7 @@ import {
 } from "../_lib/ui";
 import ConfirmDialog from "./ConfirmDialog";
 import Icon from "./Icon";
+import { RowListSkeleton } from "./Skeleton";
 import Modal from "./Modal";
 
 function getUnreadSignature(conversations = []) {
@@ -577,9 +578,7 @@ export default function MessagesMenu({
               <aside className="min-h-0 border-b border-(--site-border) md:border-b-0 md:border-r">
                 <div className="max-h-44 overflow-y-auto md:max-h-full">
                   {isLoading ? (
-                    <div className="site-muted p-4 text-sm">
-                      Loading inbox...
-                    </div>
+                    <RowListSkeleton count={4} />
                   ) : conversations.length === 0 ? (
                     <div className="p-4 text-sm">
                       <div className="site-badge inline-flex h-10 w-10 items-center justify-center rounded-md">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@components/auth/AuthProvider";
+import SkeletonBlock from "@components/Skeleton";
 import { useState } from "react";
 
 function getMessage(body, fallback) {
@@ -67,7 +68,7 @@ export default function JobActions({ jobId, isClosed }) {
     }
 
     if (status === "loading") {
-        return <p className="site-muted mt-4 text-sm">Loading actions...</p>;
+        return <SkeletonBlock className="mt-4 h-10 w-full" />;
     }
 
     if (isClosed) {

@@ -1,6 +1,7 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
 import Icon from "@components/Icon";
+import { FormSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
 import { emailError, getVisibleErrors, hasValidationErrors, passwordError, touchAll, usernameError, } from "@lib/formValidation";
 import { formatDate, getApiMessage as getMessage } from "@lib/ui";
@@ -461,7 +462,7 @@ export default function ProfileClient() {
               </button>
             </div>
 
-            {isLoading ? (<div className="site-muted p-6 text-sm">Loading profile...</div>) : (<form onSubmit={handleProfileSubmit} noValidate className="space-y-4 p-4">
+            {isLoading ? (<FormSkeleton rows={4} />) : (<form onSubmit={handleProfileSubmit} noValidate className="space-y-4 p-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">
                     <span className="text-sm font-medium">Username</span>

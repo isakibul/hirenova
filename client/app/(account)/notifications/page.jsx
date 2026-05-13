@@ -1,6 +1,7 @@
 "use client";
 
 import StatusNotice from "@components/StatusNotice";
+import { RowListSkeleton } from "@components/Skeleton";
 import { getApiMessage } from "@lib/ui";
 import { useEffect, useState } from "react";
 import NotificationsList from "./NotificationsList";
@@ -8,10 +9,12 @@ import NotificationsList from "./NotificationsList";
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     async function loadNotifications() {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/notifications?limit=100");
         const body = await response.json();
@@ -28,6 +31,8 @@ export default function NotificationsPage() {
             ? caughtError.message
             : "Unable to load notifications.",
         );
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -47,11 +52,17 @@ export default function NotificationsPage() {
           Track application updates, saved jobs, and job activity in one place.
         </p>
         <StatusNotice>{error}</StatusNotice>
-        <NotificationsList
-          key={`${notifications.length}-${unreadCount}`}
-          initialNotifications={notifications}
-          initialUnreadCount={unreadCount}
-        />
+        {isLoading ? (
+          <div className="site-border site-card mt-6 divide-y divide-[var(--site-border)] overflow-hidden rounded-lg border">
+            <RowListSkeleton count={5} />
+          </div>
+        ) : (
+          <NotificationsList
+            key={`${notifications.length}-${unreadCount}`}
+            initialNotifications={notifications}
+            initialUnreadCount={unreadCount}
+          />
+        )}
       </div>
     </section>
   );

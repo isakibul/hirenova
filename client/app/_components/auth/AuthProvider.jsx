@@ -40,10 +40,8 @@ export function useAuth() {
 }
 
 export default function AuthProvider({ children }) {
-  const [auth, setAuth] = useState(readStoredAuth);
-  const [status, setStatus] = useState(
-    auth.accessToken ? "authenticated" : "unauthenticated",
-  );
+  const [auth, setAuth] = useState({ accessToken: "", user: null });
+  const [status, setStatus] = useState("unauthenticated");
 
   useEffect(() => {
     const originalFetch = window.fetch.bind(window);
@@ -73,6 +71,20 @@ export default function AuthProvider({ children }) {
       window.localStorage.removeItem(storageKey);
     }
   }, []);
+
+  useEffect(() => {
+    const storedAuth = readStoredAuth();
+
+    if (storedAuth.accessToken) {
+      const timeoutId = window.setTimeout(() => {
+        persistAuth(storedAuth);
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    return undefined;
+  }, [persistAuth]);
 
   const login = useCallback(
     async ({ email, password }) => {

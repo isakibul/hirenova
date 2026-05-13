@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { requestJson } from "@lib/clientApi";
 import Icon from "./Icon";
 
 const footerSections = [
@@ -70,20 +71,13 @@ export default function Footer() {
     setIsSubscribing(true);
 
     try {
-      const response = await fetch("/api/newsletter", {
+      const body = await requestJson("/api/newsletter", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email: nextEmail, source: "footer" }),
-      });
-      const body = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          body?.error ?? body?.message ?? "Unable to subscribe right now.",
-        );
-      }
+      }, "Unable to subscribe right now.");
 
       setMessage(body?.message ?? "Thanks for joining HireNova updates.");
       setEmail("");
@@ -148,6 +142,8 @@ export default function Footer() {
                 onChange={(event) => setEmail(event.target.value)}
                 type="email"
                 placeholder="Email address"
+                autoComplete="email"
+                required
                 className="site-field min-h-10 flex-1 rounded-md border px-3 text-sm focus:outline-none"
               />
               <button

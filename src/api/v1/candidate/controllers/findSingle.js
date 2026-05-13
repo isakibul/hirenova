@@ -2,7 +2,13 @@ const userService = require("../../../../lib/user");
 
 const findSingle = async (req, res, next) => {
   try {
-    const user = await userService.getJobseekerProfile(req.params.id);
+    const statuses =
+      req.user?.role === "admin" || req.user?.role === "superadmin"
+        ? ["active", "pending"]
+        : ["active"];
+    const user = await userService.getJobseekerProfile(req.params.id, {
+      statuses,
+    });
 
     res.status(200).json({
       data: user,

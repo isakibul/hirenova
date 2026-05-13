@@ -1,6 +1,7 @@
 "use client";
 import ConfirmDialog from "@components/ConfirmDialog";
 import PaginationControls from "@components/PaginationControls";
+import { TableRowsSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
 import { useAuth } from "@components/auth/AuthProvider";
 import SelectField from "@components/forms/SelectField";
@@ -473,11 +474,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole, }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {isLoading ? (<tr>
-                      <td colSpan={5} className="site-muted px-4 py-10 text-center">
-                        Loading users...
-                      </td>
-                    </tr>) : users.length === 0 ? (<tr>
+                  {isLoading ? (<TableRowsSkeleton columns={5} rows={6} />) : users.length === 0 ? (<tr>
                       <td colSpan={5} className="px-4 py-10 text-center">
                         <p className="font-semibold">No users found</p>
                         <p className="site-muted mt-1 text-xs">
