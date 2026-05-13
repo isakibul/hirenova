@@ -24,13 +24,15 @@ const themeScript = `
   })();
 `;
 export const metadata = {
-    title: "HireNova - AI-Powered Job Suggestion",
-    description: "HireNova is an AI-powered job suggestion platform that matches you with the best opportunities based on your skills and experience. Get personalized job recommendations and take your career to the next level with HireNova.",
+  title: "HireNova - Find Your Opportunity",
+  description:
+    "HireNova is an AI-powered job suggestion platform that matches you with the best opportunities based on your skills and experience. Get personalized job recommendations and take your career to the next level with HireNova.",
 };
-export default function RootLayout({ children, }) {
-    return (<html lang="en" className="h-full antialiased" suppressHydrationWarning>
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }}/>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full">
         <ThemeProvider>
@@ -43,5 +45,6 @@ export default function RootLayout({ children, }) {
           </AuthProvider>
         </ThemeProvider>
       </body>
-    </html>);
+    </html>
+  );
 }
