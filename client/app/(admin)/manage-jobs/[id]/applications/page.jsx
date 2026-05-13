@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { requestJson } from "@lib/clientApi";
 import { use, useEffect, useState } from "react";
 import ApplicationsClient from "./ApplicationsClient";
 
@@ -12,13 +13,11 @@ export default function JobApplicationsPage({ params }) {
   useEffect(() => {
     async function loadApplications() {
       try {
-        const response = await fetch(`/api/jobs/${id}/applications`);
-        const body = await response.json();
-
-        if (!response.ok) {
-          throw new Error(body.error ?? body.message ?? "Unable to load applicants.");
-        }
-
+        const body = await requestJson(
+          `/api/jobs/${id}/applications`,
+          {},
+          "Unable to load applicants.",
+        );
         setApplications(body.data ?? []);
       } catch (caughtError) {
         setError(

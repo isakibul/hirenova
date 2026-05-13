@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { requestJson } from "@lib/clientApi";
 import Icon from "./Icon";
@@ -50,11 +51,17 @@ const contactItems = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const isMessagesPage = pathname === "/messages";
+
+  if (isMessagesPage) {
+    return null;
+  }
 
   async function handleNewsletter(event) {
     event.preventDefault();

@@ -3,11 +3,8 @@
 import Link from "next/link";
 import { useAuth } from "@components/auth/AuthProvider";
 import SkeletonBlock from "@components/Skeleton";
+import { requestJson } from "@lib/clientApi";
 import { useState } from "react";
-
-function getMessage(body, fallback) {
-    return body?.error ?? body?.message ?? fallback;
-}
 
 export default function JobActions({ jobId, isClosed }) {
     const { isAuthenticated, status, user } = useAuth();
@@ -23,17 +20,10 @@ export default function JobActions({ jobId, isClosed }) {
         setNotice("");
         setError("");
         try {
-            const response = await fetch(`/api/jobs/${jobId}/apply`, {
+            await requestJson(`/api/jobs/${jobId}/apply`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({ coverLetter }),
-            });
-            const body = await response.json();
-            if (!response.ok) {
-                throw new Error(getMessage(body, "Unable to apply."));
-            }
+            }, "Unable to apply.");
             setNotice("Application submitted.");
             setCoverLetter("");
         }
@@ -50,13 +40,9 @@ export default function JobActions({ jobId, isClosed }) {
         setNotice("");
         setError("");
         try {
-            const response = await fetch(`/api/jobs/${jobId}/save`, {
+            await requestJson(`/api/jobs/${jobId}/save`, {
                 method: "POST",
-            });
-            const body = await response.json();
-            if (!response.ok) {
-                throw new Error(getMessage(body, "Unable to save job."));
-            }
+            }, "Unable to save job.");
             setNotice("Job saved.");
         }
         catch (caughtError) {

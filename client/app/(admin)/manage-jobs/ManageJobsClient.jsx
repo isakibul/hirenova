@@ -7,8 +7,9 @@ import StatusNotice from "@components/StatusNotice";
 import { useAuth } from "@components/auth/AuthProvider";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
+import { requestJson } from "@lib/clientApi";
 import { getVisibleErrors, hasValidationErrors, touchAll } from "@lib/formValidation";
-import { formatDate, formatDateTime, getApiMessage as getMessage, getRecordId as getJobId } from "@lib/ui";
+import { formatDate, formatDateTime, getRecordId as getJobId } from "@lib/ui";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import JobFormPanel from "./JobFormPanel";
@@ -81,11 +82,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
             params.set("approval_status", approvalFilter);
         }
         try {
-            const response = await fetch(`/api/manage-jobs?${params.toString()}`);
-            const body = (await response.json());
-            if (!response.ok) {
-                throw new Error(getMessage(body));
-            }
+            const body = await requestJson(`/api/manage-jobs?${params.toString()}`, {}, "Unable to load jobs.");
             setJobs(body.data ?? []);
             setPagination(body.pagination);
         }
@@ -161,11 +158,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
         setNotice(null);
         setError(null);
         try {
-            const response = await fetch(`/api/manage-jobs/${jobId}`);
-            const body = (await response.json());
-            if (!response.ok || !body.data) {
-                throw new Error(getMessage(body));
-            }
+            const body = await requestJson(`/api/manage-jobs/${jobId}`, {}, "Unable to load this job.");
             setEditingJobId(jobId);
             setForm(getFormFromJob({ ...job, ...body.data, id: jobId }));
             setFormTouched({});
@@ -198,17 +191,10 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
             : "/api/manage-jobs";
         const method = editingJobId ? "PATCH" : "POST";
         try {
-            const response = await fetch(target, {
+            await requestJson(target, {
                 method,
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify(payload),
-            });
-            const body = (await response.json());
-            if (!response.ok) {
-                throw new Error(getMessage(body));
-            }
+            }, "Unable to save job.");
             setNotice(editingJobId
                 ? isResubmission
                     ? "Job updated and resubmitted for admin review."
@@ -246,17 +232,10 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
         setNotice(null);
         setError(null);
         try {
-            const response = await fetch(`/api/manage-jobs/${jobId}/status`, {
+            await requestJson(`/api/manage-jobs/${jobId}/status`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({ status: nextStatus }),
-            });
-            const body = await response.json();
-            if (!response.ok) {
-                throw new Error(getMessage(body));
-            }
+            }, "Unable to update job status.");
             setNotice(nextStatus === "closed" ? "Job closed." : "Job reopened.");
             await loadJobs();
         }
@@ -278,20 +257,13 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
         setNotice(null);
         setError(null);
         try {
-            const response = await fetch(`/api/manage-jobs/${jobId}/approval`, {
+            await requestJson(`/api/manage-jobs/${jobId}/approval`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({
                     approvalStatus,
                     rejectionNote: note,
                 }),
-            });
-            const body = await response.json();
-            if (!response.ok) {
-                throw new Error(getMessage(body));
-            }
+            }, "Unable to review job.");
             setNotice(approvalStatus === "approved" ? "Job approved." : "Job declined.");
             setJobPendingDecline(null);
             setRejectionNote("");
@@ -336,13 +308,9 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
         setNotice(null);
         setError(null);
         try {
-            const response = await fetch(`/api/manage-jobs/${jobId}`, {
+            await requestJson(`/api/manage-jobs/${jobId}`, {
                 method: "DELETE",
-            });
-            if (!response.ok) {
-                const body = (await response.json());
-                throw new Error(getMessage(body));
-            }
+            }, "Unable to delete job.");
             if (editingJobId === jobId) {
                 resetForm();
             }

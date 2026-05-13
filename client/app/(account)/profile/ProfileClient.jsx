@@ -3,6 +3,7 @@ import FieldError from "@components/forms/FieldError";
 import Icon from "@components/Icon";
 import { FormSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
+import { requestJson } from "@lib/clientApi";
 import { emailError, getVisibleErrors, hasValidationErrors, passwordError, touchAll, usernameError, } from "@lib/formValidation";
 import { formatDate, getApiMessage as getMessage } from "@lib/ui";
 import { useCallback, useEffect, useState } from "react";
@@ -178,11 +179,7 @@ export default function ProfileClient() {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch("/api/profile");
-            const body = (await response.json());
-            if (!response.ok || !body.data) {
-                throw new Error(getMessage(body, "Unable to load profile."));
-            }
+            const body = await requestJson("/api/profile", {}, "Unable to load profile.");
             setProfile(body.data);
             setProfileForm(getProfileForm(body.data));
             setResumeFile(null);
@@ -224,27 +221,16 @@ export default function ProfileClient() {
             if (resumeFile) {
                 const uploadData = new FormData();
                 uploadData.append("resume", resumeFile);
-                const uploadResponse = await fetch("/api/profile/resume", {
+                const uploadBody = await requestJson("/api/profile/resume", {
                     method: "POST",
                     body: uploadData,
-                });
-                const uploadBody = await uploadResponse.json();
-                if (!uploadResponse.ok || !uploadBody.data?.resumeUrl) {
-                    throw new Error(getMessage(uploadBody, "Unable to upload resume."));
-                }
+                }, "Unable to upload resume.");
                 resumeUrl = uploadBody.data.resumeUrl;
             }
-            const response = await fetch("/api/profile", {
+            const body = await requestJson("/api/profile", {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify(buildProfilePayload(profileForm, resumeUrl)),
-            });
-            const body = (await response.json());
-            if (!response.ok || !body.data) {
-                throw new Error(getMessage(body, "Unable to update profile."));
-            }
+            }, "Unable to update profile.");
             setProfile(body.data);
             setProfileForm(getProfileForm(body.data));
             setResumeFile(null);
@@ -291,20 +277,13 @@ export default function ProfileClient() {
         }
         setIsSavingPassword(true);
         try {
-            const response = await fetch("/api/profile/password", {
+            const body = await requestJson("/api/profile/password", {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({
                     currentPassword: passwordForm.currentPassword,
                     newPassword: passwordForm.newPassword,
                 }),
-            });
-            const body = (await response.json());
-            if (!response.ok) {
-                throw new Error(getMessage(body, "Unable to change password."));
-            }
+            }, "Unable to change password.");
             setPasswordForm(emptyPasswordForm);
             setPasswordTouched({});
             setPasswordSubmitAttempted(false);
@@ -349,14 +328,10 @@ export default function ProfileClient() {
             else {
                 formData.append("resumeUrl", profileForm.resumeUrl);
             }
-            const response = await fetch("/api/profile/resume/parse", {
+            const body = await requestJson("/api/profile/resume/parse", {
                 method: "POST",
                 body: formData,
-            });
-            const body = await response.json();
-            if (!response.ok || !body.data) {
-                throw new Error(getMessage(body, "Unable to parse resume."));
-            }
+            }, "Unable to parse resume.");
             const parsed = body.data;
             setParsedResume(parsed);
             setParsedFieldSelection(getParsedFieldSelection(parsed));

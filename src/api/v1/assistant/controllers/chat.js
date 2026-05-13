@@ -1,6 +1,8 @@
 const Joi = require("joi");
 
 const assistantService = require("../../../../lib/assistant");
+const tokenService = require("../../../../lib/token");
+const userService = require("../../../../lib/user");
 
 const messageSchema = Joi.object({
   role: Joi.string().valid("user", "assistant").required(),
@@ -20,6 +22,26 @@ const chatSchema = Joi.object({
     .optional(),
 });
 
+const getOptionalUser = async (req) => {
+  const authHeader = req.headers.authorization || "";
+  const [, token] = authHeader.split(" ");
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const decoded = tokenService.verifyToken({ token });
+    const user = decoded.id
+      ? await userService.findUserById(decoded.id)
+      : await userService.findUserByEmail(decoded.email);
+
+    return user ? { ...user._doc, id: user.id } : null;
+  } catch {
+    return null;
+  }
+};
+
 const chat = async (req, res, next) => {
   const { error, value } = chatSchema.validate(req.body, {
     abortEarly: true,
@@ -31,7 +53,11 @@ const chat = async (req, res, next) => {
   }
 
   try {
-    const answer = await assistantService.askAssistantWithOpenRouter(value);
+    const user = await getOptionalUser(req);
+    const answer = await assistantService.askAssistantWithOpenRouter({
+      ...value,
+      user,
+    });
 
     res.status(200).json({
       message: "Assistant response generated.",

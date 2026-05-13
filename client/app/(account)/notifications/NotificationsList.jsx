@@ -1,6 +1,7 @@
 "use client";
 
 import Icon from "@components/Icon";
+import { requestJson } from "@lib/clientApi";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -55,9 +56,9 @@ export default function NotificationsList({
     );
     setUnreadCount((current) => Math.max(current - 1, 0));
 
-    await fetch(`/api/notifications/${id}/read`, {
+    await requestJson(`/api/notifications/${id}/read`, {
       method: "PATCH",
-    });
+    }).catch(() => undefined);
   }
 
   async function markAllAsRead() {
@@ -71,9 +72,9 @@ export default function NotificationsList({
     );
     setUnreadCount(0);
 
-    await fetch("/api/notifications/read-all", {
+    await requestJson("/api/notifications/read-all", {
       method: "PATCH",
-    });
+    }).catch(() => undefined);
   }
 
   return (

@@ -3,7 +3,7 @@
 import Icon from "@components/Icon";
 import { CardListSkeleton } from "@components/Skeleton";
 import { useAuth } from "@components/auth/AuthProvider";
-import { getApiMessage } from "@lib/ui";
+import { requestJson } from "@lib/clientApi";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -36,13 +36,11 @@ export default function MyJobsPage() {
     async function loadSummary() {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/dashboard");
-        const body = await response.json();
-
-        if (!response.ok) {
-          throw new Error(getApiMessage(body, "Unable to load dashboard."));
-        }
-
+        const body = await requestJson(
+          "/api/dashboard",
+          {},
+          "Unable to load dashboard.",
+        );
         setSummary(body.data ?? {});
       } catch {
         setSummary({});

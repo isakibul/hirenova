@@ -3,7 +3,8 @@
 import Icon from "@components/Icon";
 import { CardListSkeleton, MetricSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
-import { formatDate, getApiMessage } from "@lib/ui";
+import { requestJson } from "@lib/clientApi";
+import { formatDate } from "@lib/ui";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -22,13 +23,11 @@ export default function ApplicationsPage() {
     async function loadApplications() {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/applications/me");
-        const body = await response.json();
-
-        if (!response.ok) {
-          throw new Error(getApiMessage(body, "Unable to load applications."));
-        }
-
+        const body = await requestJson(
+          "/api/applications/me",
+          {},
+          "Unable to load applications.",
+        );
         setApplications(body.data ?? []);
       } catch (caughtError) {
         setError(

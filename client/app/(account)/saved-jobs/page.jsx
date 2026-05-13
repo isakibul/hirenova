@@ -3,7 +3,8 @@
 import Icon from "@components/Icon";
 import { CardListSkeleton, MetricSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
-import { formatDate, getApiMessage } from "@lib/ui";
+import { requestJson } from "@lib/clientApi";
+import { formatDate } from "@lib/ui";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -25,13 +26,11 @@ export default function SavedJobsPage() {
     async function loadSavedJobs() {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/saved-jobs/me");
-        const body = await response.json();
-
-        if (!response.ok) {
-          throw new Error(getApiMessage(body, "Unable to load saved jobs."));
-        }
-
+        const body = await requestJson(
+          "/api/saved-jobs/me",
+          {},
+          "Unable to load saved jobs.",
+        );
         setSavedJobs(body.data ?? []);
       } catch (caughtError) {
         setError(

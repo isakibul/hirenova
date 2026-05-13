@@ -130,17 +130,10 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
         setMessagingCandidateId(candidateId);
         setError("");
         try {
-            const response = await fetch("/api/messages/conversations", {
+            const body = await requestJson("/api/messages/conversations", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({ recipientId: candidateId }),
-            });
-            const body = await response.json();
-            if (!response.ok || !body.data) {
-                throw new Error(getApiMessage(body, "Unable to start conversation."));
-            }
+            }, "Unable to start conversation.");
             router.push(`/messages?conversation=${body.data.id ?? body.data._id}`);
         }
         catch (caughtError) {

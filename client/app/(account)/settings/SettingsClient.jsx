@@ -6,7 +6,7 @@ import StatusNotice from "@components/StatusNotice";
 import { useAuth } from "@components/auth/AuthProvider";
 import SelectField from "@components/forms/SelectField";
 import { useTheme } from "@components/theme/ThemeProvider";
-import { getApiMessage as getMessage } from "@lib/ui";
+import { requestJson } from "@lib/clientApi";
 import { useEffect, useMemo, useState } from "react";
 
 const storageKey = "hirenova-settings";
@@ -213,11 +213,7 @@ export default function SettingsClient({ user: userProp }) {
         setNotice("");
         setError("");
         try {
-            const response = await fetch("/api/profile");
-            const body = await response.json();
-            if (!response.ok || !body.data) {
-                throw new Error(getMessage(body, "Unable to load account data."));
-            }
+            const body = await requestJson("/api/profile", {}, "Unable to load account data.");
             const profile = body.data;
             const lines = [
                 "HireNova Account Data",
@@ -274,17 +270,10 @@ export default function SettingsClient({ user: userProp }) {
         }
         setIsDeactivating(true);
         try {
-            const response = await fetch("/api/account/deactivate", {
+            await requestJson("/api/account/deactivate", {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({ password: deactivatePassword }),
-            });
-            const body = await response.json();
-            if (!response.ok) {
-                throw new Error(getMessage(body, "Unable to deactivate account."));
-            }
+            }, "Unable to deactivate account.");
             await logout();
             window.location.href = "/login";
         }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { requestJson } from "@lib/clientApi";
 import Icon from "./Icon";
 
 function formatTime(value) {
@@ -29,15 +30,11 @@ export default function NotificationsMenu({ enabled = false }) {
     }
 
     try {
-      const response = await fetch("/api/notifications?limit=6", {
+      const body = await requestJson("/api/notifications?limit=6", {
         cache: "no-store",
       });
-      const body = await response.json();
-
-      if (response.ok) {
-        setNotifications(body.data ?? []);
-        setUnreadCount(body.meta?.unreadCount ?? 0);
-      }
+      setNotifications(body.data ?? []);
+      setUnreadCount(body.meta?.unreadCount ?? 0);
     } catch {
       // Keep the notification menu quiet if the session expires mid-request.
     }
@@ -58,9 +55,9 @@ export default function NotificationsMenu({ enabled = false }) {
     );
     setUnreadCount((current) => Math.max(current - 1, 0));
 
-    await fetch(`/api/notifications/${id}/read`, {
+    await requestJson(`/api/notifications/${id}/read`, {
       method: "PATCH",
-    });
+    }).catch(() => undefined);
   }
 
   async function markAllAsRead() {
@@ -74,9 +71,9 @@ export default function NotificationsMenu({ enabled = false }) {
     );
     setUnreadCount(0);
 
-    await fetch("/api/notifications/read-all", {
+    await requestJson("/api/notifications/read-all", {
       method: "PATCH",
-    });
+    }).catch(() => undefined);
   }
 
   useEffect(() => {
@@ -88,12 +85,11 @@ export default function NotificationsMenu({ enabled = false }) {
 
     async function loadInitialNotifications() {
       try {
-        const response = await fetch("/api/notifications?limit=6", {
+        const body = await requestJson("/api/notifications?limit=6", {
           cache: "no-store",
         });
-        const body = await response.json();
 
-        if (!ignore && response.ok) {
+        if (!ignore) {
           setNotifications(body.data ?? []);
           setUnreadCount(body.meta?.unreadCount ?? 0);
         }

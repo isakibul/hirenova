@@ -2,7 +2,7 @@
 
 import StatusNotice from "@components/StatusNotice";
 import { RowListSkeleton } from "@components/Skeleton";
-import { getApiMessage } from "@lib/ui";
+import { requestJson } from "@lib/clientApi";
 import { useEffect, useState } from "react";
 import NotificationsList from "./NotificationsList";
 
@@ -16,13 +16,11 @@ export default function NotificationsPage() {
     async function loadNotifications() {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/notifications?limit=100");
-        const body = await response.json();
-
-        if (!response.ok) {
-          throw new Error(getApiMessage(body, "Unable to load notifications."));
-        }
-
+        const body = await requestJson(
+          "/api/notifications?limit=100",
+          {},
+          "Unable to load notifications.",
+        );
         setNotifications(body.data ?? []);
         setUnreadCount(body.meta?.unreadCount ?? 0);
       } catch (caughtError) {

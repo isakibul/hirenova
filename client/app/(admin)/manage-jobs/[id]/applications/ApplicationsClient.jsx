@@ -1,6 +1,7 @@
 "use client";
 
 import SelectField from "@components/forms/SelectField";
+import { requestJson } from "@lib/clientApi";
 import { useState } from "react";
 
 const statusOptions = [
@@ -15,10 +16,6 @@ function getApplicationId(application) {
     return application.id ?? application._id ?? "";
 }
 
-function getMessage(body) {
-    return body?.error ?? body?.message ?? "Something went wrong.";
-}
-
 export default function ApplicationsClient({ initialApplications }) {
     const [applications, setApplications] = useState(initialApplications);
     const [error, setError] = useState("");
@@ -29,17 +26,10 @@ export default function ApplicationsClient({ initialApplications }) {
         setUpdatingId(id);
         setError("");
         try {
-            const response = await fetch(`/api/applications/${id}/status`, {
+            const body = await requestJson(`/api/applications/${id}/status`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({ status }),
-            });
-            const body = await response.json();
-            if (!response.ok) {
-                throw new Error(getMessage(body));
-            }
+            }, "Unable to update status.");
             setApplications((current) => current.map((item) => getApplicationId(item) === id
                 ? { ...item, status: body.data?.status ?? status }
                 : item));

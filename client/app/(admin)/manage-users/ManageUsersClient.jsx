@@ -6,11 +6,11 @@ import StatusNotice from "@components/StatusNotice";
 import { useAuth } from "@components/auth/AuthProvider";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
+import { requestJson } from "@lib/clientApi";
 import { getVisibleErrors, hasValidationErrors, touchAll } from "@lib/formValidation";
 import {
     formatDate,
     formatTitle as formatStatus,
-    getApiMessage as getMessage,
     getRecordId as getUserId,
 } from "@lib/ui";
 import { useCallback, useEffect, useState } from "react";
@@ -96,11 +96,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole, }) {
             params.set("role", roleFilter);
         }
         try {
-            const response = await fetch(`/api/manage-users?${params.toString()}`);
-            const body = (await response.json());
-            if (!response.ok) {
-                throw new Error(getMessage(body));
-            }
+            const body = await requestJson(`/api/manage-users?${params.toString()}`, {}, "Unable to load users.");
             setUsers(body.data ?? []);
             setPagination(body.pagination);
         }
@@ -164,11 +160,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole, }) {
         setNotice(null);
         setError(null);
         try {
-            const response = await fetch(`/api/manage-users/${userId}`);
-            const body = (await response.json());
-            if (!response.ok || !body.data) {
-                throw new Error(getMessage(body));
-            }
+            const body = await requestJson(`/api/manage-users/${userId}`, {}, "Unable to load this user.");
             setSelectedUserId(userId);
             setSelectedUser({ ...user, ...body.data, id: userId });
         }
@@ -192,17 +184,10 @@ export default function ManageUsersClient({ currentUserId, currentUserRole, }) {
         setNotice(null);
         setError(null);
         try {
-            const response = await fetch("/api/manage-users", {
+            await requestJson("/api/manage-users", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify(buildPayload(form)),
-            });
-            const body = (await response.json());
-            if (!response.ok) {
-                throw new Error(getMessage(body));
-            }
+            }, "Unable to create user.");
             setNotice("User created.");
             setForm(emptyForm);
             setFormTouched({});
@@ -246,17 +231,10 @@ export default function ManageUsersClient({ currentUserId, currentUserRole, }) {
         setNotice(null);
         setError(null);
         try {
-            const response = await fetch(`/api/manage-users/${userId}`, {
+            await requestJson(`/api/manage-users/${userId}`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({ role: nextRole }),
-            });
-            const body = (await response.json());
-            if (!response.ok) {
-                throw new Error(getMessage(body));
-            }
+            }, "Unable to update user role.");
             setNotice(`${user.username ?? user.email ?? "User"} role updated to ${formatRole(nextRole)}.`);
             if (selectedUserId === userId) {
                 setSelectedUser((current) => current ? { ...current, role: nextRole } : current);
@@ -297,17 +275,10 @@ export default function ManageUsersClient({ currentUserId, currentUserRole, }) {
         setNotice(null);
         setError(null);
         try {
-            const response = await fetch(`/api/manage-users/${userId}`, {
+            await requestJson(`/api/manage-users/${userId}`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({ status: nextStatus }),
-            });
-            const body = (await response.json());
-            if (!response.ok) {
-                throw new Error(getMessage(body));
-            }
+            }, "Unable to update user status.");
             setNotice(`${user.username ?? user.email ?? "User"} ${nextStatus === "suspended" ? "suspended" : "activated"}.`);
             if (selectedUserId === userId) {
                 setSelectedUser((current) => current ? { ...current, status: nextStatus } : current);
@@ -340,13 +311,9 @@ export default function ManageUsersClient({ currentUserId, currentUserRole, }) {
         setNotice(null);
         setError(null);
         try {
-            const response = await fetch(`/api/manage-users/${userId}`, {
+            await requestJson(`/api/manage-users/${userId}`, {
                 method: "DELETE",
-            });
-            if (!response.ok) {
-                const body = (await response.json());
-                throw new Error(getMessage(body));
-            }
+            }, "Unable to delete user.");
             if (selectedUserId === userId) {
                 setSelectedUserId(null);
                 setSelectedUser(null);

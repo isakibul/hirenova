@@ -40,6 +40,7 @@ export default function AssistantChat() {
   const [error, setError] = useState("");
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
+  const isMessagesPage = pathname === "/messages";
 
   useEffect(() => {
     if (!isOpen) {
@@ -48,6 +49,10 @@ export default function AssistantChat() {
 
     messagesEndRef.current?.scrollIntoView({ block: "end" });
   }, [isOpen, messages]);
+
+  if (isMessagesPage) {
+    return null;
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();

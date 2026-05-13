@@ -1,3 +1,5 @@
+const { User, Job, NewsletterSubscription } = require("../../model");
+const dashboardService = require("../dashboard");
 const { badRequest } = require("../../utils/error");
 
 const maxChatMessages = 8;
@@ -11,12 +13,13 @@ HireNova capabilities:
 - Job seekers can confirm email, manage profile details, upload PDF/DOC/DOCX resumes up to 5 MB, parse resumes with AI, save jobs, apply with a cover letter, track applications, view notifications, manage settings, and message employers/admins when conversations exist.
 - Employers can manage jobs, review applicants for their jobs, browse active job seeker profiles, and use messages.
 - Admins and superadmins can use dashboard metrics, manage jobs, approve or decline listings, manage users, browse active and pending job seekers, manage newsletter subscribers, and use messages/notifications.
-- Resume parsing uses OpenRouter to extract profile fields; users should review parsed fields before saving.
+- Resume parsing uses AI to extract profile fields; users should review parsed fields before saving.
 - Newsletter emails are collected from footer subscriptions and auth flows; admins can view and delete them in Manage Newsletter.
 
 Rules:
-- Do not claim to read live database records, private account data, or current page form values unless they are provided in the conversation.
-- If the user asks for live counts, exact statuses, or private data, explain where in the app to find it.
+- You may use the safe live context provided below for aggregate counts and role-appropriate summaries.
+- Do not claim to read private records, individual user details, or current page form values unless they are provided in the conversation.
+- If the user asks for private data that is not in the safe context, explain where in the app to find it.
 - If the user asks for an action you cannot perform, give the shortest path to do it in the UI.
 - Keep answers under 120 words unless the user asks for detail.
 - If a question is outside HireNova, briefly say you are focused on HireNova and offer a related app answer.`;
@@ -30,11 +33,58 @@ const normalizeMessages = (messages = []) =>
     }))
     .filter((message) => message.content);
 
+const getSafeLiveContext = async (user) => {
+  const now = new Date();
+  const publicOpenJobFilter = {
+    approvalStatus: "approved",
+    status: "open",
+    $or: [
+      { expiresAt: { $exists: false } },
+      { expiresAt: null },
+      { expiresAt: { $gt: now } },
+    ],
+  };
+
+  const [openJobs, activeJobseekers] = await Promise.all([
+    Job.countDocuments(publicOpenJobFilter),
+    User.countDocuments({ role: "jobseeker", status: "active" }),
+  ]);
+  const liveContext = {
+    public: {
+      openJobs,
+      activeJobseekers,
+    },
+  };
+
+  if (!user?.id) {
+    return liveContext;
+  }
+
+  if (user.role === "admin" || user.role === "superadmin") {
+    const [summary, newsletterSubscribers] = await Promise.all([
+      dashboardService.getAdminSummary(),
+      NewsletterSubscription.countDocuments({ status: "subscribed" }),
+    ]);
+
+    liveContext.roleSummary = {
+      ...summary,
+      newsletterSubscribers,
+    };
+  } else if (user.role === "employer") {
+    liveContext.roleSummary = await dashboardService.getEmployerSummary(user.id);
+  } else if (user.role === "jobseeker") {
+    liveContext.roleSummary = await dashboardService.getJobseekerSummary(user.id);
+  }
+
+  return liveContext;
+};
+
 const buildMessages = ({ messages, context = {} }) => {
   const contextText = [
     context.path ? `Current route: ${context.path}` : "",
     context.role ? `User role: ${context.role}` : "",
     context.isAuthenticated ? "User is signed in." : "User is not signed in.",
+    context.live ? `Safe live context: ${JSON.stringify(context.live)}` : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -48,7 +98,7 @@ const buildMessages = ({ messages, context = {} }) => {
   ];
 };
 
-const askAssistantWithOpenRouter = async ({ messages, context }) => {
+const askAssistantWithOpenRouter = async ({ messages, context, user }) => {
   if (!process.env.OPENROUTER_API_KEY) {
     throw badRequest("OpenRouter is not configured.");
   }
@@ -63,6 +113,7 @@ const askAssistantWithOpenRouter = async ({ messages, context }) => {
     process.env.OPENROUTER_API_URL ||
     "https://openrouter.ai/api/v1/chat/completions";
 
+  const liveContext = await getSafeLiveContext(user);
   const response = await fetch(openRouterApiUrl, {
     method: "POST",
     headers: {
@@ -76,7 +127,15 @@ const askAssistantWithOpenRouter = async ({ messages, context }) => {
     },
     body: JSON.stringify({
       model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
-      messages: buildMessages({ messages: normalizedMessages, context }),
+      messages: buildMessages({
+        messages: normalizedMessages,
+        context: {
+          ...context,
+          role: user?.role || context?.role,
+          isAuthenticated: Boolean(user?.id) || Boolean(context?.isAuthenticated),
+          live: liveContext,
+        },
+      }),
       temperature: 0.2,
       max_tokens: 350,
     }),
@@ -99,4 +158,5 @@ const askAssistantWithOpenRouter = async ({ messages, context }) => {
 
 module.exports = {
   askAssistantWithOpenRouter,
+  getSafeLiveContext,
 };

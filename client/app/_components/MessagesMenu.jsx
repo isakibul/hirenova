@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { requestJson } from "../_lib/clientApi";
 import { acquireRealtimeSocket } from "../_lib/realtime";
 import {
   formatDateTime,
   formatPresence,
-  getApiMessage,
   getCandidateProfileHref,
   getDisplayName,
   getOtherParticipant,
@@ -177,13 +177,9 @@ export default function MessagesMenu({
   );
 
   async function refreshConversations({ markSelectedRead = false } = {}) {
-    const response = await fetch("/api/messages/conversations", {
+    const body = await requestJson("/api/messages/conversations", {
       cache: "no-store",
-    });
-    const body = await response.json();
-    if (!response.ok) {
-      throw new Error(getApiMessage(body, "Unable to load messages."));
-    }
+    }, "Unable to load messages.");
 
     const nextConversations = body.data ?? [];
     const nextSelectedId =
@@ -197,7 +193,7 @@ export default function MessagesMenu({
     setSelectedId(nextSelectedId);
 
     if (markSelectedRead && nextSelectedId) {
-      fetch(`/api/messages/conversations/${nextSelectedId}`, {
+      requestJson(`/api/messages/conversations/${nextSelectedId}`, {
         cache: "no-store",
       }).catch(() => undefined);
     }
@@ -276,11 +272,10 @@ export default function MessagesMenu({
       }
 
       try {
-        const response = await fetch("/api/messages/conversations", {
+        const body = await requestJson("/api/messages/conversations", {
           cache: "no-store",
         });
-        const body = await response.json();
-        if (!ignore && response.ok) {
+        if (!ignore) {
           const nextConversations = body.data ?? [];
           rememberUnreadState(nextConversations, { allowSound });
           setConversations(nextConversations);
@@ -301,10 +296,9 @@ export default function MessagesMenu({
       updateConversation(updatedConversation);
 
       if (isOpenRef.current && selectedIdRef.current === updatedId) {
-        fetch(`/api/messages/conversations/${updatedId}`, {
+        requestJson(`/api/messages/conversations/${updatedId}`, {
           cache: "no-store",
         })
-          .then((response) => response.json())
           .then((body) => {
             if (body?.data) {
               updateConversation(body.data);
@@ -394,14 +388,11 @@ export default function MessagesMenu({
       ),
     );
     try {
-      const response = await fetch(
+      const body = await requestJson(
         `/api/messages/conversations/${conversationId}`,
-        {
-          cache: "no-store",
-        },
+        { cache: "no-store" },
       );
-      const body = await response.json();
-      if (response.ok && body.data) {
+      if (body.data) {
         setConversations((current) =>
           current.map((conversation) =>
             getRecordId(conversation) === conversationId
@@ -429,20 +420,14 @@ export default function MessagesMenu({
     setIsSending(true);
     setError("");
     try {
-      const response = await fetch(
+      const body = await requestJson(
         `/api/messages/conversations/${conversationId}/messages`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({ body: bodyText }),
         },
+        "Unable to send message.",
       );
-      const body = await response.json();
-      if (!response.ok) {
-        throw new Error(getApiMessage(body, "Unable to send message."));
-      }
       setConversations((current) =>
         current
           .map((conversation) =>
@@ -479,16 +464,13 @@ export default function MessagesMenu({
     setIsDeleting(true);
     setError("");
     try {
-      const response = await fetch(
+      await requestJson(
         `/api/messages/conversations/${conversationId}`,
         {
           method: "DELETE",
         },
+        "Unable to delete conversation.",
       );
-      const body = await response.json();
-      if (!response.ok) {
-        throw new Error(getApiMessage(body, "Unable to delete conversation."));
-      }
       removeConversation(conversationId);
       setIsDeleteModalOpen(false);
     } catch (caughtError) {
