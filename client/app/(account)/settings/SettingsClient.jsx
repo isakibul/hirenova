@@ -3,10 +3,10 @@
 import Icon from "@components/Icon";
 import Modal from "@components/Modal";
 import StatusNotice from "@components/StatusNotice";
+import { useAuth } from "@components/auth/AuthProvider";
 import SelectField from "@components/forms/SelectField";
 import { useTheme } from "@components/theme/ThemeProvider";
 import { getApiMessage as getMessage } from "@lib/ui";
-import { signOut } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
 const storageKey = "hirenova-settings";
@@ -149,7 +149,9 @@ function downloadBlob(blob, filename) {
     URL.revokeObjectURL(url);
 }
 
-export default function SettingsClient({ user }) {
+export default function SettingsClient({ user: userProp }) {
+    const { logout, user: authUser } = useAuth();
+    const user = userProp ?? authUser ?? {};
     const { theme, setTheme } = useTheme();
     const [settings, setSettings] = useState({ ...defaultSettings, theme });
     const [notice, setNotice] = useState("");
@@ -283,7 +285,8 @@ export default function SettingsClient({ user }) {
             if (!response.ok) {
                 throw new Error(getMessage(body, "Unable to deactivate account."));
             }
-            await signOut({ callbackUrl: "/login" });
+            await logout();
+            window.location.href = "/login";
         }
         catch (caughtError) {
             setError(caughtError instanceof Error ? caughtError.message : "Unable to deactivate account.");

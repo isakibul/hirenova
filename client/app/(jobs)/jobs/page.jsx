@@ -1,6 +1,5 @@
 import Icon from "@components/Icon";
 import SelectField from "@components/forms/SelectField";
-import { getFromBackend } from "@lib/backend";
 import { formatDate, getApiMessage } from "@lib/ui";
 import Link from "next/link";
 import ClearFiltersButton from "./ClearFiltersButton";
@@ -51,6 +50,25 @@ function getPositiveNumber(value, fallback) {
 }
 function getErrorMessage(response) {
   return getApiMessage(response, "Unable to load jobs right now.");
+}
+function getBackendApiUrl() {
+  return (
+    process.env.NEXT_PUBLIC_BACKEND_API_URL?.replace(/\/$/, "") ??
+    "http://localhost:4000/api/v1"
+  );
+}
+async function getJobs(params) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") {
+      query.set(key, String(value));
+    }
+  });
+  const response = await fetch(`${getBackendApiUrl()}/jobs?${query.toString()}`, {
+    cache: "no-store",
+  });
+  const body = await response.json().catch(() => ({}));
+  return { body, ok: response.ok, status: response.status };
 }
 function formatJobType(value) {
   if (!value) {
@@ -130,8 +148,7 @@ export default async function JobsPage({ searchParams }) {
   const limit = Math.min(getPositiveNumber(getParam(params, "limit"), 10), 50);
   const sortValue = getParam(params, "sort") || "createdAt:dsc";
   const [sortBy = "createdAt", sortType = "dsc"] = sortValue.split(":");
-  const result = await getFromBackend("/jobs", {
-    params: {
+  const result = await getJobs({
       search: search || undefined,
       location: location || undefined,
       skills: skills || undefined,
@@ -146,7 +163,6 @@ export default async function JobsPage({ searchParams }) {
       sort_type: sortType,
       limit,
       page,
-    },
   });
   const jobs = result.ok ? (result.body.data ?? []) : [];
   const pagination = result.body.pagination;

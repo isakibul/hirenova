@@ -1,27 +1,10 @@
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "@lib/auth";
-import { getFromBackend } from "@lib/backend";
-import { getAuthHeaders } from "@lib/session";
+import { Suspense } from "react";
 import CandidatesClient from "./CandidatesClient";
 
-export default async function CandidatesPage() {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-        redirect("/login");
-    }
-    if (!["employer", "admin", "superadmin"].includes(session.user.role)) {
-        redirect("/my-jobs");
-    }
-    const result = await getFromBackend("/candidates", {
-        headers: getAuthHeaders(session.accessToken),
-        params: {
-            page: 1,
-            limit: 10,
-            sort_by: "updatedAt",
-            sort_type: "dsc",
-        },
-    });
-
-    return (<CandidatesClient initialCandidates={result.ok ? result.body.data ?? [] : []} initialPagination={result.ok ? result.body.pagination : undefined} initialError={result.ok ? "" : result.body.message ?? result.body.error ?? "Unable to load candidates."}/>);
+export default function CandidatesPage() {
+    return (
+        <Suspense fallback={<div className="site-muted p-6 text-sm">Loading candidates...</div>}>
+            <CandidatesClient />
+        </Suspense>
+    );
 }

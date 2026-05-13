@@ -1,6 +1,4 @@
 import Icon from "@components/Icon";
-import { authOptions } from "@lib/auth";
-import { getServerSession } from "next-auth";
 import Link from "next/link";
 
 const featureGroups = [
@@ -77,9 +75,7 @@ const quickFacts = [
   "Notifications for hiring activity",
 ];
 
-export default async function FeaturesPage() {
-  const session = await getServerSession(authOptions);
-
+export default function FeaturesPage() {
   return (
     <main>
       <section className="px-5 py-12 md:px-[10vw]">
@@ -103,14 +99,12 @@ export default async function FeaturesPage() {
               >
                 Explore Jobs
               </Link>
-              {!session?.user ? (
-                <Link
-                  href="/signup"
-                  className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold transition"
-                >
-                  Create Account
-                </Link>
-              ) : null}
+              <Link
+                href="/signup"
+                className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold transition"
+              >
+                Create Account
+              </Link>
             </div>
           </div>
 

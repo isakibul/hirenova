@@ -4,6 +4,7 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 const hpp = require("hpp");
+const path = require("path");
 
 const v1Routes = require("./routes/v1");
 
@@ -26,6 +27,7 @@ app.use(
 );
 app.use(hpp());
 app.disable("x-powered-by");
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 /**
  * Preventing DoS attacks via payload size
@@ -60,7 +62,8 @@ app.use((req, res, next) => {
  */
 app.use((err, _req, res, _next) => {
   console.error(err.stack);
-  const status = err.statusCode || err.status || 500;
+  const status =
+    err.code === "LIMIT_FILE_SIZE" ? 400 : err.statusCode || err.status || 500;
   res.status(status).json({ error: err.message || "Internal Server Error" });
 });
 

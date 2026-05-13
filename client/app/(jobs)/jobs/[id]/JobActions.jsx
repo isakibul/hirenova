@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@components/auth/AuthProvider";
 import { useState } from "react";
 
 function getMessage(body, fallback) {
@@ -9,8 +9,8 @@ function getMessage(body, fallback) {
 }
 
 export default function JobActions({ jobId, isClosed }) {
-    const { data: session, status } = useSession();
-    const role = session?.user?.role;
+    const { isAuthenticated, status, user } = useAuth();
+    const role = user?.role;
     const [coverLetter, setCoverLetter] = useState("");
     const [notice, setNotice] = useState("");
     const [error, setError] = useState("");
@@ -76,7 +76,7 @@ export default function JobActions({ jobId, isClosed }) {
         </div>);
     }
 
-    if (!session) {
+    if (!isAuthenticated) {
         return (<Link href="/login" className="site-button mt-4 inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium">
           Sign In to Apply
         </Link>);

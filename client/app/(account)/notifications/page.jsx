@@ -1,52 +1,54 @@
-import { authOptions } from "@lib/auth";
-import { getFromBackend } from "@lib/backend";
-import { getAuthHeaders } from "@lib/session";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
+"use client";
+
+import StatusNotice from "@components/StatusNotice";
+import { getApiMessage } from "@lib/ui";
+import { useEffect, useState } from "react";
 import NotificationsList from "./NotificationsList";
 
-export default async function NotificationsPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    redirect("/login");
-  }
+export default function NotificationsPage() {
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [error, setError] = useState("");
 
-  const result = await getFromBackend("/notifications", {
-    headers: getAuthHeaders(session.accessToken),
-    params: {
-      limit: 100,
-    },
-  });
-  const notifications = result.ok ? (result.body.data ?? []) : [];
-  const unreadCount = result.ok ? (result.body.meta?.unreadCount ?? 0) : 0;
+  useEffect(() => {
+    async function loadNotifications() {
+      try {
+        const response = await fetch("/api/notifications?limit=100");
+        const body = await response.json();
+
+        if (!response.ok) {
+          throw new Error(getApiMessage(body, "Unable to load notifications."));
+        }
+
+        setNotifications(body.data ?? []);
+        setUnreadCount(body.meta?.unreadCount ?? 0);
+      } catch (caughtError) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Unable to load notifications.",
+        );
+      }
+    }
+
+    void loadNotifications();
+  }, []);
 
   return (
     <section className="px-5 py-12 md:px-[8vw]">
       <div className="mx-auto max-w-5xl">
-        <div>
-          <div>
-            <p className="site-accent text-xs font-semibold uppercase tracking-widest">
-              Account
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Notifications
-            </h1>
-            <p className="site-muted mt-2 max-w-2xl text-sm leading-6">
-              Track application updates, saved jobs, and job activity in one
-              place.
-            </p>
-          </div>
-        </div>
-
-        {!result.ok ? (
-          <div className="site-danger mt-6 rounded-lg border px-4 py-3 text-sm">
-            {result.body.error ??
-              result.body.message ??
-              "Unable to load notifications."}
-          </div>
-        ) : null}
-
+        <p className="site-accent text-xs font-semibold uppercase tracking-widest">
+          Account
+        </p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+          Notifications
+        </h1>
+        <p className="site-muted mt-2 max-w-2xl text-sm leading-6">
+          Track application updates, saved jobs, and job activity in one place.
+        </p>
+        <StatusNotice>{error}</StatusNotice>
         <NotificationsList
+          key={`${notifications.length}-${unreadCount}`}
           initialNotifications={notifications}
           initialUnreadCount={unreadCount}
         />

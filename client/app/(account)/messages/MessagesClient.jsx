@@ -2,6 +2,7 @@
 
 import ConfirmDialog from "@components/ConfirmDialog";
 import Icon from "@components/Icon";
+import { useAuth } from "@components/auth/AuthProvider";
 import { acquireRealtimeSocket } from "@lib/realtime";
 import {
   formatDateTime,
@@ -18,6 +19,9 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function MessagesClient({ currentUserId, accessToken = "" }) {
+  const { accessToken: authAccessToken, user } = useAuth();
+  const effectiveAccessToken = accessToken || authAccessToken;
+  const effectiveCurrentUserId = currentUserId || user?.id;
   const searchParams = useSearchParams();
   const requestedConversationId = searchParams.get("conversation");
   const [conversations, setConversations] = useState([]);
@@ -145,12 +149,12 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
   }, [selectedId]);
 
   useEffect(() => {
-    if (!accessToken) {
+    if (!effectiveAccessToken) {
       return undefined;
     }
 
     let ignore = false;
-    const realtime = acquireRealtimeSocket(accessToken);
+    const realtime = acquireRealtimeSocket(effectiveAccessToken);
 
     if (!realtime) {
       return undefined;
@@ -232,7 +236,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
       realtime.release();
       document.removeEventListener("visibilitychange", handleVisibleAgain);
     };
-  }, [accessToken, removeConversation, updateConversation]);
+  }, [effectiveAccessToken, removeConversation, updateConversation]);
 
   useEffect(() => {
     if (!selectedConversation) {
@@ -363,7 +367,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
 
   const selectedOther = getOtherParticipant(
     selectedConversation,
-    currentUserId,
+    effectiveCurrentUserId,
   );
 
   return (
@@ -396,7 +400,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
               ) : (
                 conversations.map((conversation) => {
                   const conversationId = getRecordId(conversation);
-                  const other = getOtherParticipant(conversation, currentUserId);
+                  const other = getOtherParticipant(conversation, effectiveCurrentUserId);
                   const isSelected =
                     conversationId === getRecordId(selectedConversation);
                   return (
@@ -488,7 +492,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
                 </div>
               ) : selectedConversation.messages?.length ? (
                 selectedConversation.messages.map((message) => {
-                  const mine = String(message.sender) === currentUserId;
+                  const mine = String(message.sender) === effectiveCurrentUserId;
                   return (
                     <div
                       key={message.id ?? message._id}

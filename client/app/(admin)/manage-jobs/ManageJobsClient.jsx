@@ -3,6 +3,7 @@ import ConfirmDialog from "@components/ConfirmDialog";
 import Modal from "@components/Modal";
 import PaginationControls from "@components/PaginationControls";
 import StatusNotice from "@components/StatusNotice";
+import { useAuth } from "@components/auth/AuthProvider";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
 import { getVisibleErrors, hasValidationErrors, touchAll } from "@lib/formValidation";
@@ -11,7 +12,9 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import JobFormPanel from "./JobFormPanel";
 import { approvalFilterOptions, buildPayload, emptyForm, formatApprovalHistoryAction, formatApprovalStatus, formatApprovalStatusRole, formatExperience, formatJobStatus, formatJobType, formatSalary, getApprovalClass, getApprovalHistoryClass, getFormFromJob, getStatusClass, jobSortOptions, statusFilterOptions, validateJobForm, } from "./jobUtils";
-export default function ManageJobsClient({ currentRole = "admin", initialApprovalFilter = "all" }) {
+export default function ManageJobsClient({ currentRole, initialApprovalFilter = "all" }) {
+    const { user } = useAuth();
+    const effectiveRole = currentRole ?? user?.role ?? "employer";
     const [jobs, setJobs] = useState([]);
     const [pagination, setPagination] = useState();
     const [searchInput, setSearchInput] = useState("");
@@ -362,13 +365,13 @@ export default function ManageJobsClient({ currentRole = "admin", initialApprova
     }
     const totalItems = pagination?.totalItems ?? jobs.length;
     const totalPages = pagination?.totalPage ?? 1;
-    const isAdmin = currentRole === "admin" || currentRole === "superadmin";
+    const isAdmin = effectiveRole === "admin" || effectiveRole === "superadmin";
     return (<section className="px-5 py-8 md:px-[6vw] lg:px-[8vw]">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">
-              {currentRole === "superadmin" ? "Super Admin" : isAdmin ? "Admin" : "Employer"}
+              {effectiveRole === "superadmin" ? "Super Admin" : isAdmin ? "Admin" : "Employer"}
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
               Manage Jobs

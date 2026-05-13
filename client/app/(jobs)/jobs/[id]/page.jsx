@@ -1,8 +1,18 @@
 import FormattedText from "@components/FormattedText";
 import Icon from "@components/Icon";
-import { getFromBackend } from "@lib/backend";
 import { notFound } from "next/navigation";
 import JobActions from "./JobActions";
+function getBackendApiUrl() {
+    return (process.env.NEXT_PUBLIC_BACKEND_API_URL?.replace(/\/$/, "") ??
+        "http://localhost:4000/api/v1");
+}
+async function getJob(id) {
+    const response = await fetch(`${getBackendApiUrl()}/jobs/${id}`, {
+        cache: "no-store",
+    });
+    const body = await response.json().catch(() => ({}));
+    return { body, ok: response.ok, status: response.status };
+}
 function formatDate(value) {
     if (!value) {
         return "Not available";
@@ -71,7 +81,7 @@ function DetailItem({ label, value, }) {
 }
 export default async function JobDetailsPage({ params }) {
     const { id } = await params;
-    const result = await getFromBackend(`/jobs/${id}`);
+    const result = await getJob(id);
     if (result.status === 404) {
         notFound();
     }

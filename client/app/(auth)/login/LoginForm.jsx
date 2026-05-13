@@ -1,5 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import { useAuth } from "@components/auth/AuthProvider";
 import {
   emailError,
   getVisibleErrors,
@@ -7,7 +8,6 @@ import {
   required,
   touchAll,
 } from "@lib/formValidation";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,6 +19,7 @@ function validateLoginForm(form) {
 }
 export default function LoginForm() {
   const router = useRouter();
+  const { login } = useAuth();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -56,19 +57,18 @@ export default function LoginForm() {
     }
     setIsSubmitting(true);
     try {
-      const result = await signIn("credentials", {
+      await login({
         email: form.email,
         password: form.password,
-        redirect: false,
       });
-      if (!result?.ok) {
-        setError(result?.error ?? "Unable to login");
-        return;
-      }
       router.push("/jobs");
       router.refresh();
-    } catch {
-      setError("Unable to reach the server. Please try again.");
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to reach the server. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }

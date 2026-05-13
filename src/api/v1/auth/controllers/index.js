@@ -9,6 +9,8 @@ const updateProfile = require("./updateProfile");
 const logout = require("./logout");
 const resendConfirmation = require("./resendConfirmation");
 const deactivateAccount = require("./deactivateAccount");
+const uploadResume = require("./uploadResume");
+const parseResume = require("./parseResume");
 
 module.exports = {
   login,
@@ -22,4 +24,6 @@ module.exports = {
   logout,
   resendConfirmation,
   deactivateAccount,
+  uploadResume,
+  parseResume,
 };

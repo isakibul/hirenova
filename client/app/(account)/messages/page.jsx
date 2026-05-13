@@ -1,19 +1,12 @@
-import { authOptions } from "@lib/auth";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
+"use client";
+
+import { Suspense } from "react";
 import MessagesClient from "./MessagesClient";
 
-export default async function MessagesPage() {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
+export default function MessagesPage() {
   return (
-    <MessagesClient
-      currentUserId={session.user.id}
-      accessToken={session.accessToken}
-    />
+    <Suspense fallback={<div className="site-muted p-6 text-sm">Loading messages...</div>}>
+      <MessagesClient />
+    </Suspense>
   );
 }

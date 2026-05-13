@@ -2,6 +2,7 @@
 import ConfirmDialog from "@components/ConfirmDialog";
 import PaginationControls from "@components/PaginationControls";
 import StatusNotice from "@components/StatusNotice";
+import { useAuth } from "@components/auth/AuthProvider";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
 import { getVisibleErrors, hasValidationErrors, touchAll } from "@lib/formValidation";
@@ -14,7 +15,10 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import UserSidePanel from "./UserSidePanel";
 import { adminManagedRoles, buildPayload, emptyForm, formatRole, isAdminLevelRole, roleTabs, roles, userSortOptions, validateUserForm, } from "./userUtils";
-export default function ManageUsersClient({ currentUserId, currentUserRole = "admin", }) {
+export default function ManageUsersClient({ currentUserId, currentUserRole, }) {
+    const { user } = useAuth();
+    const effectiveUserId = currentUserId ?? user?.id;
+    const effectiveUserRole = currentUserRole ?? user?.role ?? "admin";
     const [users, setUsers] = useState([]);
     const [pagination, setPagination] = useState();
     const [searchInput, setSearchInput] = useState("");
@@ -42,7 +46,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
     const [error, setError] = useState(null);
     const totalItems = pagination?.totalItems ?? users.length;
     const totalPages = pagination?.totalPage ?? 1;
-    const isSuperAdmin = currentUserRole === "superadmin";
+    const isSuperAdmin = effectiveUserRole === "superadmin";
     const createRoleOptions = isSuperAdmin ? roles : adminManagedRoles;
     const validationErrors = validateUserForm(form, createRoleOptions);
     const visibleErrors = getVisibleErrors(validationErrors, formTouched, submitAttempted);
@@ -271,7 +275,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
     function requestStatusChange(user) {
         const userId = getUserId(user);
         const nextStatus = user.status === "suspended" ? "active" : "suspended";
-        if (!userId || !canChangeUserStatus(user) || currentUserId === userId) {
+        if (!userId || !canChangeUserStatus(user) || effectiveUserId === userId) {
             return;
         }
         setStatusPendingChange({ user, nextStatus });
@@ -483,7 +487,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
                     </tr>) : (users.map((user) => {
             const userId = getUserId(user);
             const isSelected = selectedUserId === userId;
-            const isCurrentUser = currentUserId === userId;
+            const isCurrentUser = effectiveUserId === userId;
             const isBusy = loadingUserId === userId ||
                 roleUpdatingUserId === userId ||
                 statusUpdatingUserId === userId ||
@@ -565,7 +569,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole = "ad
             canChangeUserRole={canChangeUserRole}
             canChangeUserStatus={canChangeUserStatus}
             createRoleOptions={createRoleOptions}
-            currentUserId={currentUserId}
+            currentUserId={effectiveUserId}
             form={form}
             isFormOpen={isFormOpen}
             isSubmitting={isSubmitting}
