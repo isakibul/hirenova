@@ -10,6 +10,7 @@ const notificationRoutes = require("./notifications.routes");
 const candidateRoutes = require("./candidates.routes");
 const messageRoutes = require("./messages.routes");
 const newsletterRoutes = require("./newsletter.routes");
+const assistantRoutes = require("./assistant.routes");
 
 router.use("/auth", authRoutes);
 router.use("/jobs", jobRoutes);
@@ -21,5 +22,6 @@ router.use("/notifications", notificationRoutes);
 router.use("/candidates", candidateRoutes);
 router.use("/messages", messageRoutes);
 router.use("/newsletter", newsletterRoutes);
+router.use("/assistant", assistantRoutes);
 
 module.exports = router;

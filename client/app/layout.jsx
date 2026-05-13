@@ -1,4 +1,5 @@
 import AuthProvider from "./_components/auth/AuthProvider";
+import AssistantChat from "./_components/AssistantChat";
 import Footer from "./_components/Footer";
 import Nav from "./_components/Nav";
 import ThemeProvider from "./_components/theme/ThemeProvider";
@@ -41,6 +42,7 @@ export default function RootLayout({ children }) {
               <Nav />
               <main className="flex-1">{children}</main>
               <Footer />
+              <AssistantChat />
             </div>
           </AuthProvider>
         </ThemeProvider>
