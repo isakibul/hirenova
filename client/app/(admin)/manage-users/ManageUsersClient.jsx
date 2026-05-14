@@ -33,7 +33,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole, }) {
     const [submitAttempted, setSubmitAttempted] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
-    const [isFormOpen, setIsFormOpen] = useState(true);
+    const [isFormOpen, setIsFormOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingUserId, setLoadingUserId] = useState(null);
@@ -358,19 +358,19 @@ export default function ManageUsersClient({ currentUserId, currentUserRole, }) {
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="site-border site-panel rounded-lg border p-4">
+          <div className="site-border site-panel rounded-lg border p-3">
             <p className="site-muted text-xs font-medium">Total Users</p>
-            <p className="mt-2 text-2xl font-semibold">{totalItems}</p>
+            <p className="mt-1 text-xl font-semibold">{totalItems}</p>
           </div>
-          <div className="site-border site-panel rounded-lg border p-4">
+          <div className="site-border site-panel rounded-lg border p-3">
             <p className="site-muted text-xs font-medium">Current Page</p>
-            <p className="mt-2 text-2xl font-semibold">
+            <p className="mt-1 text-xl font-semibold">
               {pagination?.page ?? page}
             </p>
           </div>
-          <div className="site-border site-panel rounded-lg border p-4">
+          <div className="site-border site-panel rounded-lg border p-3">
             <p className="site-muted text-xs font-medium">Sort</p>
-            <p className="mt-2 text-2xl font-semibold">
+            <p className="mt-1 text-xl font-semibold">
               {sortType === "dsc" ? "Newest" : "Oldest"}
             </p>
           </div>

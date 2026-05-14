@@ -5,6 +5,102 @@ const { badRequest } = require("../../utils/error");
 const maxChatMessages = 8;
 const maxMessageLength = 900;
 
+const pageGuide = [
+  {
+    match: (path) => path === "/jobs",
+    title: "Browse Jobs",
+    actions:
+      "Search by title, skill, or location; filter by type/salary/experience; sort jobs; open a job detail page.",
+  },
+  {
+    match: (path) => /^\/jobs\/[^/]+$/.test(path),
+    title: "Job Details",
+    actions:
+      "Review the job description, save the job, apply as a job seeker, or sign in/sign up before applying.",
+  },
+  {
+    match: (path) => path === "/profile",
+    title: "Profile",
+    actions:
+      "Edit account details, upload a resume, parse a resume, apply parsed fields, save profile changes, and update password.",
+  },
+  {
+    match: (path) => path === "/applications",
+    title: "My Applications",
+    actions:
+      "Review submitted applications and track their current status.",
+  },
+  {
+    match: (path) => path === "/saved-jobs",
+    title: "Saved Jobs",
+    actions:
+      "Review saved listings, open job details, and remove jobs from saved items.",
+  },
+  {
+    match: (path) => path === "/my-jobs",
+    title: "My Jobs",
+    actions:
+      "Review jobs posted by the signed-in employer and open management tools.",
+  },
+  {
+    match: (path) => path === "/messages",
+    title: "Messages",
+    actions:
+      "Select a conversation, send replies, inspect participants, and delete conversations.",
+  },
+  {
+    match: (path) => path === "/notifications",
+    title: "Notifications",
+    actions:
+      "Read notifications, mark one notification as read, or mark all notifications as read.",
+  },
+  {
+    match: (path) => path === "/settings",
+    title: "Settings",
+    actions:
+      "Change preferences, export account data, and request account deactivation.",
+  },
+  {
+    match: (path) => path === "/dashboard",
+    title: "Dashboard",
+    actions:
+      "Review role-specific metrics and use dashboard links to reach jobs, users, applications, and messages.",
+  },
+  {
+    match: (path) => path === "/manage-jobs",
+    title: "Manage Jobs",
+    actions:
+      "Search/filter listings, create or edit a listing, view public details, review applicants, close/reopen jobs, approve/decline listings as admin, inspect approval history, and delete listings.",
+  },
+  {
+    match: (path) => /^\/manage-jobs\/[^/]+\/applications$/.test(path),
+    title: "Job Applicants",
+    actions:
+      "Review applicants for a listing, inspect applicant details, and update application status.",
+  },
+  {
+    match: (path) => path === "/manage-users",
+    title: "Manage Users",
+    actions:
+      "Search/filter users, create accounts, view details, change roles, activate/suspend accounts, and delete eligible users.",
+  },
+  {
+    match: (path) => path === "/candidates",
+    title: "Candidates",
+    actions:
+      "Browse job seeker profiles, search/filter candidates, open candidate details, and start conversations when available.",
+  },
+  {
+    match: (path) => path === "/manage-newsletter",
+    title: "Manage Newsletter",
+    actions:
+      "Search newsletter subscribers, filter by status, sort subscriptions, and delete subscriber records.",
+  },
+];
+
+const getPageGuide = (path = "") =>
+  pageGuide.find((item) => item.match(path)) || null;
+
 const systemGuide = `You are HireNova Assistant, the in-app support chatbot for HireNova.
 Answer questions about how to use this system clearly and briefly.
 
@@ -18,6 +114,7 @@ HireNova capabilities:
 
 Rules:
 - You may use the safe live context provided below for aggregate counts and role-appropriate summaries.
+- Use the current page guide and available actions to answer page-specific "how do I..." questions with direct UI steps.
 - Do not claim to read private records, individual user details, or current page form values unless they are provided in the conversation.
 - If the user asks for private data that is not in the safe context, explain where in the app to find it.
 - If the user asks for an action you cannot perform, give the shortest path to do it in the UI.
@@ -80,8 +177,15 @@ const getSafeLiveContext = async (user) => {
 };
 
 const buildMessages = ({ messages, context = {} }) => {
+  const guide = getPageGuide(context.path);
   const contextText = [
     context.path ? `Current route: ${context.path}` : "",
+    guide ? `Current page: ${guide.title}` : "",
+    guide ? `Available page actions: ${guide.actions}` : "",
+    context.pageTitle ? `Client page title: ${context.pageTitle}` : "",
+    Array.isArray(context.visibleActions) && context.visibleActions.length
+      ? `Visible UI actions: ${context.visibleActions.join(", ")}`
+      : "",
     context.role ? `User role: ${context.role}` : "",
     context.isAuthenticated ? "User is signed in." : "User is not signed in.",
     context.live ? `Safe live context: ${JSON.stringify(context.live)}` : "",

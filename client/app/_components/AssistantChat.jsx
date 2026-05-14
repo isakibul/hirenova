@@ -14,6 +14,79 @@ const welcomeMessage = {
     "Hi, I am HireNova Assistant. Ask me how to use jobs, profiles, applications, resumes, admin tools, or newsletter features.",
 };
 
+const pageAssistantGuides = [
+  {
+    match: (path) => path === "/jobs",
+    title: "Browse Jobs",
+    actions: ["Search jobs", "Filter jobs", "Open job details"],
+    prompts: ["How do I filter jobs?", "How do I apply for a job?"],
+  },
+  {
+    match: (path) => /^\/jobs\/[^/]+$/.test(path),
+    title: "Job Details",
+    actions: ["Save job", "Apply for job", "Review job details"],
+    prompts: ["How do I apply here?", "Why can I not apply?"],
+  },
+  {
+    match: (path) => path === "/profile",
+    title: "Profile",
+    actions: ["Edit profile", "Parse resume", "Update password"],
+    prompts: ["How do I parse my resume?", "How do I update my password?"],
+  },
+  {
+    match: (path) => path === "/manage-jobs",
+    title: "Manage Jobs",
+    actions: [
+      "Create job",
+      "Edit job",
+      "Review applicants",
+      "Approve or decline",
+      "View history",
+    ],
+    prompts: ["How do approvals work?", "How do I review applicants?"],
+  },
+  {
+    match: (path) => /^\/manage-jobs\/[^/]+\/applications$/.test(path),
+    title: "Job Applicants",
+    actions: ["Review applicants", "Update application status"],
+    prompts: ["How do I update an applicant?", "What do statuses mean?"],
+  },
+  {
+    match: (path) => path === "/manage-users",
+    title: "Manage Users",
+    actions: ["Create user", "Change role", "Suspend or activate", "Delete user"],
+    prompts: ["How do role changes work?", "Why is a user action disabled?"],
+  },
+  {
+    match: (path) => path === "/candidates",
+    title: "Candidates",
+    actions: ["Search candidates", "Open profile", "Start conversation"],
+    prompts: ["How do I contact a candidate?", "Who appears here?"],
+  },
+  {
+    match: (path) => path === "/manage-newsletter",
+    title: "Manage Newsletter",
+    actions: ["Search subscribers", "Filter statuses", "Delete subscriber"],
+    prompts: ["Where do subscribers come from?", "How do I remove a subscriber?"],
+  },
+  {
+    match: (path) => path === "/messages",
+    title: "Messages",
+    actions: ["Select conversation", "Send message", "Delete conversation"],
+    prompts: ["How do conversations work?", "Why can I not send a message?"],
+  },
+  {
+    match: (path) => path === "/settings",
+    title: "Settings",
+    actions: ["Change preferences", "Export data", "Deactivate account"],
+    prompts: ["How do I export my data?", "How do I deactivate my account?"],
+  },
+];
+
+function getPageAssistantGuide(pathname) {
+  return pageAssistantGuides.find((guide) => guide.match(pathname)) ?? null;
+}
+
 function ChatBubble({ message }) {
   const isUser = message.role === "user";
 
@@ -42,6 +115,7 @@ export default function AssistantChat() {
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
   const isMessagesPage = pathname === "/messages";
+  const pageGuide = getPageAssistantGuide(pathname);
 
   useEffect(() => {
     if (!isOpen) {
@@ -88,6 +162,8 @@ export default function AssistantChat() {
               .slice(-8),
             context: {
               path: pathname,
+              pageTitle: pageGuide?.title ?? "",
+              visibleActions: pageGuide?.actions ?? [],
               role: user?.role ?? "",
               isAuthenticated,
             },
@@ -137,6 +213,21 @@ export default function AssistantChat() {
           </div>
 
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+            {pageGuide ? (
+              <div className="site-border site-panel rounded-lg border p-3">
+                <p className="text-xs font-semibold">{pageGuide.title}</p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {pageGuide.actions.slice(0, 5).map((action) => (
+                    <span
+                      key={action}
+                      className="site-badge rounded px-2 py-1 text-[11px] font-semibold"
+                    >
+                      {action}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             {messages.map((message, index) => (
               <ChatBubble key={`${message.role}-${index}`} message={message} />
             ))}
@@ -161,6 +252,20 @@ export default function AssistantChat() {
             onSubmit={handleSubmit}
             className="border-t border-[var(--site-border)] p-3"
           >
+            {pageGuide?.prompts?.length ? (
+              <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
+                {pageGuide.prompts.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => setInput(prompt)}
+                    className="site-border site-field shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             <label htmlFor="assistant-message" className="sr-only">
               Ask HireNova Assistant
             </label>

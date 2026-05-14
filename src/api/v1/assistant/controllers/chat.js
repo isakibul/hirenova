@@ -13,6 +13,11 @@ const chatSchema = Joi.object({
   messages: Joi.array().items(messageSchema).min(1).max(8).required(),
   context: Joi.object({
     path: Joi.string().trim().max(200).allow("").optional(),
+    pageTitle: Joi.string().trim().max(120).allow("").optional(),
+    visibleActions: Joi.array()
+      .items(Joi.string().trim().max(80))
+      .max(12)
+      .optional(),
     role: Joi.string()
       .valid("jobseeker", "employer", "admin", "superadmin", "")
       .optional(),

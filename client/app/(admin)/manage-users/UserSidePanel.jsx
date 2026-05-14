@@ -26,7 +26,7 @@ export default function UserSidePanel({
   visibleErrors,
 }) {
   return (
-    <aside className="site-border site-card self-start rounded-lg border">
+    <aside className="site-border site-card self-start rounded-lg border xl:sticky xl:top-24">
       <div className="flex items-center justify-between border-b border-[var(--site-border)] px-4 py-3">
         <div>
           <h2 className="font-semibold">Create User</h2>
@@ -139,7 +139,12 @@ export default function UserSidePanel({
             {isSubmitting ? "Creating..." : "Create User"}
           </button>
         </form>
-      ) : null}
+      ) : (
+        <div className="site-muted p-4 text-sm leading-6">
+          Open this panel when you need to create an account. User inspection
+          and role/status changes remain available below.
+        </div>
+      )}
 
       <div className="border-t border-[var(--site-border)]">
         <div className="px-4 py-3">

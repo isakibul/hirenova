@@ -20,7 +20,7 @@ export default function JobFormPanel({
   visibleErrors,
 }) {
   return (
-    <aside className="site-border site-card self-start rounded-lg border">
+    <aside className="site-border site-card self-start rounded-lg border 2xl:sticky 2xl:top-24">
       <div className="flex items-center justify-between border-b border-[var(--site-border)] px-4 py-3">
         <div>
           <h2 className="font-semibold">
@@ -275,7 +275,12 @@ export default function JobFormPanel({
             ) : null}
           </div>
         </form>
-      ) : null}
+      ) : (
+        <div className="site-muted p-4 text-sm leading-6">
+          Open this panel only when you need to create or edit a listing. The
+          jobs table stays easier to scan while the form is collapsed.
+        </div>
+      )}
     </aside>
   );
 }

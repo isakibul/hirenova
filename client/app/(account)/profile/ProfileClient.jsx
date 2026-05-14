@@ -424,7 +424,7 @@ export default function ProfileClient() {
         <StatusNotice tone="success">{notice}</StatusNotice>
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_414px]">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="site-border site-card rounded-lg border">
             <div className="flex items-start justify-between gap-3 border-b border-[var(--site-border)] px-4 py-3">
               <div>
@@ -438,7 +438,7 @@ export default function ProfileClient() {
               </button>
             </div>
 
-            {isLoading ? (<FormSkeleton rows={4} />) : (<form onSubmit={handleProfileSubmit} noValidate className="space-y-4 p-4">
+            {isLoading ? (<FormSkeleton rows={4} />) : (<form onSubmit={handleProfileSubmit} noValidate className="space-y-5 p-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">
                     <span className="text-sm font-medium">Username</span>
@@ -602,7 +602,7 @@ export default function ProfileClient() {
               </form>)}
           </div>
 
-          <aside className="site-border site-card self-start rounded-lg border">
+          <aside className="site-border site-card self-start rounded-lg border lg:sticky lg:top-24">
             <div className="border-b border-[var(--site-border)] px-4 py-3">
               <h2 className="font-semibold">Change Password</h2>
               <p className="site-muted mt-1 text-xs">
