@@ -526,40 +526,32 @@ export default function ManageNewsletterClient({
               </section>
 
               <section className="site-border site-card overflow-hidden rounded-lg border">
-                <div className="site-panel border-b border-[var(--site-border)] px-4 py-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="site-accent text-xs font-semibold uppercase tracking-widest">
-                        Recent campaigns
-                      </p>
-                      <p className="site-muted mt-1 text-xs">
-                        Latest sent newsletter history.
-                      </p>
-                    </div>
-                    <span className="site-badge shrink-0 rounded px-2.5 py-1 text-xs font-semibold">
-                      {campaigns.length}
-                    </span>
-                  </div>
+                <div className="border-b border-[var(--site-border)] px-4 py-3">
+                  <p className="site-accent text-xs font-semibold uppercase tracking-widest">
+                    Recent campaigns
+                  </p>
                 </div>
-                <div className="space-y-2 p-3">
+                <div className="divide-y divide-[var(--site-border)]">
                   {campaigns.length ? (
                     campaigns.map((campaign) => (
                       <div
                         key={campaign.id}
-                        className="site-border rounded-lg border bg-[var(--site-card)] p-3 transition hover:border-[var(--site-accent)] hover:bg-[var(--site-panel)]"
+                        className="grid gap-3 px-4 py-3 transition hover:bg-[var(--site-panel)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <p className="truncate text-sm font-semibold">
                               {campaign.subject}
                             </p>
-                            <p className="site-muted mt-1 text-xs">
-                              {formatDate(campaign.createdAt)}
-                            </p>
+                            <div className="site-muted mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                              <span>{formatDate(campaign.createdAt)}</span>
+                              <span>{campaign.sentCount} sent</span>
+                              <span>{campaign.failedCount} failed</span>
+                            </div>
                           </div>
                           <div className="flex shrink-0 items-center gap-2">
                             <span
-                              className={`rounded border px-2.5 py-1 text-[11px] font-semibold ${getCampaignStatusClass(campaign.status)}`}
+                              className={`rounded border px-2 py-1 text-[11px] font-semibold ${getCampaignStatusClass(campaign.status)}`}
                             >
                               {getCampaignStatusLabel(campaign.status)}
                             </span>
@@ -575,28 +567,10 @@ export default function ManageNewsletterClient({
                             </button>
                           </div>
                         </div>
-                        <div className="mt-3 grid grid-cols-2 gap-2">
-                          <div className="site-border site-field rounded-md border px-3 py-2">
-                            <p className="site-muted text-[11px] font-medium uppercase tracking-wide">
-                              Sent
-                            </p>
-                            <p className="mt-1 text-sm font-semibold">
-                              {campaign.sentCount}
-                            </p>
-                          </div>
-                          <div className="site-border site-field rounded-md border px-3 py-2">
-                            <p className="site-muted text-[11px] font-medium uppercase tracking-wide">
-                              Failed
-                            </p>
-                            <p className="mt-1 text-sm font-semibold">
-                              {campaign.failedCount}
-                            </p>
-                          </div>
-                        </div>
                       </div>
                     ))
                   ) : (
-                    <p className="site-muted text-sm">
+                    <p className="site-muted px-4 py-6 text-sm">
                       Sent campaigns will appear here.
                     </p>
                   )}

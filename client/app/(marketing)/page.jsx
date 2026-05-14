@@ -46,7 +46,7 @@ export default function Home() {
             HireNova
           </p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight md:text-5xl">
-            A simple workspace for jobs and hiring
+            Your workspace for Jobs and Hiring
           </h1>
           <p className="site-muted mx-auto mt-5 max-w-2xl text-base leading-7">
             HireNova helps jobseekers find roles and track applications while
