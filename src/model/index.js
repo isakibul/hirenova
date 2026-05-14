@@ -5,6 +5,8 @@ const SavedJob = require("./SavedJob");
 const Notification = require("./Notification");
 const Conversation = require("./Conversation");
 const NewsletterSubscription = require("./NewsletterSubscription");
+const AuditLog = require("./AuditLog");
+const EmailEvent = require("./EmailEvent");
 
 module.exports = {
   User,
@@ -14,4 +16,6 @@ module.exports = {
   Notification,
   Conversation,
   NewsletterSubscription,
+  AuditLog,
+  EmailEvent,
 };

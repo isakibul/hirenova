@@ -67,6 +67,11 @@ export default function Nav() {
             href: "/manage-newsletter",
             icon: "mail",
           },
+          {
+            label: "Operations",
+            href: "/operations",
+            icon: "chart",
+          },
         ]
       : userRole === "employer"
         ? [

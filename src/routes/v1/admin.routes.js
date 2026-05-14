@@ -59,4 +59,25 @@ router.delete(
   adminControllers.removeNewsletterSubscription
 );
 
+router.get(
+  "/operations-summary",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.getOperationsSummary
+);
+
+router.get(
+  "/audit-logs",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.getAuditLogs
+);
+
+router.get(
+  "/email-events",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.getEmailEvents
+);
+
 module.exports = router;

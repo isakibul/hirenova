@@ -6,12 +6,14 @@ const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const checkUserStatus = require("../../middleware/checkUserStatus");
 const ownership = require("../../middleware/ownership");
+const { writeLimiter } = require("../../middleware/rateLimits");
 
 // jobseeker
 router.get("/", jobControllers.findAll);
 
 router.post(
   "/:id/apply",
+  writeLimiter,
   authenticate,
   checkUserStatus,
   authorize(["jobseeker"]),
@@ -27,6 +29,7 @@ router.get(
 
 router.post(
   "/:id/save",
+  writeLimiter,
   authenticate,
   checkUserStatus,
   authorize(["jobseeker"]),
@@ -35,6 +38,7 @@ router.post(
 
 router.delete(
   "/:id/save",
+  writeLimiter,
   authenticate,
   authorize(["jobseeker"]),
   savedJobControllers.remove
@@ -45,6 +49,7 @@ router.get("/:id", jobControllers.findSingle);
 // employer/admin
 router.post(
   "/",
+  writeLimiter,
   authenticate,
   checkUserStatus,
   authorize(["admin", "superadmin", "employer"]),
@@ -53,6 +58,7 @@ router.post(
 
 router.delete(
   "/:id",
+  writeLimiter,
   authenticate,
   ownership("Job"),
   checkUserStatus,
@@ -62,6 +68,7 @@ router.delete(
 
 router.patch(
   "/:id/status",
+  writeLimiter,
   authenticate,
   ownership("Job"),
   checkUserStatus,
@@ -71,6 +78,7 @@ router.patch(
 
 router.patch(
   "/:id/approval",
+  writeLimiter,
   authenticate,
   authorize(["admin", "superadmin"]),
   jobControllers.updateApproval
@@ -78,6 +86,7 @@ router.patch(
 
 router.put(
   "/:id",
+  writeLimiter,
   authenticate,
   ownership("Job"),
   checkUserStatus,
@@ -87,6 +96,7 @@ router.put(
 
 router.patch(
   "/:id",
+  writeLimiter,
   authenticate,
   ownership("Job"),
   checkUserStatus,

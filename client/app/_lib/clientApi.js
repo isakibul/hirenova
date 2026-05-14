@@ -41,6 +41,9 @@ function mapLegacyApiPath(pathname) {
   if (pathname === "/api/manage-jobs") return "/jobs";
   if (pathname === "/api/manage-users") return "/admin/users";
   if (pathname === "/api/manage-newsletter") return "/admin/newsletter";
+  if (pathname === "/api/operations-summary") return "/admin/operations-summary";
+  if (pathname === "/api/audit-logs") return "/admin/audit-logs";
+  if (pathname === "/api/email-events") return "/admin/email-events";
   if (pathname === "/api/assistant/chat") return "/assistant/chat";
 
   let match = pathname.match(/^\/api\/manage-jobs\/([^/]+)$/);

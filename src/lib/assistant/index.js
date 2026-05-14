@@ -1,5 +1,15 @@
-const { User, Job, NewsletterSubscription } = require("../../model");
+const {
+  User,
+  Job,
+  Application,
+  SavedJob,
+  Conversation,
+  Notification,
+  NewsletterSubscription,
+} = require("../../model");
 const dashboardService = require("../dashboard");
+const { summarizeAuditActivity } = require("../observability/audit");
+const { summarizeEmailEvents } = require("../observability/emailEvents");
 const { badRequest } = require("../../utils/error");
 
 const maxChatMessages = 8;
@@ -101,6 +111,18 @@ const pageGuide = [
 const getPageGuide = (path = "") =>
   pageGuide.find((item) => item.match(path)) || null;
 
+const countByField = async ({ model, match = {}, field }) => {
+  const rows = await model.aggregate([
+    { $match: match },
+    { $group: { _id: `$${field}`, count: { $sum: 1 } } },
+  ]);
+
+  return rows.reduce((summary, row) => {
+    summary[row._id || "unknown"] = row.count;
+    return summary;
+  }, {});
+};
+
 const systemGuide = `You are HireNova Assistant, the in-app support chatbot for HireNova.
 Answer questions about how to use this system clearly and briefly.
 
@@ -109,6 +131,7 @@ HireNova capabilities:
 - Job seekers can confirm email, manage profile details, upload PDF/DOC/DOCX resumes up to 5 MB, parse resumes with AI, save jobs, apply with a cover letter, track applications, view notifications, manage settings, and message employers/admins when conversations exist.
 - Employers can manage jobs, review applicants for their jobs, browse active job seeker profiles, and use messages.
 - Admins and superadmins can use dashboard metrics, manage jobs, approve or decline listings, manage users, browse active and pending job seekers, manage newsletter subscribers, and use messages/notifications.
+- Admins and superadmins can inspect operational summaries such as audit activity and email delivery health through safe aggregate data.
 - Resume parsing uses AI to extract profile fields; users should review parsed fields before saving.
 - Newsletter emails are collected from footer subscriptions and auth flows; admins can view and delete them in Manage Newsletter.
 
@@ -132,6 +155,7 @@ const normalizeMessages = (messages = []) =>
 
 const getSafeLiveContext = async (user) => {
   const now = new Date();
+  const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const publicOpenJobFilter = {
     approvalStatus: "approved",
     status: "open",
@@ -142,14 +166,20 @@ const getSafeLiveContext = async (user) => {
     ],
   };
 
-  const [openJobs, activeJobseekers] = await Promise.all([
+  const [openJobs, activeJobseekers, jobsByType] = await Promise.all([
     Job.countDocuments(publicOpenJobFilter),
     User.countDocuments({ role: "jobseeker", status: "active" }),
+    countByField({
+      model: Job,
+      match: publicOpenJobFilter,
+      field: "jobType",
+    }),
   ]);
   const liveContext = {
     public: {
       openJobs,
       activeJobseekers,
+      jobsByType,
     },
   };
 
@@ -158,19 +188,78 @@ const getSafeLiveContext = async (user) => {
   }
 
   if (user.role === "admin" || user.role === "superadmin") {
-    const [summary, newsletterSubscribers] = await Promise.all([
+    const [
+      summary,
+      newsletterSubscribers,
+      usersByRole,
+      usersByStatus,
+      jobsByApproval,
+      applicationsByStatus,
+      emailEvents24h,
+      auditActivity24h,
+    ] = await Promise.all([
       dashboardService.getAdminSummary(),
       NewsletterSubscription.countDocuments({ status: "subscribed" }),
+      countByField({ model: User, field: "role" }),
+      countByField({ model: User, field: "status" }),
+      countByField({ model: Job, field: "approvalStatus" }),
+      countByField({ model: Application, field: "status" }),
+      summarizeEmailEvents(last24Hours),
+      summarizeAuditActivity(last24Hours),
     ]);
 
     liveContext.roleSummary = {
       ...summary,
       newsletterSubscribers,
+      usersByRole,
+      usersByStatus,
+      jobsByApproval,
+      applicationsByStatus,
+      emailEvents24h,
+      auditActivity24h,
     };
   } else if (user.role === "employer") {
-    liveContext.roleSummary = await dashboardService.getEmployerSummary(user.id);
+    const jobs = await Job.find({ author: user.id }).select("_id").lean();
+    const jobIds = jobs.map((job) => job._id);
+    const [summary, applicationsByStatus, unreadConversations] =
+      await Promise.all([
+        dashboardService.getEmployerSummary(user.id),
+        countByField({
+          model: Application,
+          match: { job: { $in: jobIds } },
+          field: "status",
+        }),
+        Conversation.countDocuments({
+          participants: user.id,
+          unreadBy: user.id,
+          deletedBy: { $ne: user.id },
+        }),
+      ]);
+
+    liveContext.roleSummary = {
+      ...summary,
+      applicationsByStatus,
+      unreadConversations,
+    };
   } else if (user.role === "jobseeker") {
-    liveContext.roleSummary = await dashboardService.getJobseekerSummary(user.id);
+    const [summary, applicationsByStatus, savedJobs, unreadNotifications] =
+      await Promise.all([
+        dashboardService.getJobseekerSummary(user.id),
+        countByField({
+          model: Application,
+          match: { applicant: user.id },
+          field: "status",
+        }),
+        SavedJob.countDocuments({ user: user.id }),
+        Notification.countDocuments({ recipient: user.id, readAt: null }),
+      ]);
+
+    liveContext.roleSummary = {
+      ...summary,
+      applicationsByStatus,
+      savedJobs,
+      unreadNotifications,
+    };
   }
 
   return liveContext;

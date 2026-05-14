@@ -7,9 +7,12 @@ const hpp = require("hpp");
 const path = require("path");
 
 const v1Routes = require("./routes/v1");
+const auditLogger = require("./middleware/auditLogger");
+const requestMetrics = require("./middleware/requestMetrics");
 
 const app = express();
 app.use(morgan("dev"));
+app.use(requestMetrics);
 
 /**
  * Security middlewares
@@ -33,13 +36,18 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
  * Preventing DoS attacks via payload size
  */
 app.use(express.json({ limit: "10kb" }));
+app.use(auditLogger);
 
 /**
  * Health checker route
  */
 app.get("/health", (_req, res, next) => {
   try {
-    res.status(200).json({ status: "OK", uptime: process.uptime() });
+    res.status(200).json({
+      status: "OK",
+      uptime: process.uptime(),
+      metrics: requestMetrics.getSnapshot(),
+    });
   } catch (err) {
     next(err);
   }
