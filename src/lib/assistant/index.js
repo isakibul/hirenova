@@ -106,6 +106,12 @@ const pageGuide = [
     actions:
       "Search newsletter subscribers, filter by status, sort subscriptions, and delete subscriber records.",
   },
+  {
+    match: (path) => path === "/system-monitor",
+    title: "System Monitor",
+    actions:
+      "Review health metrics, email delivery, audit activity, failed email events, API errors, and slow request alerts.",
+  },
 ];
 
 const getPageGuide = (path = "") =>
@@ -138,6 +144,8 @@ HireNova capabilities:
 Rules:
 - You may use the safe live context provided below for aggregate counts and role-appropriate summaries.
 - Use the current page guide and available actions to answer page-specific "how do I..." questions with direct UI steps.
+- When a direct app destination helps, include a short "Useful links:" section with safe internal paths such as /manage-jobs?approval_status=pending, /system-monitor, or /profile.
+- You may guide users to filtered admin views, but do not claim to perform the action yourself.
 - Do not claim to read private records, individual user details, or current page form values unless they are provided in the conversation.
 - If the user asks for private data that is not in the safe context, explain where in the app to find it.
 - If the user asks for an action you cannot perform, give the shortest path to do it in the UI.
@@ -274,6 +282,11 @@ const buildMessages = ({ messages, context = {} }) => {
     context.pageTitle ? `Client page title: ${context.pageTitle}` : "",
     Array.isArray(context.visibleActions) && context.visibleActions.length
       ? `Visible UI actions: ${context.visibleActions.join(", ")}`
+      : "",
+    Array.isArray(context.visibleLinks) && context.visibleLinks.length
+      ? `Visible safe links: ${context.visibleLinks
+          .map((link) => `${link.label}: ${link.href}`)
+          .join(", ")}`
       : "",
     context.role ? `User role: ${context.role}` : "",
     context.isAuthenticated ? "User is signed in." : "User is not signed in.",

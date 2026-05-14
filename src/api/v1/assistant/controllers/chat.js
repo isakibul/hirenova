@@ -18,6 +18,15 @@ const chatSchema = Joi.object({
       .items(Joi.string().trim().max(80))
       .max(12)
       .optional(),
+    visibleLinks: Joi.array()
+      .items(
+        Joi.object({
+          label: Joi.string().trim().max(80).required(),
+          href: Joi.string().trim().max(200).required(),
+        })
+      )
+      .max(8)
+      .optional(),
     role: Joi.string()
       .valid("jobseeker", "employer", "admin", "superadmin", "")
       .optional(),

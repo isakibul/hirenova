@@ -3,6 +3,7 @@
 import Icon from "@components/Icon";
 import { MetricSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
+import { useAuth } from "@components/auth/AuthProvider";
 import { requestJson } from "@lib/clientApi";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -41,7 +42,38 @@ function QuickAction({ href, icon, title, description }) {
   );
 }
 
+function OnboardingPanel({ role }) {
+  if (role === "jobseeker") {
+    return (
+      <div className="site-border site-card mt-6 rounded-lg border p-5">
+        <h2 className="font-semibold">Jobseeker Start Guide</h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <QuickAction href="/profile" icon="user" title="Complete Profile" description="Add skills, location, and resume." />
+          <QuickAction href="/jobs" icon="search" title="Find Roles" description="Filter jobs that match your profile." />
+          <QuickAction href="/applications" icon="file" title="Track Applications" description="Follow review status in one place." />
+        </div>
+      </div>
+    );
+  }
+
+  if (role === "employer") {
+    return (
+      <div className="site-border site-card mt-6 rounded-lg border p-5">
+        <h2 className="font-semibold">Employer Start Guide</h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <QuickAction href="/profile" icon="user" title="Company Profile" description="Add company details for hiring." />
+          <QuickAction href="/manage-jobs" icon="briefcase" title="Post a Job" description="Create a listing for admin review." />
+          <QuickAction href="/candidates" icon="search" title="Browse Talent" description="Find active job seeker profiles." />
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [summary, setSummary] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -78,7 +110,7 @@ export default function DashboardPage() {
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Dashboard</h1>
         <p className="site-muted mt-2 max-w-2xl text-sm leading-6">
-          Monitor hiring activity, jobs, applications, and account operations.
+          Monitor hiring activity, jobs, applications, and account activity.
         </p>
 
         <StatusNotice>{error}</StatusNotice>
@@ -97,11 +129,31 @@ export default function DashboardPage() {
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <QuickAction href="/manage-jobs" icon="briefcase" title="Manage Jobs" description="Create and review listings." />
-          <QuickAction href="/candidates" icon="search" title="Candidates" description="Browse active profiles." />
-          <QuickAction href="/manage-users" icon="user" title="Manage Users" description="Administer accounts." />
-          <QuickAction href="/profile" icon="user" title="Profile" description="Keep your profile updated." />
+          {user?.role === "jobseeker" ? (
+            <>
+              <QuickAction href="/jobs" icon="search" title="Find Jobs" description="Search and filter open roles." />
+              <QuickAction href="/applications" icon="file" title="Applications" description="Track submitted roles." />
+              <QuickAction href="/saved-jobs" icon="bell" title="Saved Jobs" description="Review roles saved for later." />
+              <QuickAction href="/profile" icon="user" title="Profile" description="Keep your profile updated." />
+            </>
+          ) : user?.role === "employer" ? (
+            <>
+              <QuickAction href="/manage-jobs" icon="briefcase" title="Manage Jobs" description="Create and review listings." />
+              <QuickAction href="/candidates" icon="search" title="Candidates" description="Browse active profiles." />
+              <QuickAction href="/messages" icon="message" title="Messages" description="Continue hiring conversations." />
+              <QuickAction href="/profile" icon="user" title="Profile" description="Keep company details updated." />
+            </>
+          ) : (
+            <>
+              <QuickAction href="/manage-jobs" icon="briefcase" title="Manage Jobs" description="Create and review listings." />
+              <QuickAction href="/candidates" icon="search" title="Candidates" description="Browse active profiles." />
+              <QuickAction href="/manage-users" icon="user" title="Manage Users" description="Administer accounts." />
+              <QuickAction href="/system-monitor" icon="chart" title="System Monitor" description="Review alerts and audit activity." />
+            </>
+          )}
         </div>
+
+        <OnboardingPanel role={user?.role} />
       </div>
     </section>
   );

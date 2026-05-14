@@ -1,5 +1,7 @@
 const { Schema, model } = require("mongoose");
 
+const emailEventRetentionDays = Number(process.env.EMAIL_EVENT_RETENTION_DAYS || 90);
+
 const emailEventSchema = new Schema(
   {
     type: {
@@ -45,6 +47,10 @@ const emailEventSchema = new Schema(
 );
 
 emailEventSchema.index({ createdAt: -1 });
+emailEventSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: Math.max(emailEventRetentionDays, 1) * 24 * 60 * 60 }
+);
 emailEventSchema.index({ status: 1, createdAt: -1 });
 
 const EmailEvent = model("EmailEvent", emailEventSchema);

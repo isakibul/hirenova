@@ -1,5 +1,5 @@
-import OperationsClient from "./OperationsClient";
+import { redirect } from "next/navigation";
 
 export default function OperationsPage() {
-  return <OperationsClient />;
+  redirect("/system-monitor");
 }

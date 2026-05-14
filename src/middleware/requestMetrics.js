@@ -11,7 +11,7 @@ const metrics = {
 
 const ignoredPathPatterns = [
   /^\/health$/,
-  /^\/api\/v1\/admin\/operations-summary$/,
+  /^\/api\/v1\/admin\/system-monitor-summary$/,
   /^\/api\/v1\/admin\/audit-logs$/,
   /^\/api\/v1\/admin\/email-events$/,
 ];

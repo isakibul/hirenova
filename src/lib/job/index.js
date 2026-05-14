@@ -704,8 +704,6 @@ const checkOwnership = async ({ resourceId, userId }) => {
     return true;
   }
   return false;
-
-  console.log("done");
 };
 
 module.exports = {

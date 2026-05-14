@@ -1,5 +1,7 @@
 const { Schema, model } = require("mongoose");
 
+const auditLogRetentionDays = Number(process.env.AUDIT_LOG_RETENTION_DAYS || 90);
+
 const auditLogSchema = new Schema(
   {
     actor: {
@@ -69,6 +71,10 @@ const auditLogSchema = new Schema(
 );
 
 auditLogSchema.index({ createdAt: -1 });
+auditLogSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: Math.max(auditLogRetentionDays, 1) * 24 * 60 * 60 }
+);
 auditLogSchema.index({ action: 1, createdAt: -1 });
 
 const AuditLog = model("AuditLog", auditLogSchema);

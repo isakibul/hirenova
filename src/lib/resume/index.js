@@ -17,6 +17,33 @@ const allowedResumeMimeTypes = new Set([
 
 const getResumeExtension = (filename = "") => path.extname(filename).toLowerCase();
 
+const hasExpectedSignature = (file, extension) => {
+  const buffer = file?.buffer;
+
+  if (!Buffer.isBuffer(buffer) || buffer.length < 8) {
+    return false;
+  }
+
+  if (extension === ".pdf") {
+    return buffer.subarray(0, 4).toString("utf8") === "%PDF";
+  }
+
+  if (extension === ".docx") {
+    return buffer[0] === 0x50 && buffer[1] === 0x4b;
+  }
+
+  if (extension === ".doc") {
+    return (
+      buffer[0] === 0xd0 &&
+      buffer[1] === 0xcf &&
+      buffer[2] === 0x11 &&
+      buffer[3] === 0xe0
+    );
+  }
+
+  return false;
+};
+
 const validateResumeFile = (file) => {
   if (!file) {
     throw badRequest("Choose a resume file to upload.");
@@ -33,6 +60,10 @@ const validateResumeFile = (file) => {
 
   if (file.size > maxResumeSize) {
     throw badRequest("Resume file must be 5 MB or smaller.");
+  }
+
+  if (file.size === 0 || !hasExpectedSignature(file, extension)) {
+    throw badRequest("Resume file content does not match the selected file type.");
   }
 };
 

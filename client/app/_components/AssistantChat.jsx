@@ -3,6 +3,7 @@
 import { useAuth } from "@components/auth/AuthProvider";
 import { requestJson } from "@lib/clientApi";
 import { getApiMessage } from "@lib/ui";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
@@ -43,6 +44,10 @@ const pageAssistantGuides = [
       "Approve or decline",
       "View history",
     ],
+    links: [
+      { label: "Pending jobs", href: "/manage-jobs?approval_status=pending" },
+      { label: "System monitor", href: "/system-monitor" },
+    ],
     prompts: ["How do approvals work?", "How do I review applicants?"],
   },
   {
@@ -67,7 +72,18 @@ const pageAssistantGuides = [
     match: (path) => path === "/manage-newsletter",
     title: "Manage Newsletter",
     actions: ["Search subscribers", "Filter statuses", "Delete subscriber"],
+    links: [{ label: "Email delivery", href: "/system-monitor" }],
     prompts: ["Where do subscribers come from?", "How do I remove a subscriber?"],
+  },
+  {
+    match: (path) => path === "/system-monitor",
+    title: "System Monitor",
+    actions: ["Review alerts", "Filter audit logs", "Filter email events"],
+    links: [
+      { label: "Failed emails", href: "/system-monitor" },
+      { label: "Audit logs", href: "/system-monitor" },
+    ],
+    prompts: ["Show me failed email events", "What should I check first?"],
   },
   {
     match: (path) => path === "/messages",
@@ -89,6 +105,7 @@ function getPageAssistantGuide(pathname) {
 
 function ChatBubble({ message }) {
   const isUser = message.role === "user";
+  const parts = String(message.content).split(/(\s\/[a-z0-9][^\s,)]*)/gi);
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
@@ -99,7 +116,23 @@ function ChatBubble({ message }) {
             : "site-border site-panel border text-[var(--site-fg)]"
         }`}
       >
-        {message.content}
+        {parts.map((part, index) => {
+          const trimmed = part.trim();
+
+          if (!isUser && trimmed.startsWith("/")) {
+            return (
+              <Link
+                key={`${part}-${index}`}
+                href={trimmed}
+                className="site-accent font-semibold underline-offset-4 hover:underline"
+              >
+                {part}
+              </Link>
+            );
+          }
+
+          return part;
+        })}
       </div>
     </div>
   );
@@ -164,6 +197,7 @@ export default function AssistantChat() {
               path: pathname,
               pageTitle: pageGuide?.title ?? "",
               visibleActions: pageGuide?.actions ?? [],
+              visibleLinks: pageGuide?.links ?? [],
               role: user?.role ?? "",
               isAuthenticated,
             },
@@ -226,6 +260,19 @@ export default function AssistantChat() {
                     </span>
                   ))}
                 </div>
+                {pageGuide.links?.length ? (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {pageGuide.links.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="site-border site-field rounded px-2 py-1 text-[11px] font-semibold"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             ) : null}
             {messages.map((message, index) => (

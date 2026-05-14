@@ -8,6 +8,7 @@ const getNewsletterSubscriptions = require("./getNewsletterSubscriptions");
 const removeNewsletterSubscription = require("./removeNewsletterSubscription");
 const getAuditLogs = require("./getAuditLogs");
 const getEmailEvents = require("./getEmailEvents");
+const getSystemMonitorSummary = require("./getSystemMonitorSummary");
 const getOperationsSummary = require("./getOperationsSummary");
 
 module.exports = {
@@ -21,5 +22,6 @@ module.exports = {
   removeNewsletterSubscription,
   getAuditLogs,
   getEmailEvents,
+  getSystemMonitorSummary,
   getOperationsSummary,
 };

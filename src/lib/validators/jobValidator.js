@@ -1,20 +1,26 @@
 const Joi = require("joi");
+const sanitizeText = require("../../utils/sanitizeText");
+
+const sanitizedString = (max) =>
+  Joi.string()
+    .max(max)
+    .custom((value) => sanitizeText(value), "sanitize unsafe markup");
 
 const jobSchema = Joi.object({
   title: Joi.string().min(10).max(150).required(),
-  description: Joi.string().max(5000).optional(),
-  location: Joi.string().max(100).optional(),
+  description: sanitizedString(5000).optional(),
+  location: sanitizedString(100).optional(),
   jobType: Joi.string()
     .valid("full-time", "part-time", "remote", "contract")
     .optional(),
-  skillsRequired: Joi.array().items(Joi.string()).optional(),
+  skillsRequired: Joi.array().items(sanitizedString(80)).optional(),
   experienceRequired: Joi.number().min(0).optional(),
   experienceMin: Joi.number().min(0).optional(),
   experienceMax: Joi.number().min(0).optional(),
   salary: Joi.number().min(0).optional(),
   status: Joi.string().valid("open", "closed").optional(),
   approvalStatus: Joi.string().valid("pending", "approved", "declined").optional(),
-  rejectionNote: Joi.string().max(1000).allow("").optional(),
+  rejectionNote: sanitizedString(1000).allow("").optional(),
   expiresAt: Joi.date().iso().allow(null).optional(),
 });
 
@@ -27,8 +33,8 @@ const jobApprovalSchema = Joi.object({
   approvalStatus: Joi.string().valid("approved", "declined").required(),
   rejectionNote: Joi.when("approvalStatus", {
     is: "declined",
-    then: Joi.string().trim().max(1000).required(),
-    otherwise: Joi.string().trim().max(1000).allow("").optional(),
+    then: sanitizedString(1000).required(),
+    otherwise: sanitizedString(1000).allow("").optional(),
   }),
 });
 

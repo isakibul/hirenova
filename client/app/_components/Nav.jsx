@@ -68,8 +68,8 @@ export default function Nav() {
             icon: "mail",
           },
           {
-            label: "Operations",
-            href: "/operations",
+            label: "System Monitor",
+            href: "/system-monitor",
             icon: "chart",
           },
         ]

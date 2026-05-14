@@ -2,23 +2,52 @@ const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
-const morgan = require("morgan");
 const hpp = require("hpp");
 const path = require("path");
 
 const v1Routes = require("./routes/v1");
 const auditLogger = require("./middleware/auditLogger");
+const requestContext = require("./middleware/requestContext");
 const requestMetrics = require("./middleware/requestMetrics");
+const structuredRequestLogger = require("./middleware/structuredRequestLogger");
+const { reportError } = require("./lib/observability/reporter");
 
 const app = express();
-app.use(morgan("dev"));
+app.use(requestContext);
 app.use(requestMetrics);
 
 /**
  * Security middlewares
  */
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin(origin, callback) {
+      const allowedOrigins = (process.env.CORS_ORIGINS || process.env.CLIENT_URL || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.length === 0 && process.env.NODE_ENV !== "production") {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -37,6 +66,7 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
  */
 app.use(express.json({ limit: "10kb" }));
 app.use(auditLogger);
+app.use(structuredRequestLogger);
 
 /**
  * Health checker route
@@ -68,11 +98,19 @@ app.use((req, res, next) => {
 /**
  * Global error handler
  */
-app.use((err, _req, res, _next) => {
-  console.error(err.stack);
+app.use((err, req, res, _next) => {
+  void reportError(err, {
+    requestId: req.id,
+    method: req.method,
+    path: req.originalUrl,
+    actorRole: req.user?.role || "anonymous",
+  });
   const status =
     err.code === "LIMIT_FILE_SIZE" ? 400 : err.statusCode || err.status || 500;
-  res.status(status).json({ error: err.message || "Internal Server Error" });
+  res.status(status).json({
+    error: err.message || "Internal Server Error",
+    requestId: req.id,
+  });
 });
 
 module.exports = app;

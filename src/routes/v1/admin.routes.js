@@ -60,6 +60,13 @@ router.delete(
 );
 
 router.get(
+  "/system-monitor-summary",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.getSystemMonitorSummary
+);
+
+router.get(
   "/operations-summary",
   authenticate,
   authorize(["admin", "superadmin"]),

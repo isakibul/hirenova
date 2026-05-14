@@ -1,7 +1,8 @@
 # HireNova Client
 
-Next.js App Router frontend for HireNova. The app uses JavaScript/JSX, route
-handlers as backend proxies, NextAuth credentials sessions, and Tailwind CSS.
+Next.js App Router frontend for HireNova. The app uses JavaScript/JSX,
+client-side auth state backed by the Express API JWT, direct backend API
+helpers, and Tailwind CSS.
 
 ## Setup
 
@@ -20,8 +21,8 @@ cp .env.example .env.local
 Required variables:
 
 - `BACKEND_API_URL`: backend API base URL, for example `http://localhost:4000/api/v1`.
-- `NEXTAUTH_URL`: frontend origin, for example `http://localhost:3000`.
-- `NEXTAUTH_SECRET`: strong random secret used to sign NextAuth tokens.
+- `NEXT_PUBLIC_BACKEND_API_URL`: browser-visible backend API base URL, for
+  example `http://localhost:4000/api/v1`.
 
 The backend also needs `CLIENT_URL` set to the same frontend origin. Email
 confirmation links are sent to `/confirm-email?token=...` on that URL.
@@ -54,9 +55,11 @@ npm run check
 - `app/(jobs)`: job browsing and detail pages.
 - `app/(account)`: authenticated user pages.
 - `app/(admin)`: admin management pages.
-- `app/api`: Next.js route handlers that proxy backend API calls.
+- `app/_components/auth/AuthProvider.jsx`: browser auth provider that stores
+  the backend access token in `localStorage`.
 - `app/_components`: shared UI and provider components.
-- `app/_lib`: shared server-side helpers for auth, env, sessions, and backend calls.
+- `app/_lib`: shared helpers for API URLs, backend calls, environment values,
+  realtime connections, validation, and UI formatting.
 
 ## Deploy on Vercel
 
