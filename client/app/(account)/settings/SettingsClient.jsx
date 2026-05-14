@@ -283,8 +283,8 @@ export default function SettingsClient({ user: userProp }) {
         }
     }
 
-    return (<section className="px-5 py-12 md:px-[8vw]">
-      <div className="mx-auto max-w-6xl">
+    return (<section className="site-section py-12">
+      <div className="site-container">
         <div>
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">Settings</p>

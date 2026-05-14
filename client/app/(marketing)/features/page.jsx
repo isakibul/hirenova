@@ -78,8 +78,8 @@ const quickFacts = [
 export default function FeaturesPage() {
   return (
     <main>
-      <section className="px-5 py-12 md:px-[10vw]">
-        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_360px] lg:items-center">
+      <section className="site-section py-12">
+        <div className="site-container grid gap-8 lg:grid-cols-[1fr_360px] lg:items-center">
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">
               Features
@@ -127,8 +127,8 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      <section className="px-5 py-8 md:px-[10vw]">
-        <div className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-2">
+      <section className="site-section py-8">
+        <div className="site-container grid gap-5 lg:grid-cols-2">
           {featureGroups.map((group) => (
             <section
               key={group.eyebrow}
@@ -167,8 +167,8 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      <section className="px-5 py-10 md:px-[10vw]">
-        <div className="mx-auto max-w-6xl">
+      <section className="site-section py-10">
+        <div className="site-container">
           <div className="max-w-2xl">
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">
               Workflow

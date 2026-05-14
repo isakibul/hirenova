@@ -140,57 +140,59 @@ export default function Nav() {
     };
   }, [isProfileOpen]);
   return (
-    <header className="site-border site-nav sticky top-0 z-20 flex items-center justify-between border-b px-5 md:px-[10vw] py-3">
-      <Link href="/" className="text-lg font-semibold tracking-tight">
-        Hire<span className="site-accent">Nova</span>
-      </Link>
+    <header className="site-border site-nav sticky top-0 z-20 border-b py-3">
+      <div className="site-section">
+        <div className="site-container flex items-center justify-between">
+          <Link href="/" className="text-lg font-semibold tracking-tight">
+            Hire<span className="site-accent">Nova</span>
+          </Link>
 
-      <nav className="hidden gap-5 text-[13px] md:flex">
-        <Link
-          href="/features"
-          className="site-link transition hover:text-(--site-accent)"
-        >
-          Features
-        </Link>
-        <Link
-          href="/about"
-          className="site-link transition hover:text-(--site-accent)"
-        >
-          About
-        </Link>
-        <Link
-          href="/jobs"
-          className="site-link transition hover:text-(--site-accent)"
-        >
-          Jobs
-        </Link>
-      </nav>
-
-      <div className="flex items-center gap-3">
-        <NotificationsMenu enabled={isAuthenticated} />
-        <MessagesMenu
-          enabled={isAuthenticated}
-          currentUserId={user?.id}
-          accessToken={accessToken}
-        />
-        {isAuthenticated ? (
-          <div className="relative" ref={profileMenuRef}>
-            <button
-              type="button"
-              onClick={() => setIsProfileOpen((current) => !current)}
-              className="site-border site-panel inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-(--site-accent) hover:text-(--site-accent)"
-              aria-label="Open profile menu"
-              aria-expanded={isProfileOpen}
-              aria-haspopup="menu"
+          <nav className="hidden gap-5 text-[13px] md:flex">
+            <Link
+              href="/features"
+              className="site-link transition hover:text-(--site-accent)"
             >
-              <Icon name="user" />
-            </button>
+              Features
+            </Link>
+            <Link
+              href="/about"
+              className="site-link transition hover:text-(--site-accent)"
+            >
+              About
+            </Link>
+            <Link
+              href="/jobs"
+              className="site-link transition hover:text-(--site-accent)"
+            >
+              Jobs
+            </Link>
+          </nav>
 
-            {isProfileOpen ? (
-              <div
-                className="site-border site-card absolute right-0 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg border py-2"
-                role="menu"
-              >
+          <div className="flex items-center gap-3">
+            <NotificationsMenu enabled={isAuthenticated} />
+            <MessagesMenu
+              enabled={isAuthenticated}
+              currentUserId={user?.id}
+              accessToken={accessToken}
+            />
+            {isAuthenticated ? (
+              <div className="relative" ref={profileMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsProfileOpen((current) => !current)}
+                  className="site-border site-panel inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-(--site-accent) hover:text-(--site-accent)"
+                  aria-label="Open profile menu"
+                  aria-expanded={isProfileOpen}
+                  aria-haspopup="menu"
+                >
+                  <Icon name="user" />
+                </button>
+
+                {isProfileOpen ? (
+                  <div
+                    className="site-border site-card absolute right-0 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg border py-2"
+                    role="menu"
+                  >
                 <div className="border-b border-(--site-border) px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="site-badge flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
@@ -260,17 +262,19 @@ export default function Nav() {
                     Sign Out
                   </button>
                 </div>
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+            ) : (
+              <Link
+                href="/signup"
+                className="site-button rounded-md px-3 py-1.5 text-[13px] font-medium transition"
+              >
+                {status === "loading" ? "..." : "Get Started"}
+              </Link>
+            )}
           </div>
-        ) : (
-          <Link
-            href="/signup"
-            className="site-button rounded-md px-3 py-1.5 text-[13px] font-medium transition"
-          >
-            {status === "loading" ? "..." : "Get Started"}
-          </Link>
-        )}
+        </div>
       </div>
     </header>
   );

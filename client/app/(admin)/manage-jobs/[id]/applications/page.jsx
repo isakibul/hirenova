@@ -32,8 +32,8 @@ export default function JobApplicationsPage({ params }) {
   }, [id]);
 
   return (
-    <section className="px-5 py-12 md:px-[8vw]">
-      <div className="mx-auto max-w-5xl">
+    <section className="site-section py-12">
+      <div className="site-container">
         <Link href="/manage-jobs" className="site-link text-sm font-semibold">
           Back to jobs
         </Link>

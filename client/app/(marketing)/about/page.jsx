@@ -49,8 +49,8 @@ const platform = [
 export default function AboutPage() {
   return (
     <main>
-      <section className="px-5 py-12 md:px-[10vw]">
-        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_380px] lg:items-center">
+      <section className="site-section py-12">
+        <div className="site-container grid gap-8 lg:grid-cols-[1fr_380px] lg:items-center">
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">
               About HireNova
@@ -99,8 +99,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="px-5 py-8 md:px-[10vw]">
-        <div className="mx-auto max-w-6xl">
+      <section className="site-section py-8">
+        <div className="site-container">
           <div className="max-w-2xl">
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">
               Purpose
@@ -134,8 +134,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="px-5 py-10 md:px-[10vw]">
-        <div className="mx-auto max-w-6xl">
+      <section className="site-section py-10">
+        <div className="site-container">
           <div className="site-border site-card rounded-xl border p-5 md:p-6">
             <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
               <div>

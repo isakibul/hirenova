@@ -171,8 +171,8 @@ export default async function JobsPage({ searchParams }) {
   const firstResult = totalItems === 0 ? 0 : (page - 1) * limit + 1;
   const lastResult = Math.min(page * limit, totalItems);
   return (
-    <section className="px-5 py-8 md:px-[6vw] lg:px-[8vw]">
-      <div className="mx-auto max-w-7xl">
+    <section className="site-section py-8">
+      <div className="site-container">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">

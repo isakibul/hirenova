@@ -6,8 +6,8 @@ import {
 
 export default function Loading() {
   return (
-    <section className="px-5 py-8 md:px-[6vw] lg:px-[8vw]">
-      <div className="mx-auto max-w-7xl">
+    <section className="site-section py-8">
+      <div className="site-container">
         <PageHeaderSkeleton />
         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <MetricSkeleton count={4} />

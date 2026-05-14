@@ -2,8 +2,8 @@ import { PageHeaderSkeleton, CardListSkeleton } from "@components/Skeleton";
 
 export default function Loading() {
   return (
-    <section className="px-5 py-12 md:px-[8vw]">
-      <div className="mx-auto max-w-6xl">
+    <section className="site-section py-12">
+      <div className="site-container">
         <PageHeaderSkeleton />
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <CardListSkeleton count={2} />

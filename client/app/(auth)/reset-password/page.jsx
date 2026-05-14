@@ -14,8 +14,8 @@ export default async function ResetPasswordPage({ searchParams }) {
     const params = await searchParams;
     const token = getToken(params);
 
-    return (<section className="px-5 py-12 md:px-[10vw]">
-      <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-[1fr_360px] md:items-center">
+    return (<section className="site-section py-12">
+      <div className="site-container grid gap-8 md:grid-cols-[1fr_360px] md:items-center">
         <div>
           <p className="site-accent text-xs font-semibold uppercase tracking-widest">
             Password Recovery

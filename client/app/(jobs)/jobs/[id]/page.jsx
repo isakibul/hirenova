@@ -87,8 +87,8 @@ export default async function JobDetailsPage({ params }) {
     }
     const job = result.ok ? result.body.data : undefined;
     if (!result.ok || !job) {
-        return (<section className="px-5 py-12 md:px-[10vw]">
-        <div className="mx-auto max-w-3xl">
+        return (<section className="site-section py-12">
+        <div className="site-container">
           <div className="site-danger rounded-lg border p-4 text-sm">
             {getErrorMessage(result.body)}
           </div>
@@ -100,8 +100,8 @@ export default async function JobDetailsPage({ params }) {
     const updatedDate = formatDate(job.updatedAt);
     const jobStatus = getJobStatus(job);
     const isClosed = jobStatus !== "Open Role";
-    return (<section className="px-5 py-12 md:px-[10vw]">
-      <div className="mx-auto max-w-5xl">
+    return (<section className="site-section py-12">
+      <div className="site-container">
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <article className="site-border site-card site-elevated rounded-lg border p-5 md:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

@@ -7,10 +7,10 @@ import SkeletonBlock, {
   TableRowsSkeleton,
 } from "@components/Skeleton";
 
-export function PageShellSkeleton({ children, maxWidth = "max-w-6xl" }) {
+export function PageShellSkeleton({ children }) {
   return (
-    <section className="px-5 py-8 md:px-[8vw]">
-      <div className={`mx-auto ${maxWidth}`}>{children}</div>
+    <section className="site-section py-8">
+      <div className="site-container">{children}</div>
     </section>
   );
 }
@@ -114,8 +114,8 @@ export function ProfilePageSkeleton() {
 
 export function JobsPageSkeleton() {
   return (
-    <section className="px-5 py-10 md:px-[8vw]">
-      <div className="mx-auto max-w-7xl">
+    <section className="site-section py-10">
+      <div className="site-container">
         <PageHeaderSkeleton />
         <div className="site-border site-card mt-8 rounded-lg border p-4">
           <div className="grid gap-3 lg:grid-cols-[1fr_1fr_140px_160px]">
@@ -173,8 +173,8 @@ export function JobDetailPageSkeleton() {
 
 export function AuthPageSkeleton() {
   return (
-    <section className="px-5 py-16 md:px-[8vw]">
-      <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-[1fr_420px] md:items-start">
+    <section className="site-section py-16">
+      <div className="site-container grid gap-8 md:grid-cols-[1fr_420px] md:items-start">
         <PageHeaderSkeleton />
         <div className="site-border site-card rounded-lg border p-4">
           <FormSkeleton rows={3} />

@@ -3,8 +3,8 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <section className="px-5 py-16 md:px-[8vw]">
-      <div className="mx-auto max-w-3xl text-center">
+    <section className="site-section py-16">
+      <div className="site-container text-center">
         <div className="site-badge mx-auto flex h-14 w-14 items-center justify-center rounded-lg">
           <Icon name="search" />
         </div>

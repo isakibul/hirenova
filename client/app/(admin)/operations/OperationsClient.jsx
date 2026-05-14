@@ -12,7 +12,7 @@ export default function OperationsClient() {
   }, [router]);
 
   return (
-    <section className="px-5 py-16 md:px-[10vw]">
+    <section className="site-section py-16">
       <div className="mx-auto flex max-w-xl items-center gap-3 text-sm">
         <LoadingCircle />
         Redirecting to System Monitor...

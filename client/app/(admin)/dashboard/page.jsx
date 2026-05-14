@@ -103,8 +103,8 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <section className="px-5 py-8 md:px-[8vw]">
-      <div className="mx-auto max-w-7xl">
+    <section className="site-section py-8">
+      <div className="site-container">
         <p className="site-accent text-xs font-semibold uppercase tracking-widest">
           Workspace
         </p>

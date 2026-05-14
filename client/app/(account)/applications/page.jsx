@@ -48,8 +48,8 @@ export default function ApplicationsPage() {
   ).length;
 
   return (
-    <section className="px-5 py-12 md:px-[8vw]">
-      <div className="mx-auto max-w-6xl">
+    <section className="site-section py-12">
+      <div className="site-container">
         <p className="site-accent text-xs font-semibold uppercase tracking-widest">
           Jobseeker
         </p>

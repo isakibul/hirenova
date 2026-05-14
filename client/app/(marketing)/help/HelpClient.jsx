@@ -93,8 +93,8 @@ export default function HelpClient() {
         window.location.href = getMailto(form);
     }
 
-    return (<section className="px-5 py-12 md:px-[8vw]">
-      <div className="mx-auto max-w-6xl">
+    return (<section className="site-section py-12">
+      <div className="site-container">
         <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">Help Center</p>

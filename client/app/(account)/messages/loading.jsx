@@ -2,8 +2,8 @@ import SkeletonBlock, { RowListSkeleton } from "@components/Skeleton";
 
 export default function Loading() {
   return (
-    <section className="px-5 py-8 md:px-[8vw]">
-      <div className="mx-auto max-w-7xl">
+    <section className="site-section py-8">
+      <div className="site-container">
         <div className="grid h-[calc(100vh-5.5rem)] min-h-[620px] gap-4 lg:grid-cols-[340px_1fr]">
           <aside className="site-border site-card overflow-hidden rounded-lg border">
             <div className="site-panel border-b border-[var(--site-border)] px-4 py-3">

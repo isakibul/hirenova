@@ -101,8 +101,8 @@ export default function Footer() {
   }
 
   return (
-    <footer className="site-border border-t px-5 py-10 md:px-[10vw]">
-      <div className="mx-auto max-w-6xl">
+    <footer className="site-border site-section border-t py-10">
+      <div className="site-container">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:items-start">
           <section className="max-w-md">
             <Link href="/" className="text-xl font-semibold tracking-tight">

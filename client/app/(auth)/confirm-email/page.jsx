@@ -51,7 +51,7 @@ function ConfirmEmailContent() {
 
 export default function ConfirmEmailPage() {
   return (
-    <section className="px-5 py-16 md:px-[8vw]">
+    <section className="site-section py-16">
       <div className="mx-auto max-w-xl">
         <p className="site-accent text-xs font-semibold uppercase tracking-widest">
           Account

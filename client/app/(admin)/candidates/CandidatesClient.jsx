@@ -144,8 +144,8 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
         }
     }
 
-    return (<section className="px-5 py-8 md:px-[6vw] lg:px-[8vw]">
-      <div className="mx-auto max-w-7xl">
+    return (<section className="site-section py-8">
+      <div className="site-container">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">Employer</p>

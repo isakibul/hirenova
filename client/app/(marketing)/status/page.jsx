@@ -41,8 +41,8 @@ export default async function StatusPage() {
     const health = await getHealth();
     const status = health.body.status ?? (health.ok ? "OK" : "DOWN");
 
-    return (<section className="px-5 py-12 md:px-[10vw]">
-      <div className="mx-auto max-w-3xl">
+    return (<section className="site-section py-12">
+      <div className="site-container">
         <p className="site-accent text-xs font-semibold uppercase tracking-widest">
           System Status
         </p>

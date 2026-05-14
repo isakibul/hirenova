@@ -40,8 +40,8 @@ export default function Home() {
 
   return (
     <>
-      <section className="px-5 py-14 md:px-[10vw] lg:py-20">
-        <div className="mx-auto max-w-4xl text-center">
+      <section className="site-section py-14 lg:py-20">
+        <div className="site-container text-center">
           <p className="site-accent text-xs font-semibold uppercase tracking-widest">
             HireNova
           </p>
@@ -94,8 +94,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-5 pb-14 md:px-[10vw]">
-        <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-3">
+      <section className="site-section pb-14">
+        <div className="site-container grid gap-4 md:grid-cols-3">
           {features.map((feature) => (
             <article
               key={feature.title}
