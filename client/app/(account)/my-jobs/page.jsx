@@ -11,7 +11,7 @@ function MetricCard({ href, icon, label, value, description }) {
   return (
     <Link
       href={href}
-      className="site-border site-card rounded-lg border p-5 transition hover:border-[var(--site-accent)]"
+      className="site-border site-card h-full rounded-lg border p-5 transition hover:border-[var(--site-accent)]"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -63,7 +63,7 @@ export default function MyJobsPage() {
           Track applications, revisit saved roles, and keep your next move organized.
         </p>
 
-        <div className="mt-8 grid items-start gap-4 md:grid-cols-2">
+        <div className="mt-8 grid items-stretch gap-4 md:grid-cols-2">
           {isLoading ? (
             <CardListSkeleton count={2} />
           ) : (
@@ -89,14 +89,14 @@ export default function MyJobsPage() {
         <div className="mt-6 grid items-start gap-4 lg:grid-cols-[1fr_340px]">
           <div className="site-border site-card rounded-lg border p-5">
             <h2 className="font-semibold">Recommended Next Steps</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <Link href="/profile" className="site-border site-field rounded-lg border p-4 text-sm font-semibold">
+            <div className="mt-4 grid items-stretch gap-3 sm:grid-cols-3">
+              <Link href="/profile" className="site-border site-field h-full rounded-lg border p-4 text-sm font-semibold">
                 Complete profile
               </Link>
-              <Link href="/saved-jobs" className="site-border site-field rounded-lg border p-4 text-sm font-semibold">
+              <Link href="/saved-jobs" className="site-border site-field h-full rounded-lg border p-4 text-sm font-semibold">
                 Review saved roles
               </Link>
-              <Link href="/applications" className="site-border site-field rounded-lg border p-4 text-sm font-semibold">
+              <Link href="/applications" className="site-border site-field h-full rounded-lg border p-4 text-sm font-semibold">
                 Check statuses
               </Link>
             </div>

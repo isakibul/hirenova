@@ -74,7 +74,7 @@ function getErrorMessage(response) {
     return response.error ?? response.message ?? "Unable to load this job.";
 }
 function DetailItem({ label, value, }) {
-    return (<div className="site-border site-panel rounded-lg border p-4">
+    return (<div className="site-border site-panel h-full rounded-lg border p-4">
       <p className="site-muted text-xs font-medium">{label}</p>
       <p className="mt-1 text-sm font-semibold">{value}</p>
     </div>);
@@ -122,7 +122,7 @@ export default async function JobDetailsPage({ params }) {
               </span>
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-2">
               <DetailItem label="Location" value={job.location ?? "Remote"}/>
               <DetailItem label="Job Type" value={formatJobType(job.jobType)}/>
               <DetailItem label="Salary" value={formatSalary(job.salary)}/>

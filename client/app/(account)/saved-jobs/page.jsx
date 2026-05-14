@@ -57,22 +57,22 @@ export default function SavedJobsPage() {
           Compare roles you want to revisit before applying.
         </p>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-3">
           {isLoading ? (
             <MetricSkeleton count={3} />
           ) : (
             <>
-              <div className="site-border site-panel rounded-lg border p-4">
+              <div className="site-border site-panel h-full rounded-lg border p-4">
                 <p className="site-muted text-xs font-medium">Saved Roles</p>
                 <p className="mt-2 text-2xl font-semibold">{savedJobs.length}</p>
               </div>
-              <div className="site-border site-panel rounded-lg border p-4">
+              <div className="site-border site-panel h-full rounded-lg border p-4">
                 <p className="site-muted text-xs font-medium">Latest Save</p>
                 <p className="mt-2 text-2xl font-semibold">
                   {savedJobs[0] ? formatDate(savedJobs[0].createdAt) : "None"}
                 </p>
               </div>
-              <div className="site-border site-panel rounded-lg border p-4">
+              <div className="site-border site-panel h-full rounded-lg border p-4">
                 <p className="site-muted text-xs font-medium">Next Step</p>
                 <p className="mt-2 text-2xl font-semibold">Apply</p>
               </div>
@@ -82,7 +82,7 @@ export default function SavedJobsPage() {
 
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid items-start gap-4 md:grid-cols-2">
+        <div className="mt-6 grid items-stretch gap-4 md:grid-cols-2">
           {isLoading ? (
             <CardListSkeleton count={4} />
           ) : savedJobs.length === 0 ? (
@@ -104,7 +104,7 @@ export default function SavedJobsPage() {
                 <Link
                   key={savedJob.id ?? savedJob._id}
                   href={jobId ? `/jobs/${jobId}` : "/jobs"}
-                  className="site-border site-card rounded-lg border p-5 transition hover:border-[var(--site-accent)]"
+                  className="site-border site-card h-full rounded-lg border p-5 transition hover:border-[var(--site-accent)]"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>

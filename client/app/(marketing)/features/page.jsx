@@ -128,11 +128,11 @@ export default function FeaturesPage() {
       </section>
 
       <section className="site-section py-8">
-        <div className="site-container grid items-start gap-5 lg:grid-cols-2">
+        <div className="site-container grid items-stretch gap-5 lg:grid-cols-2">
           {featureGroups.map((group) => (
             <section
               key={group.eyebrow}
-              className="site-border site-card rounded-xl border p-5"
+              className="site-border site-card h-full rounded-xl border p-5"
             >
               <p className="site-accent text-xs font-semibold uppercase tracking-widest">
                 {group.eyebrow}
@@ -178,11 +178,11 @@ export default function FeaturesPage() {
             </h2>
           </div>
 
-          <div className="mt-6 grid items-start gap-4 md:grid-cols-3">
+          <div className="mt-6 grid items-stretch gap-4 md:grid-cols-3">
             {workflow.map((item, index) => (
               <article
                 key={item.title}
-                className="site-border site-card rounded-lg border p-4"
+                className="site-border site-card h-full rounded-lg border p-4"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="site-badge inline-flex h-9 w-9 items-center justify-center rounded-md">

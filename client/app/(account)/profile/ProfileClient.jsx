@@ -400,20 +400,20 @@ export default function ProfileClient() {
           </span>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="site-border site-panel rounded-lg border p-4">
+        <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-3">
+          <div className="site-border site-panel h-full rounded-lg border p-4">
             <p className="site-muted text-xs font-medium">Account Type</p>
             <p className="mt-2 text-2xl font-semibold">
               {formatRole(profile?.role)}
             </p>
           </div>
-          <div className="site-border site-panel rounded-lg border p-4">
+          <div className="site-border site-panel h-full rounded-lg border p-4">
             <p className="site-muted text-xs font-medium">Status</p>
             <p className="mt-2 text-2xl font-semibold">
               {formatStatus(profile?.status)}
             </p>
           </div>
-          <div className="site-border site-panel rounded-lg border p-4">
+          <div className="site-border site-panel h-full rounded-lg border p-4">
             <p className="site-muted text-xs font-medium">Joined</p>
             <p className="mt-2 text-2xl font-semibold">
               {formatDate(profile?.createdAt)}

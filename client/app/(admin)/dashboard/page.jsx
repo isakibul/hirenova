@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 
 function Metric({ label, value, helper, icon = "chart" }) {
   return (
-    <div className="site-border site-card rounded-lg border p-5">
+    <div className="site-border site-card h-full rounded-lg border p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="site-muted text-xs font-medium">{label}</p>
@@ -29,7 +29,7 @@ function QuickAction({ href, icon, title, description }) {
   return (
     <Link
       href={href}
-      className="site-border site-panel flex items-center gap-3 rounded-lg border p-4 transition hover:border-[var(--site-accent)]"
+      className="site-border site-panel flex h-full items-center gap-3 rounded-lg border p-4 transition hover:border-[var(--site-accent)]"
     >
       <span className="site-border site-card flex h-10 w-10 shrink-0 items-center justify-center rounded-md border">
         <Icon name={icon} />
@@ -47,7 +47,7 @@ function OnboardingPanel({ role }) {
     return (
       <div className="site-border site-card mt-6 rounded-lg border p-5">
         <h2 className="font-semibold">Jobseeker Start Guide</h2>
-        <div className="mt-4 grid items-start gap-3 md:grid-cols-3">
+        <div className="mt-4 grid items-stretch gap-3 md:grid-cols-3">
           <QuickAction href="/profile" icon="user" title="Complete Profile" description="Add skills, location, and resume." />
           <QuickAction href="/jobs" icon="search" title="Find Roles" description="Filter jobs that match your profile." />
           <QuickAction href="/applications" icon="file" title="Track Applications" description="Follow review status in one place." />
@@ -60,7 +60,7 @@ function OnboardingPanel({ role }) {
     return (
       <div className="site-border site-card mt-6 rounded-lg border p-5">
         <h2 className="font-semibold">Employer Start Guide</h2>
-        <div className="mt-4 grid items-start gap-3 md:grid-cols-3">
+        <div className="mt-4 grid items-stretch gap-3 md:grid-cols-3">
           <QuickAction href="/profile" icon="user" title="Company Profile" description="Add company details for hiring." />
           <QuickAction href="/manage-jobs" icon="briefcase" title="Post a Job" description="Create a listing for admin review." />
           <QuickAction href="/candidates" icon="search" title="Browse Talent" description="Find active job seeker profiles." />
@@ -115,7 +115,7 @@ export default function DashboardPage() {
 
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid items-start gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-4">
           {isLoading ? (
             <MetricSkeleton count={4} />
           ) : (
@@ -128,7 +128,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="mt-6 grid items-start gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-4">
           {user?.role === "jobseeker" ? (
             <>
               <QuickAction href="/jobs" icon="search" title="Find Jobs" description="Search and filter open roles." />

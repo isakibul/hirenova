@@ -365,18 +365,18 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
           </button>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="site-border site-panel rounded-lg border p-3">
+        <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-3">
+          <div className="site-border site-panel h-full rounded-lg border p-3">
             <p className="site-muted text-xs font-medium">Total Users</p>
             <p className="mt-1 text-xl font-semibold">{totalItems}</p>
           </div>
-          <div className="site-border site-panel rounded-lg border p-3">
+          <div className="site-border site-panel h-full rounded-lg border p-3">
             <p className="site-muted text-xs font-medium">Current Page</p>
             <p className="mt-1 text-xl font-semibold">
               {pagination?.page ?? page}
             </p>
           </div>
-          <div className="site-border site-panel rounded-lg border p-3">
+          <div className="site-border site-panel h-full rounded-lg border p-3">
             <p className="site-muted text-xs font-medium">Sort</p>
             <p className="mt-1 text-xl font-semibold">
               {sortType === "dsc" ? "Newest" : "Oldest"}
@@ -387,7 +387,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
         <StatusNotice tone="success">{notice}</StatusNotice>
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid items-start gap-6 xl:grid-cols-[1fr_415px]">
+        <div className="mt-6 grid items-start gap-3 xl:grid-cols-3">
           <UsersTable
             canChangeUserRole={canChangeUserRole}
             canChangeUserStatus={canChangeUserStatus}

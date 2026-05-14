@@ -379,12 +379,12 @@ export default function ManageNewsletterClient({
             </a>
           </div>
 
-          <div className="mt-6 grid items-start gap-3 md:grid-cols-3">
-            <div className="site-border site-panel rounded-lg border p-4">
+          <div className="mt-6 grid items-stretch gap-3 md:grid-cols-3">
+            <div className="site-border site-panel h-full rounded-lg border p-4">
               <p className="site-muted text-xs font-medium">Total emails</p>
               <p className="mt-2 text-2xl font-semibold">{totalItems}</p>
             </div>
-            <div className="site-border site-panel rounded-lg border p-4">
+            <div className="site-border site-panel h-full rounded-lg border p-4">
               <p className="site-muted text-xs font-medium">
                 Visible subscribed
               </p>
@@ -392,7 +392,7 @@ export default function ManageNewsletterClient({
                 {visibleSubscribedCount}
               </p>
             </div>
-            <div className="site-border site-panel rounded-lg border p-4">
+            <div className="site-border site-panel h-full rounded-lg border p-4">
               <p className="site-muted text-xs font-medium">Last campaign</p>
               <p className="mt-2 truncate text-lg font-semibold">
                 {lastCampaign
@@ -405,10 +405,10 @@ export default function ManageNewsletterClient({
           <StatusNotice tone="success">{notice}</StatusNotice>
           <StatusNotice>{error}</StatusNotice>
 
-          <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <div className="mt-6 grid items-start gap-3 xl:grid-cols-3">
             <form
               onSubmit={sendCampaign}
-              className="site-border site-card rounded-lg border xl:col-start-1 xl:row-start-1"
+              className="site-border site-card rounded-lg border xl:col-span-2 xl:col-start-1 xl:row-start-1"
             >
               <div className="border-b border-[var(--site-border)] px-5 py-4">
                 <div className="flex items-start justify-between gap-4">
@@ -495,7 +495,7 @@ export default function ManageNewsletterClient({
               </div>
             </form>
 
-            <div className="space-y-6 xl:col-start-2 xl:row-span-2 xl:row-start-1">
+            <div className="space-y-3 xl:col-start-3 xl:row-span-2 xl:row-start-1">
               <section className="site-border site-card rounded-lg border">
                 <div className="border-b border-[var(--site-border)] px-4 py-3">
                   <p className="site-accent text-xs font-semibold uppercase tracking-widest">
@@ -578,7 +578,7 @@ export default function ManageNewsletterClient({
               </section>
             </div>
 
-          <div className="site-border site-card mt-6 overflow-hidden rounded-lg border xl:col-start-1 xl:row-start-2 xl:mt-0">
+          <div className="site-border site-card mt-6 overflow-hidden rounded-lg border xl:col-span-2 xl:col-start-1 xl:row-start-2 xl:mt-0">
             <div className="border-b border-[var(--site-border)] p-4">
               <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                 <div>

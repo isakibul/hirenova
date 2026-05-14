@@ -95,11 +95,11 @@ export default function Home() {
       </section>
 
       <section className="site-section pb-14">
-        <div className="site-container grid items-start gap-4 md:grid-cols-3">
+        <div className="site-container grid items-stretch gap-4 md:grid-cols-3">
           {features.map((feature) => (
             <article
               key={feature.title}
-              className="site-border site-card rounded-lg border p-5"
+              className="site-border site-card h-full rounded-lg border p-5"
             >
               <div className="site-badge mb-4 inline-flex h-9 w-9 items-center justify-center rounded-md">
                 <Icon name={feature.icon} />

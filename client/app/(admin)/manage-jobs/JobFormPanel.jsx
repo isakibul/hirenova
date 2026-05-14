@@ -20,7 +20,7 @@ export default function JobFormPanel({
   visibleErrors,
 }) {
   return (
-    <aside className="site-border site-card self-start rounded-lg border 2xl:sticky 2xl:top-24">
+    <aside className="site-border site-card self-start rounded-lg border 2xl:col-start-3 2xl:sticky 2xl:top-24">
       <div className="flex items-center justify-between border-b border-[var(--site-border)] px-4 py-3">
         <div>
           <h2 className="font-semibold">

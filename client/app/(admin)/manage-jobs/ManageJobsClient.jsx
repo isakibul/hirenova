@@ -357,18 +357,18 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
           </button>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="site-border site-panel rounded-lg border p-3">
+        <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-3">
+          <div className="site-border site-panel h-full rounded-lg border p-3">
             <p className="site-muted text-xs font-medium">Total Results</p>
             <p className="mt-1 text-xl font-semibold">{totalItems}</p>
           </div>
-          <div className="site-border site-panel rounded-lg border p-3">
+          <div className="site-border site-panel h-full rounded-lg border p-3">
             <p className="site-muted text-xs font-medium">Current Page</p>
             <p className="mt-1 text-xl font-semibold">
               {pagination?.page ?? page}
             </p>
           </div>
-          <div className="site-border site-panel rounded-lg border p-3">
+          <div className="site-border site-panel h-full rounded-lg border p-3">
             <p className="site-muted text-xs font-medium">Sort</p>
             <p className="mt-1 text-xl font-semibold">
               {sortType === "dsc" ? "Newest" : "Oldest"}
@@ -379,8 +379,8 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
         <StatusNotice tone="success">{notice}</StatusNotice>
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_415px]">
-          <div className="site-border site-card min-w-0 overflow-hidden rounded-lg border">
+        <div className="mt-6 grid items-start gap-3 2xl:grid-cols-3">
+          <div className="site-border site-card min-w-0 overflow-hidden rounded-lg border 2xl:col-span-2">
             <div className="site-panel border-b border-[var(--site-border)] p-4">
               <form onSubmit={handleSearch} className="grid gap-3 lg:grid-cols-[1fr_160px_150px_160px_120px]">
                 <label className="relative">

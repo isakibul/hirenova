@@ -5,7 +5,7 @@ export default function Loading() {
     <section className="site-section py-8">
       <div className="site-container">
         <PageHeaderSkeleton />
-        <div className="mt-6 grid items-start gap-4 lg:grid-cols-2">
+        <div className="mt-6 grid items-stretch gap-4 lg:grid-cols-2">
           <CardListSkeleton count={4} />
         </div>
       </div>

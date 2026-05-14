@@ -60,20 +60,20 @@ export default function ApplicationsPage() {
           Follow each role from submission through final decision.
         </p>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-3">
           {isLoading ? (
             <MetricSkeleton count={3} />
           ) : (
             <>
-              <div className="site-border site-panel rounded-lg border p-4">
+              <div className="site-border site-panel h-full rounded-lg border p-4">
                 <p className="site-muted text-xs font-medium">Total</p>
                 <p className="mt-2 text-2xl font-semibold">{applications.length}</p>
               </div>
-              <div className="site-border site-panel rounded-lg border p-4">
+              <div className="site-border site-panel h-full rounded-lg border p-4">
                 <p className="site-muted text-xs font-medium">Active</p>
                 <p className="mt-2 text-2xl font-semibold">{activeCount}</p>
               </div>
-              <div className="site-border site-panel rounded-lg border p-4">
+              <div className="site-border site-panel h-full rounded-lg border p-4">
                 <p className="site-muted text-xs font-medium">Latest</p>
                 <p className="mt-2 text-2xl font-semibold">
                   {applications[0] ? formatDate(applications[0].createdAt) : "None"}

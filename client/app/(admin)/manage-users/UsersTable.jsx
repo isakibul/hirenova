@@ -40,7 +40,7 @@ export default function UsersTable({
   users,
 }) {
   return (
-    <div className="site-border site-card overflow-hidden rounded-lg border xl:w-[calc(100%+4px)]">
+    <div className="site-border site-card overflow-hidden rounded-lg border xl:col-span-2">
       <div className="site-panel border-b border-[var(--site-border)] p-4">
         <form
           onSubmit={onSearch}

@@ -26,7 +26,7 @@ export default function UserSidePanel({
   visibleErrors,
 }) {
   return (
-    <aside className="site-border site-card self-start rounded-lg border xl:sticky xl:top-24">
+    <aside className="site-border site-card self-start rounded-lg border xl:col-start-3 xl:sticky xl:top-24">
       <div className="flex items-center justify-between border-b border-[var(--site-border)] px-4 py-3">
         <div>
           <h2 className="font-semibold">Create User</h2>

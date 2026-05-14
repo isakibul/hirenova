@@ -61,7 +61,7 @@ export function ListPageSkeleton({ metrics = 3, rows = 5, maxWidth = "max-w-6xl"
   return (
     <PageShellSkeleton maxWidth={maxWidth}>
       <PageHeaderSkeleton />
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-3">
         <MetricSkeleton count={metrics} />
       </div>
       <div className="site-border site-card mt-6 divide-y divide-[var(--site-border)] overflow-hidden rounded-lg border">
@@ -75,10 +75,10 @@ export function CardGridPageSkeleton({ metrics = 3, cards = 4 }) {
   return (
     <PageShellSkeleton>
       <PageHeaderSkeleton />
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-3">
         <MetricSkeleton count={metrics} />
       </div>
-      <div className="mt-6 grid items-start gap-4 md:grid-cols-2">
+      <div className="mt-6 grid items-stretch gap-4 md:grid-cols-2">
         <CardListSkeleton count={cards} />
       </div>
     </PageShellSkeleton>
@@ -151,7 +151,7 @@ export function JobDetailPageSkeleton() {
           <SkeletonBlock className="h-3 w-24" />
           <SkeletonBlock className="mt-4 h-9 w-2/3" />
           <SkeletonBlock className="mt-4 h-4 w-1/2" />
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-3">
             <MetricSkeleton count={3} />
           </div>
           <div className="mt-8 space-y-3">

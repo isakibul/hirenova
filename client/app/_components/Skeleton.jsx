@@ -25,7 +25,7 @@ export function MetricSkeleton({ count = 3 }) {
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className="site-border site-panel rounded-lg border p-4"
+          className="site-border site-panel h-full rounded-lg border p-4"
         >
           <SkeletonBlock className="h-3 w-24" />
           <SkeletonBlock className="mt-3 h-8 w-20" />
@@ -39,7 +39,7 @@ export function CardListSkeleton({ count = 3 }) {
   return (
     <>
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="site-border site-card rounded-lg border p-5">
+        <div key={index} className="site-border site-card h-full rounded-lg border p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <SkeletonBlock className="h-5 w-2/3" />
