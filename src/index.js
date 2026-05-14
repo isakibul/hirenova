@@ -5,6 +5,7 @@ const http = require("http");
 const app = require("./app");
 const { connectDatabase } = require("./db");
 const { connectRedis } = require("./config/redisClient");
+const { validateRuntimeEnv } = require("./config/env");
 const { initRealtime } = require("./realtime/socket");
 
 /**
@@ -24,6 +25,11 @@ const PORT = process.env.PORT || 4000;
  */
 const main = async () => {
   try {
+    const envErrors = validateRuntimeEnv();
+    if (envErrors.length) {
+      throw new Error(`Invalid production environment:\n- ${envErrors.join("\n- ")}`);
+    }
+
     await connectDatabase();
     await connectRedis();
     const timestamp = new Date().toLocaleTimeString();

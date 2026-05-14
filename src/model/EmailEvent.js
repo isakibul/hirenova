@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-const apiContract = require("../../shared/apiContract.json");
+const apiContract = require("../lib/apiContract");
 
 const emailEventRetentionDays = Number(process.env.EMAIL_EVENT_RETENTION_DAYS || 90);
 

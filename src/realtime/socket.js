@@ -3,16 +3,13 @@ const { Server } = require("socket.io");
 const tokenService = require("../lib/token");
 const userService = require("../lib/user");
 const { isTokenBlacklisted } = require("../utils/tokenBlacklist");
-const { getClientUrl } = require("../utils/clientUrl");
+const { getAllowedOrigins } = require("../config/env");
 
 let io;
 
 const getAllowedOrigin = () => {
-  try {
-    return getClientUrl();
-  } catch {
-    return process.env.NODE_ENV === "production" ? false : "http://localhost:3000";
-  }
+  const origins = getAllowedOrigins();
+  return origins.length === 1 ? origins[0] : origins;
 };
 
 const getUserRoom = (userId) => `user:${userId}`;

@@ -1,5 +1,6 @@
 const authService = require("../../../../lib/auth");
 const Joi = require("joi");
+const apiContract = require("../../../../lib/apiContract");
 
 const adminCreateUserSchema = Joi.object({
   username: Joi.string().alphanum().min(3).max(50).required(),
@@ -15,11 +16,9 @@ const adminCreateUserSchema = Joi.object({
     )
     .required(),
   role: Joi.string()
-    .valid("jobseeker", "employer", "admin", "superadmin")
+    .valid(...apiContract.roles.user)
     .required(),
 });
-
-const adminAssignableRoles = ["jobseeker", "employer"];
 
 const addUser = async (req, res, next) => {
   try {
@@ -35,7 +34,7 @@ const addUser = async (req, res, next) => {
 
     const { username, email, password, role } = value;
 
-    if (req.user.role !== "superadmin" && !adminAssignableRoles.includes(role)) {
+    if (req.user.role !== "superadmin" && !apiContract.roles.adminManaged.includes(role)) {
       return res.status(403).json({
         message: "Only a super admin can create admin accounts.",
       });

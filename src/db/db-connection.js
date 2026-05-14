@@ -10,7 +10,7 @@ const dbName = process.env.DB_NAME;
  */
 const connectDatabase = () => {
   if (!dbConnectionString || !dbName) {
-    throw new Error("Missing MongoDB connection string or DB name");
+    throw new Error("Set DATABASE_CONNECTION_URL and DB_NAME before starting the API.");
   }
 
   mongoose.connect(dbConnectionString, { dbName: dbName });

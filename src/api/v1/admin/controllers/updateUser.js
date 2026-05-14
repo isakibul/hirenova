@@ -1,16 +1,16 @@
 const Joi = require("joi");
 const userService = require("../../../../lib/user");
+const apiContract = require("../../../../lib/apiContract");
 
 const adminLevelRoles = ["admin", "superadmin"];
-const adminAssignableRoles = ["jobseeker", "employer"];
 
 const adminUserSchema = Joi.object({
   username: Joi.string().alphanum().min(3).max(50).optional(),
   email: Joi.string()
     .email({ tlds: { allow: false } })
     .optional(),
-  role: Joi.string().valid("jobseeker", "employer", "admin", "superadmin").optional(),
-  status: Joi.string().valid("pending", "active", "suspended").optional(),
+  role: Joi.string().valid(...apiContract.roles.user).optional(),
+  status: Joi.string().valid(...apiContract.users.statuses).optional(),
   skills: Joi.array().items(Joi.string().max(80)).optional(),
   resumeUrl: Joi.string().uri().max(500).allow("").optional(),
   experience: Joi.number().min(0).optional(),
@@ -57,6 +57,12 @@ const updateUser = async (req, res, next) => {
     }
 
     if (value.role) {
+      if (targetUserId === req.user.id && value.role !== targetUser.role) {
+        return res.status(403).json({
+          message: "You cannot change your own role.",
+        });
+      }
+
       const changesAdminLevelRole =
         adminLevelRoles.includes(targetUser.role) ||
         adminLevelRoles.includes(value.role);
@@ -68,7 +74,7 @@ const updateUser = async (req, res, next) => {
         });
       }
 
-      if (!requesterIsSuperAdmin && !adminAssignableRoles.includes(value.role)) {
+      if (!requesterIsSuperAdmin && !apiContract.roles.adminManaged.includes(value.role)) {
         return res.status(403).json({
           message: "Admins can only switch users between job seeker and employer.",
         });

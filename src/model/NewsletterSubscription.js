@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-const apiContract = require("../../shared/apiContract.json");
+const apiContract = require("../lib/apiContract");
 
 const newsletterSubscriptionSchema = new Schema(
   {

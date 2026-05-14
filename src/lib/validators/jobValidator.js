@@ -1,11 +1,23 @@
 const Joi = require("joi");
-const apiContract = require("../../../shared/apiContract.json");
+const apiContract = require("../apiContract");
 const sanitizeText = require("../../utils/sanitizeText");
 
 const sanitizedString = (max) =>
   Joi.string()
     .max(max)
     .custom((value) => sanitizeText(value), "sanitize unsafe markup");
+
+const validateExperienceRange = (value, helpers) => {
+  if (
+    value.experienceMin !== undefined &&
+    value.experienceMax !== undefined &&
+    value.experienceMin > value.experienceMax
+  ) {
+    return helpers.message("experienceMin must be less than or equal to experienceMax");
+  }
+
+  return value;
+};
 
 const jobSchema = Joi.object({
   title: Joi.string().min(10).max(150).required(),
@@ -25,7 +37,7 @@ const jobSchema = Joi.object({
     .optional(),
   rejectionNote: sanitizedString(1000).allow("").optional(),
   expiresAt: Joi.date().iso().allow(null).optional(),
-});
+}).custom(validateExperienceRange, "experience range validation");
 
 const jobStatusSchema = Joi.object({
   status: Joi.string().valid(...apiContract.jobs.statuses).required(),

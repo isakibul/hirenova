@@ -41,6 +41,16 @@ test("job validation rejects unsupported status values", () => {
   assert.match(error.message, /must be one of/);
 });
 
+test("job validation rejects inverted experience ranges", () => {
+  const { error } = jobSchema.validate({
+    title: "Senior Platform Engineer",
+    experienceMin: 8,
+    experienceMax: 3,
+  });
+
+  assert.match(error.message, /experienceMin must be less than or equal/);
+});
+
 test("declined job approvals require a rejection note", () => {
   const { error } = jobApprovalSchema.validate({
     approvalStatus: "declined",

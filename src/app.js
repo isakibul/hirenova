@@ -11,6 +11,7 @@ const requestContext = require("./middleware/requestContext");
 const requestMetrics = require("./middleware/requestMetrics");
 const structuredRequestLogger = require("./middleware/structuredRequestLogger");
 const { reportError } = require("./lib/observability/reporter");
+const { getAllowedOrigins } = require("./config/env");
 
 const app = express();
 app.use(requestContext);
@@ -23,10 +24,7 @@ app.use(helmet());
 app.use(
   cors({
     origin(origin, callback) {
-      const allowedOrigins = (process.env.CORS_ORIGINS || process.env.CLIENT_URL || "")
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean);
+      const allowedOrigins = getAllowedOrigins();
 
       if (!origin) {
         callback(null, true);
@@ -34,11 +32,6 @@ app.use(
       }
 
       if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-        return;
-      }
-
-      if (allowedOrigins.length === 0 && process.env.NODE_ENV !== "production") {
         callback(null, true);
         return;
       }

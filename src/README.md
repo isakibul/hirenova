@@ -9,19 +9,20 @@ folders:
   inputs, call domain services, and return API responses.
 - `lib/*`: domain services. Put business rules, model queries, and workflow
   logic here instead of in routes or controllers.
-- `lib/validators`: Joi schemas for request contracts. Use shared enum values
-  from `shared/apiContract.json`.
+- `lib/validators`: Joi schemas for request contracts. Use enum values from
+  `src/lib/apiContract.js`.
 - `model`: Mongoose schemas and indexes. Model enums should also use
-  `shared/apiContract.json`.
+  `src/lib/apiContract.js`.
 - `middleware`: cross-cutting Express behavior such as auth, rate limits,
   logging, metrics, and request context.
 - `utils`: small framework-agnostic helpers.
-- `../shared/apiContract.json`: shared enum/status contract consumed by both
-  backend validators/models and frontend admin helpers.
+- `lib/apiContract.js`: enum/status contract consumed by backend validators
+  and models.
 
 When adding a feature, prefer this flow:
 
-1. Add or update the shared contract if the API introduces a new enum/status.
+1. Add or update `src/lib/apiContract.js` if the API introduces a new
+   enum/status.
 2. Add route wiring in `routes/v1`.
 3. Keep the controller focused on HTTP details.
 4. Put reusable business behavior in `lib/<feature>`.

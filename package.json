@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "test": "node --test \"test/**/*.test.js\"",
-    "seed": "node scripts/seed.js",
     "check": "npm test && npm --prefix client run check",
     "start": "nodemon src/index.js"
   },

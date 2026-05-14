@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const apiContract = require("../../../shared/apiContract.json");
+const apiContract = require("../apiContract");
 
 const registerSchema = Joi.object({
   username: Joi.string().alphanum().min(3).max(50).required(),

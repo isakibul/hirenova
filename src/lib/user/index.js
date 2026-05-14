@@ -50,9 +50,10 @@ const getUserFilter = ({ search = "", role = "" }) => {
   const filter = {};
 
   if (search) {
+    const safeSearch = escapeRegExp(search.trim());
     filter.$or = [
-      { username: { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
+      { username: { $regex: safeSearch, $options: "i" } },
+      { email: { $regex: safeSearch, $options: "i" } },
     ];
   }
 
@@ -95,11 +96,12 @@ const getJobseekerFilter = ({ search = "", statuses = ["active"] }) => {
   };
 
   if (search) {
+    const safeSearch = escapeRegExp(search.trim());
     filter.$or = [
-      { username: { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
-      { preferredLocation: { $regex: search, $options: "i" } },
-      { skills: { $regex: search, $options: "i" } },
+      { username: { $regex: safeSearch, $options: "i" } },
+      { email: { $regex: safeSearch, $options: "i" } },
+      { preferredLocation: { $regex: safeSearch, $options: "i" } },
+      { skills: { $regex: safeSearch, $options: "i" } },
     ];
   }
 
