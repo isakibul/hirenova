@@ -105,7 +105,7 @@ export default function ManageNewsletterClient({
 
     try {
       const body = await requestJson(
-        `/api/manage-newsletter?${params.toString()}`,
+        `/admin/newsletter?${params.toString()}`,
         {},
         "Unable to load newsletter subscriptions.",
       );
@@ -127,7 +127,7 @@ export default function ManageNewsletterClient({
   const loadCampaigns = useCallback(async () => {
     try {
       const body = await requestJson(
-        "/api/manage-newsletter/campaigns",
+        "/admin/newsletter/campaigns",
         {},
         "Unable to load newsletter campaigns.",
       );
@@ -212,7 +212,7 @@ export default function ManageNewsletterClient({
 
     try {
       await requestJson(
-        `/api/manage-newsletter/${subscriptionId}`,
+        `/admin/newsletter/${subscriptionId}`,
         { method: "DELETE" },
         "Unable to delete subscription.",
       );
@@ -246,7 +246,7 @@ export default function ManageNewsletterClient({
 
     try {
       const body = await requestJson(
-        `/api/manage-newsletter/${subscriptionId}/status`,
+        `/admin/newsletter/${subscriptionId}/status`,
         {
           method: "PATCH",
           body: JSON.stringify({ status: nextStatus }),
@@ -289,7 +289,7 @@ export default function ManageNewsletterClient({
 
     try {
       await requestJson(
-        `/api/manage-newsletter/campaigns/${campaignId}`,
+        `/admin/newsletter/campaigns/${campaignId}`,
         { method: "DELETE" },
         "Unable to delete campaign history.",
       );
@@ -325,7 +325,7 @@ export default function ManageNewsletterClient({
 
     try {
       const body = await requestJson(
-        "/api/manage-newsletter/campaigns",
+        "/admin/newsletter/campaigns",
         {
           method: "POST",
           body: JSON.stringify(campaignForm),

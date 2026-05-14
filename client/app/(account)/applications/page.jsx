@@ -24,7 +24,7 @@ export default function ApplicationsPage() {
       setIsLoading(true);
       try {
         const body = await requestJson(
-          "/api/applications/me",
+          "/applications/me",
           {},
           "Unable to load applications.",
         );

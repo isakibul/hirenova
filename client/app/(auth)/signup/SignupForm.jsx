@@ -69,7 +69,7 @@ export default function SignupForm({ initialEmail = "", }) {
         }
         setIsSubmitting(true);
         try {
-            const body = await requestJson("/api/auth/signup", {
+            const body = await requestJson("/auth/signup", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -97,7 +97,7 @@ export default function SignupForm({ initialEmail = "", }) {
         setError("");
         setResendNotice("");
         try {
-            const body = await requestJson("/api/auth/resend-confirmation", {
+            const body = await requestJson("/auth/resend-confirmation", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

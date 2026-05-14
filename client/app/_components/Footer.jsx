@@ -79,7 +79,7 @@ export default function Footer() {
     setIsSubscribing(true);
 
     try {
-      const body = await requestJson("/api/newsletter", {
+      const body = await requestJson("/newsletter", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

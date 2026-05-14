@@ -44,7 +44,7 @@ export default function ForgotPasswordForm() {
         setIsSubmitting(true);
 
         try {
-            const body = await requestJson("/api/auth/forgot-password", {
+            const body = await requestJson("/auth/forgot-password", {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

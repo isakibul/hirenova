@@ -64,7 +64,7 @@ export default function ResetPasswordForm({ token }) {
         setIsSubmitting(true);
 
         try {
-            const body = await requestJson(`/api/auth/reset-password?token=${encodeURIComponent(token)}`, {
+            const body = await requestJson(`/auth/reset-password?token=${encodeURIComponent(token)}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

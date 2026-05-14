@@ -72,7 +72,7 @@ const jobSchema = Schema({
   ],
   expiresAt: Date,
   closedAt: Date,
-  createdAt: { type: Date, default: Date.now() },
+  createdAt: { type: Date, default: Date.now },
   author: {
     type: Schema.ObjectId,
     ref: "User",

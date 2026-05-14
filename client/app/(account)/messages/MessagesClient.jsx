@@ -49,7 +49,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
     setIsLoading(true);
     setError("");
     try {
-      const body = await requestJson("/api/messages/conversations", {
+      const body = await requestJson("/messages/conversations", {
         cache: "no-store",
       }, "Unable to load messages.");
       const nextConversations = body.data ?? [];
@@ -70,7 +70,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
       );
       setSelectedId(nextSelectedId);
       if (nextSelectedId) {
-        requestJson(`/api/messages/conversations/${nextSelectedId}`, {
+        requestJson(`/messages/conversations/${nextSelectedId}`, {
           cache: "no-store",
         }).catch(() => undefined);
       }
@@ -166,7 +166,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
       }
 
       try {
-        const body = await requestJson("/api/messages/conversations", {
+        const body = await requestJson("/messages/conversations", {
           cache: "no-store",
         });
         if (!ignore) {
@@ -188,7 +188,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
       updateConversation(updatedConversation);
 
       if (selectedIdRef.current === updatedId) {
-        requestJson(`/api/messages/conversations/${updatedId}`, {
+        requestJson(`/messages/conversations/${updatedId}`, {
           cache: "no-store",
         })
           .then((body) => {
@@ -259,7 +259,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
     );
     try {
       const body = await requestJson(
-        `/api/messages/conversations/${conversationId}`,
+        `/messages/conversations/${conversationId}`,
         { cache: "no-store" },
       );
       if (body.data) {
@@ -289,7 +289,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
     setError("");
     try {
       const body = await requestJson(
-        `/api/messages/conversations/${conversationId}/messages`,
+        `/messages/conversations/${conversationId}/messages`,
         {
           method: "POST",
           body: JSON.stringify({ body: bodyText }),
@@ -332,7 +332,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
     setIsDeleting(true);
     setError("");
     try {
-      await requestJson(`/api/messages/conversations/${conversationId}`, {
+      await requestJson(`/messages/conversations/${conversationId}`, {
         method: "DELETE",
       }, "Unable to delete conversation.");
       removeConversation(conversationId);

@@ -178,7 +178,7 @@ export default function MessagesMenu({
   );
 
   async function refreshConversations({ markSelectedRead = false } = {}) {
-    const body = await requestJson("/api/messages/conversations", {
+    const body = await requestJson("/messages/conversations", {
       cache: "no-store",
     }, "Unable to load messages.");
 
@@ -194,7 +194,7 @@ export default function MessagesMenu({
     setSelectedId(nextSelectedId);
 
     if (markSelectedRead && nextSelectedId) {
-      requestJson(`/api/messages/conversations/${nextSelectedId}`, {
+      requestJson(`/messages/conversations/${nextSelectedId}`, {
         cache: "no-store",
       }).catch(() => undefined);
     }
@@ -273,7 +273,7 @@ export default function MessagesMenu({
       }
 
       try {
-        const body = await requestJson("/api/messages/conversations", {
+        const body = await requestJson("/messages/conversations", {
           cache: "no-store",
         });
         if (!ignore) {
@@ -297,7 +297,7 @@ export default function MessagesMenu({
       updateConversation(updatedConversation);
 
       if (isOpenRef.current && selectedIdRef.current === updatedId) {
-        requestJson(`/api/messages/conversations/${updatedId}`, {
+        requestJson(`/messages/conversations/${updatedId}`, {
           cache: "no-store",
         })
           .then((body) => {
@@ -390,7 +390,7 @@ export default function MessagesMenu({
     );
     try {
       const body = await requestJson(
-        `/api/messages/conversations/${conversationId}`,
+        `/messages/conversations/${conversationId}`,
         { cache: "no-store" },
       );
       if (body.data) {
@@ -422,7 +422,7 @@ export default function MessagesMenu({
     setError("");
     try {
       const body = await requestJson(
-        `/api/messages/conversations/${conversationId}/messages`,
+        `/messages/conversations/${conversationId}/messages`,
         {
           method: "POST",
           body: JSON.stringify({ body: bodyText }),
@@ -466,7 +466,7 @@ export default function MessagesMenu({
     setError("");
     try {
       await requestJson(
-        `/api/messages/conversations/${conversationId}`,
+        `/messages/conversations/${conversationId}`,
         {
           method: "DELETE",
         },

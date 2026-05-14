@@ -83,7 +83,7 @@ export default function DashboardPage() {
       setIsLoading(true);
       try {
         const body = await requestJson(
-          "/api/dashboard",
+          "/dashboard",
           {},
           "Unable to load dashboard.",
         );

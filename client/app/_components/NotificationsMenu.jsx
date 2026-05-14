@@ -30,7 +30,7 @@ export default function NotificationsMenu({ enabled = false }) {
     }
 
     try {
-      const body = await requestJson("/api/notifications?limit=6", {
+      const body = await requestJson("/notifications?limit=6", {
         cache: "no-store",
       });
       setNotifications(body.data ?? []);
@@ -55,7 +55,7 @@ export default function NotificationsMenu({ enabled = false }) {
     );
     setUnreadCount((current) => Math.max(current - 1, 0));
 
-    await requestJson(`/api/notifications/${id}/read`, {
+    await requestJson(`/notifications/${id}/read`, {
       method: "PATCH",
     }).catch(() => undefined);
   }
@@ -71,7 +71,7 @@ export default function NotificationsMenu({ enabled = false }) {
     );
     setUnreadCount(0);
 
-    await requestJson("/api/notifications/read-all", {
+    await requestJson("/notifications/read-all", {
       method: "PATCH",
     }).catch(() => undefined);
   }
@@ -85,7 +85,7 @@ export default function NotificationsMenu({ enabled = false }) {
 
     async function loadInitialNotifications() {
       try {
-        const body = await requestJson("/api/notifications?limit=6", {
+        const body = await requestJson("/notifications?limit=6", {
           cache: "no-store",
         });
 

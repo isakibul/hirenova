@@ -149,7 +149,7 @@ export default function SystemMonitorClient() {
 
     try {
       const body = await requestJson(
-        "/api/system-monitor-summary",
+        "/admin/system-monitor-summary",
         {},
         "Unable to load system monitor summary.",
       );
@@ -176,7 +176,7 @@ export default function SystemMonitorClient() {
         action: auditAction,
       });
       const body = await requestJson(
-        `/api/audit-logs?${query}`,
+        `/admin/audit-logs?${query}`,
         {},
         "Unable to load audit logs.",
       );
@@ -207,7 +207,7 @@ export default function SystemMonitorClient() {
         type: emailType,
       });
       const body = await requestJson(
-        `/api/email-events?${query}`,
+        `/admin/email-events?${query}`,
         {},
         "Unable to load email events.",
       );

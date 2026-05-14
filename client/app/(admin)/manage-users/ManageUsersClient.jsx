@@ -104,7 +104,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
             params.set("role", roleFilter);
         }
         try {
-            const body = await requestJson(`/api/manage-users?${params.toString()}`, {}, "Unable to load users.");
+            const body = await requestJson(`/admin/users?${params.toString()}`, {}, "Unable to load users.");
             setUsers(body.data ?? []);
             setPagination(body.pagination);
         }
@@ -168,7 +168,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
         setNotice(null);
         setError(null);
         try {
-            const body = await requestJson(`/api/manage-users/${userId}`, {}, "Unable to load this user.");
+            const body = await requestJson(`/admin/users/${userId}`, {}, "Unable to load this user.");
             setSelectedUserId(userId);
             setSelectedUser({ ...user, ...body.data, id: userId });
         }
@@ -192,7 +192,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
         setNotice(null);
         setError(null);
         try {
-            await requestJson("/api/manage-users", {
+            await requestJson("/admin/users", {
                 method: "POST",
                 body: JSON.stringify(buildPayload(form)),
             }, "Unable to create user.");
@@ -239,7 +239,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
         setNotice(null);
         setError(null);
         try {
-            await requestJson(`/api/manage-users/${userId}`, {
+            await requestJson(`/admin/users/${userId}`, {
                 method: "PATCH",
                 body: JSON.stringify({ role: nextRole }),
             }, "Unable to update user role.");
@@ -283,7 +283,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
         setNotice(null);
         setError(null);
         try {
-            await requestJson(`/api/manage-users/${userId}`, {
+            await requestJson(`/admin/users/${userId}`, {
                 method: "PATCH",
                 body: JSON.stringify({ status: nextStatus }),
             }, "Unable to update user status.");
@@ -319,7 +319,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
         setNotice(null);
         setError(null);
         try {
-            await requestJson(`/api/manage-users/${userId}`, {
+            await requestJson(`/admin/users/${userId}`, {
                 method: "DELETE",
             }, "Unable to delete user.");
             if (selectedUserId === userId) {

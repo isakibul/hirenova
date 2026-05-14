@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { getAccessToken, getUserFromAccessToken } from "@lib/backendToken";
-import { backendFetch, requestBackendJson } from "@lib/clientApi";
+import { requestBackendJson } from "@lib/clientApi";
 
 const storageKey = "hirenova-auth";
 const AuthContext = createContext(null);
@@ -42,24 +42,6 @@ export function useAuth() {
 export default function AuthProvider({ children }) {
   const [auth, setAuth] = useState({ accessToken: "", user: null });
   const [status, setStatus] = useState("unauthenticated");
-
-  useEffect(() => {
-    const originalFetch = window.fetch.bind(window);
-
-    window.fetch = (input, init) => {
-      const path = typeof input === "string" ? input : input?.url;
-
-      if (typeof path === "string" && path.startsWith("/api/")) {
-        return backendFetch(path, init);
-      }
-
-      return originalFetch(input, init);
-    };
-
-    return () => {
-      window.fetch = originalFetch;
-    };
-  }, []);
 
   const persistAuth = useCallback((nextAuth) => {
     setAuth(nextAuth);

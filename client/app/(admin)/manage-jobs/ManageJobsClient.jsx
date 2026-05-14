@@ -82,7 +82,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
             params.set("approval_status", approvalFilter);
         }
         try {
-            const body = await requestJson(`/api/manage-jobs?${params.toString()}`, {}, "Unable to load jobs.");
+            const body = await requestJson(`/jobs?${params.toString()}`, {}, "Unable to load jobs.");
             setJobs(body.data ?? []);
             setPagination(body.pagination);
         }
@@ -158,7 +158,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
         setNotice(null);
         setError(null);
         try {
-            const body = await requestJson(`/api/manage-jobs/${jobId}`, {}, "Unable to load this job.");
+            const body = await requestJson(`/jobs/${jobId}`, {}, "Unable to load this job.");
             setEditingJobId(jobId);
             setForm(getFormFromJob({ ...job, ...body.data, id: jobId }));
             setFormTouched({});
@@ -187,8 +187,8 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
         const payload = buildPayload(form);
         const isResubmission = !isAdmin && selectedJob?.approvalStatus === "declined";
         const target = editingJobId
-            ? `/api/manage-jobs/${editingJobId}`
-            : "/api/manage-jobs";
+            ? `/jobs/${editingJobId}`
+            : "/jobs";
         const method = editingJobId ? "PATCH" : "POST";
         try {
             await requestJson(target, {
@@ -232,7 +232,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
         setNotice(null);
         setError(null);
         try {
-            await requestJson(`/api/manage-jobs/${jobId}/status`, {
+            await requestJson(`/jobs/${jobId}/status`, {
                 method: "PATCH",
                 body: JSON.stringify({ status: nextStatus }),
             }, "Unable to update job status.");
@@ -257,7 +257,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
         setNotice(null);
         setError(null);
         try {
-            await requestJson(`/api/manage-jobs/${jobId}/approval`, {
+            await requestJson(`/jobs/${jobId}/approval`, {
                 method: "PATCH",
                 body: JSON.stringify({
                     approvalStatus,
@@ -308,7 +308,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
         setNotice(null);
         setError(null);
         try {
-            await requestJson(`/api/manage-jobs/${jobId}`, {
+            await requestJson(`/jobs/${jobId}`, {
                 method: "DELETE",
             }, "Unable to delete job.");
             if (editingJobId === jobId) {

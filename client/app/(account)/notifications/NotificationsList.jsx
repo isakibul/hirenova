@@ -56,7 +56,7 @@ export default function NotificationsList({
     );
     setUnreadCount((current) => Math.max(current - 1, 0));
 
-    await requestJson(`/api/notifications/${id}/read`, {
+    await requestJson(`/notifications/${id}/read`, {
       method: "PATCH",
     }).catch(() => undefined);
   }
@@ -72,7 +72,7 @@ export default function NotificationsList({
     );
     setUnreadCount(0);
 
-    await requestJson("/api/notifications/read-all", {
+    await requestJson("/notifications/read-all", {
       method: "PATCH",
     }).catch(() => undefined);
   }

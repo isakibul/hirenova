@@ -1,10 +1,14 @@
+const dangerousBlockPattern =
+  /<(script|iframe|object|embed|style)[^>]*>[\s\S]*?<\/\1>/gi;
 const dangerousTagPattern = /<\/?(script|iframe|object|embed|link|meta|style)[^>]*>/gi;
 const eventHandlerPattern = /\s+on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi;
-const dangerousUrlPattern = /(href|src)\s*=\s*("|')?\s*javascript:[^"'\s>]*/gi;
+const dangerousUrlPattern =
+  /(href|src)\s*=\s*(?:"\s*javascript:[^"]*"|'\s*javascript:[^']*'|javascript:[^\s>]*)/gi;
 
 const sanitizeText = (value = "") =>
   String(value)
     .replace(/\u0000/g, "")
+    .replace(dangerousBlockPattern, "")
     .replace(dangerousTagPattern, "")
     .replace(eventHandlerPattern, "")
     .replace(dangerousUrlPattern, "$1=\"#\"")

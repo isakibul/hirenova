@@ -26,7 +26,7 @@ export default function ApplicationsClient({ initialApplications }) {
         setUpdatingId(id);
         setError("");
         try {
-            const body = await requestJson(`/api/applications/${id}/status`, {
+            const body = await requestJson(`/applications/${id}/status`, {
                 method: "PATCH",
                 body: JSON.stringify({ status }),
             }, "Unable to update status.");

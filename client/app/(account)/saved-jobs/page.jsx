@@ -27,7 +27,7 @@ export default function SavedJobsPage() {
       setIsLoading(true);
       try {
         const body = await requestJson(
-          "/api/saved-jobs/me",
+          "/saved-jobs/me",
           {},
           "Unable to load saved jobs.",
         );

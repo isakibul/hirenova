@@ -213,7 +213,7 @@ export default function SettingsClient({ user: userProp }) {
         setNotice("");
         setError("");
         try {
-            const body = await requestJson("/api/profile", {}, "Unable to load account data.");
+            const body = await requestJson("/auth/profile", {}, "Unable to load account data.");
             const profile = body.data;
             const lines = [
                 "HireNova Account Data",
@@ -270,7 +270,7 @@ export default function SettingsClient({ user: userProp }) {
         }
         setIsDeactivating(true);
         try {
-            await requestJson("/api/account/deactivate", {
+            await requestJson("/auth/deactivate", {
                 method: "PATCH",
                 body: JSON.stringify({ password: deactivatePassword }),
             }, "Unable to deactivate account.");

@@ -37,7 +37,7 @@ export default function MyJobsPage() {
       setIsLoading(true);
       try {
         const body = await requestJson(
-          "/api/dashboard",
+          "/dashboard",
           {},
           "Unable to load dashboard.",
         );

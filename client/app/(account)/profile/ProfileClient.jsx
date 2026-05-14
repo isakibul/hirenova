@@ -180,7 +180,7 @@ export default function ProfileClient() {
         setIsLoading(true);
         setError(null);
         try {
-            const body = await requestJson("/api/profile", {}, "Unable to load profile.");
+            const body = await requestJson("/auth/profile", {}, "Unable to load profile.");
             setProfile(body.data);
             setProfileForm(getProfileForm(body.data));
             setResumeFile(null);
@@ -222,13 +222,13 @@ export default function ProfileClient() {
             if (resumeFile) {
                 const uploadData = new FormData();
                 uploadData.append("resume", resumeFile);
-                const uploadBody = await requestJson("/api/profile/resume", {
+                const uploadBody = await requestJson("/auth/profile/resume", {
                     method: "POST",
                     body: uploadData,
                 }, "Unable to upload resume.");
                 resumeUrl = uploadBody.data.resumeUrl;
             }
-            const body = await requestJson("/api/profile", {
+            const body = await requestJson("/auth/profile", {
                 method: "PATCH",
                 body: JSON.stringify(buildProfilePayload(profileForm, resumeUrl)),
             }, "Unable to update profile.");
@@ -278,7 +278,7 @@ export default function ProfileClient() {
         }
         setIsSavingPassword(true);
         try {
-            const body = await requestJson("/api/profile/password", {
+            const body = await requestJson("/auth/change-password", {
                 method: "PATCH",
                 body: JSON.stringify({
                     currentPassword: passwordForm.currentPassword,
@@ -329,7 +329,7 @@ export default function ProfileClient() {
             else {
                 formData.append("resumeUrl", profileForm.resumeUrl);
             }
-            const body = await requestJson("/api/profile/resume/parse", {
+            const body = await requestJson("/auth/profile/resume/parse", {
                 method: "POST",
                 body: formData,
             }, "Unable to parse resume.");

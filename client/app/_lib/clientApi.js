@@ -1,4 +1,4 @@
-import { getApiMessage } from "./ui";
+import { getApiMessage } from "./ui.js";
 
 export function getBackendApiUrl() {
   return (
@@ -26,48 +26,9 @@ export function getBackendPath(path) {
   }
 
   const [pathname, search = ""] = path.split("?");
-  const mappedPath = mapLegacyApiPath(pathname);
+  const normalizedPath = pathname.startsWith("/") ? pathname : `/${pathname}`;
 
-  return `${getBackendApiUrl()}${mappedPath}${search ? `?${search}` : ""}`;
-}
-
-function mapLegacyApiPath(pathname) {
-  if (pathname === "/api/profile") return "/auth/profile";
-  if (pathname === "/api/profile/password") return "/auth/change-password";
-  if (pathname === "/api/profile/resume") return "/auth/profile/resume";
-  if (pathname === "/api/profile/resume/parse") return "/auth/profile/resume/parse";
-  if (pathname === "/api/account/deactivate") return "/auth/deactivate";
-  if (pathname === "/api/applications/me") return "/applications/me";
-  if (pathname === "/api/manage-jobs") return "/jobs";
-  if (pathname === "/api/manage-users") return "/admin/users";
-  if (pathname === "/api/manage-newsletter") return "/admin/newsletter";
-  if (pathname === "/api/manage-newsletter/campaigns") {
-    return "/admin/newsletter/campaigns";
-  }
-  if (pathname === "/api/operations-summary") return "/admin/operations-summary";
-  if (pathname === "/api/system-monitor-summary") return "/admin/system-monitor-summary";
-  if (pathname === "/api/audit-logs") return "/admin/audit-logs";
-  if (pathname === "/api/email-events") return "/admin/email-events";
-  if (pathname === "/api/assistant/chat") return "/assistant/chat";
-
-  let match = pathname.match(/^\/api\/manage-jobs\/([^/]+)$/);
-  if (match) return `/jobs/${match[1]}`;
-  match = pathname.match(/^\/api\/manage-jobs\/([^/]+)\/status$/);
-  if (match) return `/jobs/${match[1]}/status`;
-  match = pathname.match(/^\/api\/manage-jobs\/([^/]+)\/approval$/);
-  if (match) return `/jobs/${match[1]}/approval`;
-  match = pathname.match(/^\/api\/manage-users\/([^/]+)$/);
-  if (match) return `/admin/users/${match[1]}`;
-  match = pathname.match(/^\/api\/manage-users\/([^/]+)\/make-admin$/);
-  if (match) return `/admin/users/make-admin/${match[1]}`;
-  match = pathname.match(/^\/api\/manage-newsletter\/([^/]+)$/);
-  if (match) return `/admin/newsletter/${match[1]}`;
-  match = pathname.match(/^\/api\/manage-newsletter\/campaigns\/([^/]+)$/);
-  if (match) return `/admin/newsletter/campaigns/${match[1]}`;
-  match = pathname.match(/^\/api\/manage-newsletter\/([^/]+)\/status$/);
-  if (match) return `/admin/newsletter/${match[1]}/status`;
-
-  return pathname.replace(/^\/api/, "");
+  return `${getBackendApiUrl()}${normalizedPath}${search ? `?${search}` : ""}`;
 }
 
 export async function backendFetch(path, init = {}) {
@@ -108,9 +69,10 @@ export async function requestBackendJson(
 }
 
 export async function requestJson(path, init, fallback = "Something went wrong.") {
-  const response = path.startsWith("/api/")
-    ? await backendFetch(path, init)
-    : await fetch(path, init);
+  const response =
+    path.startsWith("http://") || path.startsWith("https://")
+      ? await fetch(path, init)
+      : await backendFetch(path, init);
   const body = await response.json().catch(() => ({}));
 
   if (!response.ok) {

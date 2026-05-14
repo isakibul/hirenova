@@ -14,7 +14,7 @@ export default function JobApplicationsPage({ params }) {
     async function loadApplications() {
       try {
         const body = await requestJson(
-          `/api/jobs/${id}/applications`,
+          `/jobs/${id}/applications`,
           {},
           "Unable to load applicants.",
         );

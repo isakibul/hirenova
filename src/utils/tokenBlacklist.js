@@ -4,7 +4,7 @@ const addTokenToBlacklist = async (token, expiresInSeconds) => {
   try {
     await client.set(token, "blacklisted", { Ex: expiresInSeconds });
   } catch (e) {
-    console.error("Error adding token to blacklist:", err);
+    console.error("Error adding token to blacklist:", e);
   }
 };
 

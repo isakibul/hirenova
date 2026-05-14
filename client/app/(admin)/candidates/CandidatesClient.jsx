@@ -57,7 +57,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
             params.set("search", search);
         }
         try {
-            const body = await requestJson(`/api/candidates?${params.toString()}`, {}, "Unable to load candidates.");
+            const body = await requestJson(`/candidates?${params.toString()}`, {}, "Unable to load candidates.");
             const nextCandidates = body.data ?? [];
             setCandidates(nextCandidates);
             setPagination(body.pagination);
@@ -106,7 +106,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
         setLoadingCandidateId(candidateId);
         setError("");
         try {
-            const body = await requestJson(`/api/candidates/${candidateId}`, {}, "Unable to load candidate profile.");
+            const body = await requestJson(`/candidates/${candidateId}`, {}, "Unable to load candidate profile.");
             setSelectedCandidate(body.data);
         }
         catch (caughtError) {
@@ -130,7 +130,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
         setMessagingCandidateId(candidateId);
         setError("");
         try {
-            const body = await requestJson("/api/messages/conversations", {
+            const body = await requestJson("/messages/conversations", {
                 method: "POST",
                 body: JSON.stringify({ recipientId: candidateId }),
             }, "Unable to start conversation.");

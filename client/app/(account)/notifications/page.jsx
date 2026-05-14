@@ -17,7 +17,7 @@ export default function NotificationsPage() {
       setIsLoading(true);
       try {
         const body = await requestJson(
-          "/api/notifications?limit=100",
+          "/notifications?limit=100",
           {},
           "Unable to load notifications.",
         );

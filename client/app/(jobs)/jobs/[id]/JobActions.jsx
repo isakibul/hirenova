@@ -20,7 +20,7 @@ export default function JobActions({ jobId, isClosed }) {
         setNotice("");
         setError("");
         try {
-            await requestJson(`/api/jobs/${jobId}/apply`, {
+            await requestJson(`/jobs/${jobId}/apply`, {
                 method: "POST",
                 body: JSON.stringify({ coverLetter }),
             }, "Unable to apply.");
@@ -40,7 +40,7 @@ export default function JobActions({ jobId, isClosed }) {
         setNotice("");
         setError("");
         try {
-            await requestJson(`/api/jobs/${jobId}/save`, {
+            await requestJson(`/jobs/${jobId}/save`, {
                 method: "POST",
             }, "Unable to save job.");
             setNotice("Job saved.");

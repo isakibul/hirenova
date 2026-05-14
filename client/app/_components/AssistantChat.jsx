@@ -186,7 +186,7 @@ export default function AssistantChat() {
 
     try {
       const body = await requestJson(
-        "/api/assistant/chat",
+        "/assistant/chat",
         {
           method: "POST",
           body: JSON.stringify({
