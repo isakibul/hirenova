@@ -41,6 +41,9 @@ function mapLegacyApiPath(pathname) {
   if (pathname === "/api/manage-jobs") return "/jobs";
   if (pathname === "/api/manage-users") return "/admin/users";
   if (pathname === "/api/manage-newsletter") return "/admin/newsletter";
+  if (pathname === "/api/manage-newsletter/campaigns") {
+    return "/admin/newsletter/campaigns";
+  }
   if (pathname === "/api/operations-summary") return "/admin/operations-summary";
   if (pathname === "/api/system-monitor-summary") return "/admin/system-monitor-summary";
   if (pathname === "/api/audit-logs") return "/admin/audit-logs";
@@ -59,6 +62,10 @@ function mapLegacyApiPath(pathname) {
   if (match) return `/admin/users/make-admin/${match[1]}`;
   match = pathname.match(/^\/api\/manage-newsletter\/([^/]+)$/);
   if (match) return `/admin/newsletter/${match[1]}`;
+  match = pathname.match(/^\/api\/manage-newsletter\/campaigns\/([^/]+)$/);
+  if (match) return `/admin/newsletter/campaigns/${match[1]}`;
+  match = pathname.match(/^\/api\/manage-newsletter\/([^/]+)\/status$/);
+  if (match) return `/admin/newsletter/${match[1]}/status`;
 
   return pathname.replace(/^\/api/, "");
 }

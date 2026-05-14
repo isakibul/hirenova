@@ -102,7 +102,7 @@ export default async function JobDetailsPage({ params }) {
     const isClosed = jobStatus !== "Open Role";
     return (<section className="site-section py-12">
       <div className="site-container">
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="grid items-start gap-6 lg:grid-cols-[1fr_320px]">
           <article className="site-border site-card site-elevated rounded-lg border p-5 md:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>

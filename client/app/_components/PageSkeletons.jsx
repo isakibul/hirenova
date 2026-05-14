@@ -78,7 +78,7 @@ export function CardGridPageSkeleton({ metrics = 3, cards = 4 }) {
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         <MetricSkeleton count={metrics} />
       </div>
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <div className="mt-6 grid items-start gap-4 md:grid-cols-2">
         <CardListSkeleton count={cards} />
       </div>
     </PageShellSkeleton>
@@ -92,7 +92,7 @@ export function ProfilePageSkeleton() {
         <PageHeaderSkeleton />
         <SkeletonBlock className="h-10 w-32" />
       </div>
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_414px]">
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1fr_414px]">
         <div className="site-border site-card rounded-lg border">
           <div className="border-b border-[var(--site-border)] px-4 py-3">
             <SkeletonBlock className="h-5 w-36" />
@@ -125,7 +125,7 @@ export function JobsPageSkeleton() {
             <SkeletonBlock className="h-11 w-full" />
           </div>
         </div>
-        <div className="mt-6 grid gap-4 lg:grid-cols-[280px_1fr]">
+        <div className="mt-6 grid items-start gap-4 lg:grid-cols-[280px_1fr]">
           <div className="site-border site-card rounded-lg border p-4">
             <SkeletonBlock className="h-5 w-24" />
             <div className="mt-5 space-y-4">
@@ -146,7 +146,7 @@ export function JobsPageSkeleton() {
 export function JobDetailPageSkeleton() {
   return (
     <PageShellSkeleton maxWidth="max-w-6xl">
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px]">
         <div className="site-border site-card rounded-lg border p-6">
           <SkeletonBlock className="h-3 w-24" />
           <SkeletonBlock className="mt-4 h-9 w-2/3" />

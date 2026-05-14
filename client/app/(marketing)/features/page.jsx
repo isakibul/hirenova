@@ -128,7 +128,7 @@ export default function FeaturesPage() {
       </section>
 
       <section className="site-section py-8">
-        <div className="site-container grid gap-5 lg:grid-cols-2">
+        <div className="site-container grid items-start gap-5 lg:grid-cols-2">
           {featureGroups.map((group) => (
             <section
               key={group.eyebrow}
@@ -178,7 +178,7 @@ export default function FeaturesPage() {
             </h2>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid items-start gap-4 md:grid-cols-3">
             {workflow.map((item, index) => (
               <article
                 key={item.title}

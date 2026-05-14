@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const apiContract = require("../../shared/apiContract.json");
 
 const newsletterSubscriptionSchema = new Schema(
   {
@@ -13,7 +14,7 @@ const newsletterSubscriptionSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["subscribed", "unsubscribed"],
+      enum: apiContract.newsletter.statuses,
       default: "subscribed",
       index: true,
     },

@@ -162,7 +162,7 @@ export default function CandidatesClient({ initialCandidates = [], initialPagina
 
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_410px]">
+        <div className="mt-6 grid items-start gap-6 xl:grid-cols-[1fr_410px]">
           <div className="site-border site-card overflow-hidden rounded-lg border">
             <div className="site-panel border-b border-[var(--site-border)] p-4">
               <form onSubmit={handleSearch} className="grid gap-3 lg:grid-cols-[1fr_190px_140px]">

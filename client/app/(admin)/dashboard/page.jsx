@@ -47,7 +47,7 @@ function OnboardingPanel({ role }) {
     return (
       <div className="site-border site-card mt-6 rounded-lg border p-5">
         <h2 className="font-semibold">Jobseeker Start Guide</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-4 grid items-start gap-3 md:grid-cols-3">
           <QuickAction href="/profile" icon="user" title="Complete Profile" description="Add skills, location, and resume." />
           <QuickAction href="/jobs" icon="search" title="Find Roles" description="Filter jobs that match your profile." />
           <QuickAction href="/applications" icon="file" title="Track Applications" description="Follow review status in one place." />
@@ -60,7 +60,7 @@ function OnboardingPanel({ role }) {
     return (
       <div className="site-border site-card mt-6 rounded-lg border p-5">
         <h2 className="font-semibold">Employer Start Guide</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-4 grid items-start gap-3 md:grid-cols-3">
           <QuickAction href="/profile" icon="user" title="Company Profile" description="Add company details for hiring." />
           <QuickAction href="/manage-jobs" icon="briefcase" title="Post a Job" description="Create a listing for admin review." />
           <QuickAction href="/candidates" icon="search" title="Browse Talent" description="Find active job seeker profiles." />
@@ -115,7 +115,7 @@ export default function DashboardPage() {
 
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid items-start gap-4 md:grid-cols-2 xl:grid-cols-4">
           {isLoading ? (
             <MetricSkeleton count={4} />
           ) : (
@@ -128,7 +128,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid items-start gap-4 md:grid-cols-2 xl:grid-cols-4">
           {user?.role === "jobseeker" ? (
             <>
               <QuickAction href="/jobs" icon="search" title="Find Jobs" description="Search and filter open roles." />

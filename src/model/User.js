@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const apiContract = require("../../shared/apiContract.json");
 
 const userSchema = new Schema(
   {
@@ -23,12 +24,12 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["jobseeker", "employer", "admin", "superadmin"],
+      enum: apiContract.roles.user,
       required: true,
     },
     status: {
       type: String,
-      enum: ["pending", "active", "suspended"],
+      enum: apiContract.users.statuses,
       default: "pending",
     },
     emailVerificationToken: {

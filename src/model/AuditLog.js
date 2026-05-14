@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const apiContract = require("../../shared/apiContract.json");
 
 const auditLogRetentionDays = Number(process.env.AUDIT_LOG_RETENTION_DAYS || 90);
 
@@ -12,7 +13,7 @@ const auditLogSchema = new Schema(
     },
     actorRole: {
       type: String,
-      enum: ["jobseeker", "employer", "admin", "superadmin", "anonymous"],
+      enum: apiContract.roles.systemActors,
       default: "anonymous",
       index: true,
     },

@@ -50,7 +50,7 @@ function MetricCard({ label, value, detail, tone = "default" }) {
         : "site-border site-panel";
 
   return (
-    <div className={`rounded-lg border p-4 ${toneClass}`}>
+    <div className={`flex h-full flex-col rounded-lg border p-4 ${toneClass}`}>
       <p className="text-xs font-medium">{label}</p>
       <p className="mt-2 text-2xl font-semibold">{value}</p>
       {detail ? <p className="mt-1 text-xs opacity-80">{detail}</p> : null}
@@ -60,7 +60,7 @@ function MetricCard({ label, value, detail, tone = "default" }) {
 
 function KeyValueList({ title, items, emptyLabel }) {
   return (
-    <section className="site-border site-card rounded-lg border">
+    <section className="site-border site-card h-full overflow-hidden rounded-lg border">
       <div className="border-b border-[var(--site-border)] px-4 py-3">
         <h2 className="font-semibold">{title}</h2>
       </div>
@@ -85,7 +85,7 @@ function KeyValueList({ title, items, emptyLabel }) {
 
 function AlertList({ alerts = [] }) {
   return (
-    <section className="site-border site-card rounded-lg border">
+    <section className="site-border site-card h-full overflow-hidden rounded-lg border">
       <div className="border-b border-[var(--site-border)] px-4 py-3">
         <h2 className="font-semibold">Active Alerts</h2>
       </div>
@@ -322,7 +322,7 @@ export default function SystemMonitorClient() {
 
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {isLoadingSummary ? (
             <>
               <MetricCard label="Total Requests" value="..." />
@@ -359,7 +359,7 @@ export default function SystemMonitorClient() {
           )}
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <div className="mt-6 grid items-stretch gap-6 lg:grid-cols-3">
           <AlertList alerts={summary?.alerts ?? []} />
           <KeyValueList
             title="HTTP Status Classes"
@@ -373,7 +373,7 @@ export default function SystemMonitorClient() {
           />
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <div className="mt-6 grid items-stretch gap-6 lg:grid-cols-2">
           <KeyValueList
             title="Email Delivery - 24h"
             items={emailItems}
@@ -386,7 +386,7 @@ export default function SystemMonitorClient() {
           />
         </div>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-2">
+        <div className="mt-6 grid items-start gap-6 xl:grid-cols-2">
           <section className="site-border site-card overflow-hidden rounded-lg border">
             <div className="site-panel border-b border-[var(--site-border)] p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

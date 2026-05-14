@@ -63,7 +63,7 @@ export default function MyJobsPage() {
           Track applications, revisit saved roles, and keep your next move organized.
         </p>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <div className="mt-8 grid items-start gap-4 md:grid-cols-2">
           {isLoading ? (
             <CardListSkeleton count={2} />
           ) : (
@@ -86,7 +86,7 @@ export default function MyJobsPage() {
           )}
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_340px]">
+        <div className="mt-6 grid items-start gap-4 lg:grid-cols-[1fr_340px]">
           <div className="site-border site-card rounded-lg border p-5">
             <h2 className="font-semibold">Recommended Next Steps</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">

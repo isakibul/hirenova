@@ -82,7 +82,7 @@ export default function SavedJobsPage() {
 
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <div className="mt-6 grid items-start gap-4 md:grid-cols-2">
           {isLoading ? (
             <CardListSkeleton count={4} />
           ) : savedJobs.length === 0 ? (

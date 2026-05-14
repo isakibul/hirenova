@@ -95,7 +95,7 @@ export default function Home() {
       </section>
 
       <section className="site-section pb-14">
-        <div className="site-container grid gap-4 md:grid-cols-3">
+        <div className="site-container grid items-start gap-4 md:grid-cols-3">
           {features.map((feature) => (
             <article
               key={feature.title}

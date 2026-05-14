@@ -56,6 +56,38 @@ const sendTrackedMail = async ({ type, to, subject, html }) => {
   }
 };
 
+const escapeHtml = (value = "") =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const renderNewsletterHtml = ({ subject, previewText = "", body }) => {
+  const paragraphs = String(body)
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br />")}</p>`)
+    .join("");
+
+  return `
+    <div style="display:none;max-height:0;overflow:hidden;color:transparent;">
+      ${escapeHtml(previewText)}
+    </div>
+    <main style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;max-width:640px;margin:0 auto;padding:24px;">
+      <p style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#2563eb;font-weight:700;">HireNova Newsletter</p>
+      <h1 style="font-size:24px;line-height:1.25;margin:12px 0 20px;">${escapeHtml(subject)}</h1>
+      <section style="font-size:15px;color:#1f2937;">${paragraphs}</section>
+      <hr style="border:0;border-top:1px solid #e5e7eb;margin:28px 0;" />
+      <p style="font-size:12px;color:#64748b;">
+        You are receiving this because you subscribed to HireNova updates.
+      </p>
+    </main>
+  `;
+};
+
 const sendConfirmationEmail = async (to, confirmUrl) => {
   const html = getConfirmationEmailHtml(confirmUrl);
 
@@ -78,4 +110,17 @@ const sendResetEmail = async (to, resetLink) => {
   });
 };
 
-module.exports = { sendConfirmationEmail, sendResetEmail };
+const sendNewsletterEmail = async ({ to, subject, previewText, body }) => {
+  await sendTrackedMail({
+    type: "newsletter_campaign",
+    to,
+    subject,
+    html: renderNewsletterHtml({ subject, previewText, body }),
+  });
+};
+
+module.exports = {
+  sendConfirmationEmail,
+  sendNewsletterEmail,
+  sendResetEmail,
+};

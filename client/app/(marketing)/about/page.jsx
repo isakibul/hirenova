@@ -115,7 +115,7 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid items-start gap-4 md:grid-cols-3">
             {values.map((value) => (
               <article
                 key={value.title}
@@ -147,7 +147,7 @@ export default function AboutPage() {
                 </h2>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-3">
+              <div className="grid items-start gap-3 md:grid-cols-3">
                 {audiences.map((audience) => (
                   <article
                     key={audience.title}

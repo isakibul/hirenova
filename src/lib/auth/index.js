@@ -1,8 +1,8 @@
 const { badRequest } = require("../../utils/error");
 const {
   createUser,
-  userExitsByEmail,
-  userExitsByUsername,
+  userExistsByEmail,
+  userExistsByUsername,
 } = require("../user");
 const newsletterService = require("../newsletter");
 const { generateHash, hashMatched } = require("../../utils/hashing");
@@ -21,8 +21,8 @@ const subscribeAuthEmail = async (email, source) => {
 
 const register = async ({ username, email, password, role, status }) => {
   const normalizedEmail = email.trim().toLowerCase();
-  const hasUserByEmail = await userExitsByEmail(normalizedEmail);
-  const hasUserByUsername = await userExitsByUsername(username);
+  const hasUserByEmail = await userExistsByEmail(normalizedEmail);
+  const hasUserByUsername = await userExistsByUsername(username);
 
   if (hasUserByEmail || hasUserByUsername) {
     throw badRequest("User already exists");
@@ -44,7 +44,7 @@ const register = async ({ username, email, password, role, status }) => {
 };
 
 const login = async ({ email, password }) => {
-  const user = await userExitsByEmail(email.trim().toLowerCase());
+  const user = await userExistsByEmail(email.trim().toLowerCase());
 
   if (!user) {
     throw badRequest("Invalid credentials");

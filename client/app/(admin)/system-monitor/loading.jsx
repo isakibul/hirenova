@@ -5,10 +5,10 @@ export default function Loading() {
     <section className="site-section py-8">
       <div className="site-container">
         <PageHeaderSkeleton />
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <MetricSkeleton count={4} />
         </div>
-        <div className="mt-6 grid gap-6 xl:grid-cols-2">
+        <div className="mt-6 grid items-start gap-6 xl:grid-cols-2">
           {[0, 1].map((item) => (
             <div key={item} className="site-border site-card overflow-hidden rounded-lg border">
               <div className="site-panel h-16 border-b border-[var(--site-border)]" />

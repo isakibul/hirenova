@@ -424,7 +424,7 @@ export default function ProfileClient() {
         <StatusNotice tone="success">{notice}</StatusNotice>
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="site-border site-card rounded-lg border">
             <div className="flex items-start justify-between gap-3 border-b border-[var(--site-border)] px-4 py-3">
               <div>

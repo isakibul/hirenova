@@ -27,6 +27,16 @@ Required variables:
 The backend also needs `CLIENT_URL` set to the same frontend origin. Email
 confirmation links are sent to `/confirm-email?token=...` on that URL.
 
+For local email testing, start the root Docker services and open MailHog:
+
+```bash
+docker compose up -d mailhog
+```
+
+MailHog receives SMTP on `localhost:1025` and exposes the email inbox at
+[http://localhost:8025](http://localhost:8025). Newsletter campaigns sent from
+the admin newsletter page will appear there.
+
 ## Development
 
 ```bash

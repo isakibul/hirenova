@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const apiContract = require("../../shared/apiContract.json");
 
 const emailEventRetentionDays = Number(process.env.EMAIL_EVENT_RETENTION_DAYS || 90);
 
@@ -6,7 +7,7 @@ const emailEventSchema = new Schema(
   {
     type: {
       type: String,
-      enum: ["confirmation", "password_reset"],
+      enum: apiContract.emailEvents.types,
       required: true,
       index: true,
     },
@@ -19,7 +20,7 @@ const emailEventSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["sent", "failed"],
+      enum: apiContract.emailEvents.statuses,
       required: true,
       index: true,
     },

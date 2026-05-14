@@ -3,6 +3,7 @@ import {
   passwordError,
   usernameError,
 } from "@lib/formValidation";
+import apiContract from "../../../../shared/apiContract.json";
 
 export const emptyForm = {
   username: "",
@@ -16,7 +17,7 @@ export const roles = [
   { value: "employer", label: "Employer" },
   { value: "admin", label: "Admin" },
   { value: "superadmin", label: "Super Admin" },
-];
+].filter((role) => apiContract.roles.user.includes(role.value));
 
 export const roleTabs = [
   { value: "all", label: "All" },
@@ -27,7 +28,7 @@ export const roleTabs = [
 ];
 
 export const adminManagedRoles = roles.filter((role) =>
-  ["jobseeker", "employer"].includes(role.value),
+  apiContract.roles.adminManaged.includes(role.value),
 );
 
 export const userSortOptions = [

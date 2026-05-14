@@ -95,7 +95,7 @@ export default function HelpClient() {
 
     return (<section className="site-section py-12">
       <div className="site-container">
-        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px]">
           <div>
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">Help Center</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">How can we help?</h1>

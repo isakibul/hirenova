@@ -19,16 +19,15 @@ const findUserByUsername = async (username) => {
 };
 
 const findUserById = async (id) => {
-  const user = await User.findById(id);
   return await User.findById(id);
 };
 
-const userExitsByEmail = async (email) => {
+const userExistsByEmail = async (email) => {
   const user = await findUserByEmail(email);
   return user ? user : false;
 };
 
-const userExitsByUsername = async (username) => {
+const userExistsByUsername = async (username) => {
   const user = await findUserByUsername(username);
   return user ? user : false;
 };
@@ -235,14 +234,14 @@ const removeUser = async (id) => {
   if (!user) {
     throw notFound("User not found");
   }
-  return User.findByIdAndDelete(id);
+  return { ...user._doc, id: user._id.toString() };
 };
 
 module.exports = {
   findUserByEmail,
-  userExitsByEmail,
+  userExistsByEmail,
   findUserById,
-  userExitsByUsername,
+  userExistsByUsername,
   createUser,
   getAllUser,
   count,

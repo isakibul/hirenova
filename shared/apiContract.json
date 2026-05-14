@@ -1,0 +1,36 @@
+{
+  "roles": {
+    "user": ["jobseeker", "employer", "admin", "superadmin"],
+    "publicSignup": ["jobseeker", "employer"],
+    "adminManaged": ["jobseeker", "employer"],
+    "systemActors": ["jobseeker", "employer", "admin", "superadmin", "anonymous"]
+  },
+  "users": {
+    "statuses": ["pending", "active", "suspended"]
+  },
+  "jobs": {
+    "types": ["full-time", "part-time", "remote", "contract"],
+    "statuses": ["open", "closed"],
+    "approvalStatuses": ["pending", "approved", "declined"],
+    "reviewableApprovalStatuses": ["approved", "declined"],
+    "approvalHistoryActions": ["submitted", "resubmitted", "approved", "declined"]
+  },
+  "applications": {
+    "statuses": ["submitted", "reviewing", "shortlisted", "rejected", "hired"]
+  },
+  "emailEvents": {
+    "types": ["confirmation", "password_reset", "newsletter_campaign"],
+    "statuses": ["sent", "failed"]
+  },
+  "newsletter": {
+    "statuses": ["subscribed", "unsubscribed"],
+    "campaignStatuses": ["sent", "partial", "failed"],
+    "adminRoutes": {
+      "campaigns": {
+        "list": "GET /api/v1/admin/newsletter/campaigns",
+        "send": "POST /api/v1/admin/newsletter/campaigns",
+        "delete": "DELETE /api/v1/admin/newsletter/campaigns/:id"
+      }
+    }
+  }
+}

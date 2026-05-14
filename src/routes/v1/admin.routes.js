@@ -52,6 +52,34 @@ router.get(
   adminControllers.getNewsletterSubscriptions
 );
 
+router.get(
+  "/newsletter/campaigns",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.getNewsletterCampaigns
+);
+
+router.post(
+  "/newsletter/campaigns",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.sendNewsletterCampaign
+);
+
+router.delete(
+  "/newsletter/campaigns/:id",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.removeNewsletterCampaign
+);
+
+router.patch(
+  "/newsletter/:id/status",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.updateNewsletterSubscriptionStatus
+);
+
 router.delete(
   "/newsletter/:id",
   authenticate,

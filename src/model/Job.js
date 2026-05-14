@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const apiContract = require("../../shared/apiContract.json");
 
 const jobSchema = Schema({
   title: {
@@ -17,7 +18,7 @@ const jobSchema = Schema({
   },
   jobType: {
     type: String,
-    enum: ["full-time", "part-time", "remote", "contract"],
+    enum: apiContract.jobs.types,
   },
   skillsRequired: [String],
   experienceRequired: Number,
@@ -26,12 +27,12 @@ const jobSchema = Schema({
   salary: Number,
   status: {
     type: String,
-    enum: ["open", "closed"],
+    enum: apiContract.jobs.statuses,
     default: "open",
   },
   approvalStatus: {
     type: String,
-    enum: ["pending", "approved", "declined"],
+    enum: apiContract.jobs.approvalStatuses,
     default: "pending",
     index: true,
   },
@@ -48,7 +49,7 @@ const jobSchema = Schema({
     {
       action: {
         type: String,
-        enum: ["submitted", "resubmitted", "approved", "declined"],
+        enum: apiContract.jobs.approvalHistoryActions,
         required: true,
       },
       note: {
@@ -61,7 +62,7 @@ const jobSchema = Schema({
       },
       actorRole: {
         type: String,
-        enum: ["jobseeker", "employer", "admin", "superadmin"],
+        enum: apiContract.roles.user,
       },
       createdAt: {
         type: Date,

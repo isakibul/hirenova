@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const apiContract = require("../../shared/apiContract.json");
 
 const applicationSchema = new Schema(
   {
@@ -14,7 +15,7 @@ const applicationSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["submitted", "reviewing", "shortlisted", "rejected", "hired"],
+      enum: apiContract.applications.statuses,
       default: "submitted",
     },
     coverLetter: {

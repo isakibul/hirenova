@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const apiContract = require("../../../shared/apiContract.json");
 
 const registerSchema = Joi.object({
   username: Joi.string().alphanum().min(3).max(50).required(),
@@ -13,7 +14,7 @@ const registerSchema = Joi.object({
       "Password must contain at least one uppercase letter, one lowercase letter, and one number"
     )
     .required(),
-  role: Joi.string().valid("jobseeker", "employer").required(),
+  role: Joi.string().valid(...apiContract.roles.publicSignup).required(),
 });
 
 const loginSchema = Joi.object({
