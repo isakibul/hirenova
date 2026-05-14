@@ -6,6 +6,7 @@ import { getApiMessage } from "@lib/ui";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
+import LoadingCircle from "./LoadingCircle";
 
 const welcomeMessage = {
   role: "assistant",
@@ -141,8 +142,9 @@ export default function AssistantChat() {
             ))}
             {isSending ? (
               <div className="flex justify-start">
-                <div className="site-border site-panel border rounded-lg px-3 py-2 text-sm">
-                  Thinking...
+                <div className="site-border site-panel flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+                  <LoadingCircle className="h-3.5 w-3.5" label="Thinking" />
+                  Thinking
                 </div>
               </div>
             ) : null}
@@ -174,9 +176,12 @@ export default function AssistantChat() {
               <button
                 type="submit"
                 disabled={isSending || !input.trim()}
-                className="site-button inline-flex min-h-10 items-center justify-center rounded-md px-4 text-sm font-semibold disabled:opacity-70"
+                className="site-button inline-flex min-h-10 min-w-16 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold disabled:opacity-70"
               >
-                Send
+                {isSending ? (
+                  <LoadingCircle className="h-3.5 w-3.5" label="Sending" />
+                ) : null}
+                {isSending ? "Sending" : "Send"}
               </button>
             </div>
           </form>

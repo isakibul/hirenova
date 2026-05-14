@@ -1,5 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import LoadingCircle from "@components/LoadingCircle";
 import StatusNotice from "@components/StatusNotice";
 import { requestJson } from "@lib/clientApi";
 import { emailError, getVisibleErrors, hasValidationErrors, touchAll, } from "@lib/formValidation";
@@ -76,8 +77,9 @@ export default function ForgotPasswordForm() {
       <StatusNotice className="mt-4 text-xs">{error}</StatusNotice>
       <StatusNotice className="mt-4 text-xs" tone="success">{success}</StatusNotice>
 
-      <button type="submit" disabled={isSubmitting} className="site-button mt-5 w-full rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed">
-        {isSubmitting ? "Sending..." : "Send Reset Link"}
+      <button type="submit" disabled={isSubmitting} className="site-button mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed">
+        {isSubmitting ? (<LoadingCircle className="h-3.5 w-3.5" label="Sending reset link" />) : null}
+        {isSubmitting ? "Sending" : "Send Reset Link"}
       </button>
 
       <p className="site-muted mt-4 text-center text-xs">

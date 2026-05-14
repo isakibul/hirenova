@@ -1,6 +1,7 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
 import Icon from "@components/Icon";
+import LoadingCircle from "@components/LoadingCircle";
 import { FormSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
 import { requestJson } from "@lib/clientApi";
@@ -469,8 +470,8 @@ export default function ProfileClient() {
                           <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={handleResumeChange} disabled={!isEditingProfile || isParsingResume} className="site-field w-full rounded-md border px-3 py-2 text-sm file:mr-3 file:rounded file:border-0 file:bg-[var(--site-panel)] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--site-fg)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"/>
                         </label>
                         <button type="button" onClick={handleParseResume} disabled={isParsingResume || (!resumeFile && !profileForm.resumeUrl)} className="site-border site-field inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold disabled:opacity-60">
-                          <Icon name="file"/>
-                          {isParsingResume ? "Parsing..." : "Parse Resume"}
+                          {isParsingResume ? (<LoadingCircle className="h-3.5 w-3.5" label="Parsing resume" />) : (<Icon name="file"/>)}
+                          {isParsingResume ? "Parsing" : "Parse Resume"}
                         </button>
                       </div>
                       <p className="site-muted mt-1 text-xs">
@@ -590,8 +591,8 @@ export default function ProfileClient() {
 
                 {isEditingProfile ? (<div className="flex flex-col gap-2 sm:flex-row">
                     <button type="submit" disabled={isSavingProfile} className="site-button inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-70">
-                      <Icon name="check"/>
-                      {isSavingProfile ? "Saving..." : "Save Profile"}
+                      {isSavingProfile ? (<LoadingCircle className="h-3.5 w-3.5" label="Saving profile" />) : (<Icon name="check"/>)}
+                      {isSavingProfile ? "Saving" : "Save Profile"}
                     </button>
                     <button type="button" onClick={cancelProfileEdit} disabled={isSavingProfile} className="site-border site-field inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-70">
                       <Icon name="x"/>
@@ -638,8 +639,8 @@ export default function ProfileClient() {
               </label>
 
               <button type="submit" disabled={isSavingPassword} className="site-button inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-70">
-                <Icon name="check"/>
-                {isSavingPassword ? "Updating..." : "Update Password"}
+                {isSavingPassword ? (<LoadingCircle className="h-3.5 w-3.5" label="Updating password" />) : (<Icon name="check"/>)}
+                {isSavingPassword ? "Updating" : "Update Password"}
               </button>
             </form>
           </aside>

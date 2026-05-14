@@ -1,5 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import LoadingCircle from "@components/LoadingCircle";
 import SelectField from "@components/forms/SelectField";
 import StatusNotice from "@components/StatusNotice";
 import { requestJson } from "@lib/clientApi";
@@ -140,14 +141,16 @@ export default function SignupForm({ initialEmail = "", }) {
       <StatusNotice className="mt-4 text-xs">{error}</StatusNotice>
       <StatusNotice className="mt-4 text-xs" tone="success">{success}</StatusNotice>
       {createdEmail ? (<div className="mt-3">
-          <button type="button" onClick={resendConfirmation} disabled={isResending} className="site-border site-field w-full rounded-md border px-3 py-2 text-xs font-semibold disabled:opacity-70">
-            {isResending ? "Sending..." : "Resend verification email"}
+          <button type="button" onClick={resendConfirmation} disabled={isResending} className="site-border site-field inline-flex w-full items-center justify-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold disabled:opacity-70">
+            {isResending ? (<LoadingCircle className="h-3.5 w-3.5" label="Sending verification email" />) : null}
+            {isResending ? "Sending" : "Resend verification email"}
           </button>
           <StatusNotice className="mt-2 text-xs" tone="success">{resendNotice}</StatusNotice>
         </div>) : null}
 
-      <button type="submit" disabled={isSubmitting} className="site-button mt-5 w-full rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed">
-        {isSubmitting ? "Creating account..." : "Create Account"}
+      <button type="submit" disabled={isSubmitting} className="site-button mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed">
+        {isSubmitting ? (<LoadingCircle className="h-3.5 w-3.5" label="Creating account" />) : null}
+        {isSubmitting ? "Creating account" : "Create Account"}
       </button>
 
       <p className="site-muted mt-4 text-center text-xs">

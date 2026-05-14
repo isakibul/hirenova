@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { requestJson } from "@lib/clientApi";
 import Icon from "./Icon";
+import LoadingCircle from "./LoadingCircle";
 
 const footerSections = [
   {
@@ -156,9 +157,12 @@ export default function Footer() {
               <button
                 type="submit"
                 disabled={isSubscribing}
-                className="site-button min-h-10 rounded-md px-4 text-sm font-medium transition disabled:cursor-not-allowed"
+                className="site-button inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition disabled:cursor-not-allowed"
               >
-                {isSubscribing ? "Joining..." : "Subscribe"}
+                {isSubscribing ? (
+                  <LoadingCircle className="h-3.5 w-3.5" label="Subscribing" />
+                ) : null}
+                {isSubscribing ? "Joining" : "Subscribe"}
               </button>
             </form>
             {message ? (

@@ -16,8 +16,9 @@ import {
 } from "../_lib/ui";
 import ConfirmDialog from "./ConfirmDialog";
 import Icon from "./Icon";
-import { RowListSkeleton } from "./Skeleton";
+import LoadingCircle from "./LoadingCircle";
 import Modal from "./Modal";
+import { RowListSkeleton } from "./Skeleton";
 
 function getUnreadSignature(conversations = []) {
   return conversations
@@ -711,8 +712,11 @@ export default function MessagesMenu({
                       disabled={
                         isSending || !selectedConversation || !draft.trim()
                       }
-                      className="site-button rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
+                      className="site-button inline-flex min-w-16 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
                     >
+                      {isSending ? (
+                        <LoadingCircle className="h-3.5 w-3.5" label="Sending message" />
+                      ) : null}
                       {isSending ? "Sending" : "Send"}
                     </button>
                   </div>

@@ -2,6 +2,7 @@
 
 import ConfirmDialog from "@components/ConfirmDialog";
 import Icon from "@components/Icon";
+import LoadingCircle from "@components/LoadingCircle";
 import { RowListSkeleton } from "@components/Skeleton";
 import { useAuth } from "@components/auth/AuthProvider";
 import { requestJson } from "@lib/clientApi";
@@ -516,8 +517,11 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
                 <button
                   type="submit"
                   disabled={isSending || !selectedConversation || !draft.trim()}
-                  className="site-button rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
+                  className="site-button inline-flex min-w-16 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
                 >
+                  {isSending ? (
+                    <LoadingCircle className="h-3.5 w-3.5" label="Sending message" />
+                  ) : null}
                   {isSending ? "Sending" : "Send"}
                 </button>
               </div>

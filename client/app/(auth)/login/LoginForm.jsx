@@ -1,6 +1,7 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
 import { useAuth } from "@components/auth/AuthProvider";
+import LoadingCircle from "@components/LoadingCircle";
 import {
   emailError,
   getVisibleErrors,
@@ -138,9 +139,12 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="site-button mt-5 w-full rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed"
+        className="site-button mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed"
       >
-        {isSubmitting ? "Logging in..." : "Login"}
+        {isSubmitting ? (
+          <LoadingCircle className="h-3.5 w-3.5" label="Logging in" />
+        ) : null}
+        {isSubmitting ? "Logging in" : "Login"}
       </button>
 
       <p className="site-muted mt-4 text-center text-xs">
