@@ -160,7 +160,7 @@ export default function NotificationsMenu({ enabled = false }) {
 
       {isOpen ? (
         <div
-          className="site-border site-card absolute right-0 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg border"
+          className="site-border site-card fixed left-4 right-4 top-16 z-50 overflow-hidden rounded-lg border sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[min(22rem,calc(100vw-2rem))]"
           role="menu"
         >
           <div className="flex items-center justify-between gap-3 border-b border-(--site-border) px-4 py-3">

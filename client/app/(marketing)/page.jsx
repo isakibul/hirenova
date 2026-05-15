@@ -23,6 +23,12 @@ const features = [
   },
 ];
 
+const stats = [
+  { value: "3", label: "workspaces" },
+  { value: "12+", label: "core flows" },
+  { value: "48", label: "checks passing" },
+];
+
 function getSignupPath(email) {
   const trimmed = email.trim();
 
@@ -40,56 +46,73 @@ export default function Home() {
 
   return (
     <>
-      <section className="site-section py-14 lg:py-20">
-        <div className="site-container text-center">
-          <p className="site-accent text-xs font-semibold uppercase tracking-widest">
-            HireNova
-          </p>
-          <h1 className="mt-4 text-4xl font-semibold leading-tight md:text-5xl">
-            Your workspace for Jobs and Hiring
-          </h1>
-          <p className="site-muted mx-auto mt-5 max-w-2xl text-base leading-7">
-            HireNova helps jobseekers find roles and track applications while
-            employers manage jobs, candidates, and conversations in one place.
-          </p>
+      <section className="site-section py-10 lg:py-16">
+        <div className="site-container">
+          <div className="mx-auto max-w-5xl text-center">
+            <p className="site-accent text-xs font-semibold uppercase tracking-widest">
+              HireNova Talent OS
+            </p>
+            <h1 className="mt-4 text-3xl font-semibold leading-tight md:text-5xl">
+              One command center for jobs, candidates, and hiring momentum.
+            </h1>
+            <p className="site-muted mx-auto mt-5 max-w-2xl text-base leading-7">
+              HireNova brings job search, application tracking, employer
+              workflows, realtime conversations, and admin operations into one
+              production-minded workspace.
+            </p>
 
-          <form
-            onSubmit={handleSubmit}
-            className="site-border site-card mx-auto mt-8 grid max-w-xl gap-2 rounded-lg border p-2 sm:grid-cols-[1fr_auto]"
-          >
-            <label className="sr-only" htmlFor="home-email">
-              Email address
-            </label>
-            <input
-              id="home-email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="Enter your email"
-              type="email"
-              className="site-field h-11 rounded-md border px-3 text-sm focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="site-button h-11 rounded-md px-4 text-sm font-semibold transition"
+            <form
+              onSubmit={handleSubmit}
+              className="site-border site-card mx-auto mt-8 grid max-w-xl gap-2 rounded-lg border p-2 sm:grid-cols-[1fr_auto]"
             >
-              Get Started
-            </button>
-          </form>
+              <label className="sr-only" htmlFor="home-email">
+                Email address
+              </label>
+              <input
+                id="home-email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="Enter your email"
+                type="email"
+                className="site-field h-11 rounded-md border px-3 text-sm focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="site-button h-11 rounded-md px-4 text-sm font-semibold transition"
+              >
+                Get Started
+              </button>
+            </form>
 
-          <div className="mt-5 flex flex-wrap justify-center gap-3 text-sm">
-            <Link
-              href="/jobs"
-              className="site-border site-field inline-flex items-center gap-2 rounded-md border px-3 py-2 font-semibold transition hover:border-[var(--site-accent)]"
-            >
-              <Icon name="search" />
-              Browse Jobs
-            </Link>
-            <Link
-              href="/features"
-              className="site-link inline-flex items-center px-3 py-2 font-semibold transition hover:text-[var(--site-accent)]"
-            >
-              View Features
-            </Link>
+            <div className="mt-5 flex flex-wrap justify-center gap-3 text-sm">
+              <Link
+                href="/jobs"
+                className="site-border site-field inline-flex items-center gap-2 rounded-md border px-3 py-2 font-semibold transition hover:border-[var(--site-accent)]"
+              >
+                <Icon name="search" />
+                Browse Jobs
+              </Link>
+              <Link
+                href="/features"
+                className="site-link inline-flex items-center px-3 py-2 font-semibold transition hover:text-[var(--site-accent)]"
+              >
+                View Features
+              </Link>
+            </div>
+
+            <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-3">
+              {stats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="site-border border-l px-4 first:border-l-0"
+                >
+                  <p className="text-2xl font-semibold">{stat.value}</p>
+                  <p className="site-muted mt-1 text-xs uppercase tracking-wide">
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

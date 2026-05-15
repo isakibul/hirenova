@@ -424,8 +424,8 @@ export default function ProfileClient() {
         <StatusNotice tone="success">{notice}</StatusNotice>
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">
-          <div className="site-border site-card rounded-lg border">
+        <div className="mt-6 grid items-start gap-3 lg:grid-cols-3">
+          <div className="site-border site-card rounded-lg border lg:col-span-2">
             <div className="flex items-start justify-between gap-3 border-b border-[var(--site-border)] px-4 py-3">
               <div>
                 <h2 className="font-semibold">Profile Details</h2>
@@ -602,7 +602,7 @@ export default function ProfileClient() {
               </form>)}
           </div>
 
-          <aside className="site-border site-card self-start rounded-lg border lg:sticky lg:top-24">
+          <aside className="site-border site-card self-start rounded-lg border lg:col-span-1 lg:sticky lg:top-24">
             <div className="border-b border-[var(--site-border)] px-4 py-3">
               <h2 className="font-semibold">Change Password</h2>
               <p className="site-muted mt-1 text-xs">

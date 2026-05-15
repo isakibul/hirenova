@@ -178,7 +178,7 @@ export default function Footer() {
           </section>
         </div>
 
-        <div className="mt-8 grid gap-6 border-t border-(--site-border) pt-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-7 border-t border-(--site-border) pt-8 lg:grid-cols-4">
           {footerSections.map((section) => (
             <section key={section.title}>
               <h2 className="text-sm font-semibold">{section.title}</h2>

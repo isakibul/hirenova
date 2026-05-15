@@ -1,15 +1,35 @@
 {
   "name": "hirenova",
   "version": "1.0.0",
-  "description": "",
+  "description": "Full-stack hiring platform with job search, applications, employer workflows, admin operations, realtime messaging, notifications, email, and production-readiness checks.",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon src/index.js",
+    "dev:client": "npm --prefix client run dev",
+    "start": "node src/index.js",
     "test": "node --test \"test/**/*.test.js\"",
-    "check": "npm test && npm --prefix client run check",
-    "start": "nodemon src/index.js"
+    "test:backend": "npm test",
+    "test:client": "npm --prefix client run test",
+    "lint:client": "npm --prefix client run lint",
+    "build:client": "npm --prefix client run build",
+    "check:backend": "npm test",
+    "check:client": "npm --prefix client run check",
+    "check": "npm run check:backend && npm run check:client"
   },
-  "author": "",
+  "keywords": [
+    "hiring-platform",
+    "job-board",
+    "nextjs",
+    "express",
+    "mongodb",
+    "socket.io",
+    "portfolio"
+  ],
+  "author": "Isakibul",
   "license": "ISC",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
