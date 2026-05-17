@@ -52,8 +52,8 @@ export default function Home() {
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">
               HireNova Talent OS
             </p>
-            <h1 className="mt-4 text-3xl font-semibold leading-tight md:text-5xl">
-              One command center for jobs, candidates, and hiring momentum.
+            <h1 className="marketing-title mt-4 text-3xl font-semibold leading-tight md:text-5xl">
+              One command center for Jobs, Candidates, and Hiring Momentum.
             </h1>
             <p className="site-muted mx-auto mt-5 max-w-2xl text-base leading-7">
               HireNova brings job search, application tracking, employer

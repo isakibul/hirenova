@@ -7,45 +7,6 @@ import { requestJson } from "@lib/clientApi";
 import Icon from "./Icon";
 import LoadingCircle from "./LoadingCircle";
 
-const footerSections = [
-  {
-    title: "Platform",
-    links: [
-      { label: "Features", href: "/features" },
-      { label: "Browse Jobs", href: "/jobs" },
-      { label: "About", href: "/about" },
-      { label: "System Status", href: "/status" },
-    ],
-  },
-  {
-    title: "Jobseekers",
-    links: [
-      { label: "Find Jobs", href: "/jobs" },
-      { label: "Saved Jobs", href: "/saved-jobs" },
-      { label: "Applications", href: "/applications" },
-      { label: "Profile", href: "/profile" },
-    ],
-  },
-  {
-    title: "Employers",
-    links: [
-      { label: "Dashboard", href: "/dashboard" },
-      { label: "Manage Jobs", href: "/manage-jobs" },
-      { label: "Candidates", href: "/candidates" },
-      { label: "Messages", href: "/messages" },
-    ],
-  },
-  {
-    title: "Support",
-    links: [
-      { label: "Help Center", href: "/help" },
-      { label: "Notifications", href: "/notifications" },
-      { label: "Settings", href: "/settings" },
-      { label: "Create Account", href: "/signup" },
-    ],
-  },
-];
-
 const contactItems = [
   { icon: "mail", label: "support@hirenova.com" },
   { icon: "check", label: "Hiring workflow updates" },
@@ -176,26 +137,6 @@ export default function Footer() {
               </p>
             ) : null}
           </section>
-        </div>
-
-        <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-7 border-t border-(--site-border) pt-8 lg:grid-cols-4">
-          {footerSections.map((section) => (
-            <section key={section.title}>
-              <h2 className="text-sm font-semibold">{section.title}</h2>
-              <ul className="mt-3 space-y-2.5">
-                {section.links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="site-link text-sm transition hover:text-(--site-accent)"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
         </div>
 
         <div className="site-muted mt-8 flex flex-col gap-3 border-t border-(--site-border) pt-5 text-xs sm:flex-row sm:items-center sm:justify-between">

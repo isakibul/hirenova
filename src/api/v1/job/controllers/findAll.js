@@ -19,10 +19,16 @@ const findAll = async (req, res, next) => {
   const maxSalary = req.query.max_salary;
   const minExperience = req.query.min_experience;
   const maxExperience = req.query.max_experience;
-  const author = req.query.author;
+  const canManageJobs = ["admin", "superadmin", "employer"].includes(
+    req.user?.role
+  );
+  const author =
+    req.query.author || (canManageJobs && req.user.role === "employer"
+      ? req.user.id
+      : undefined);
   const status = req.query.status || "";
   const approvalStatus = req.query.approval_status || "";
-  const includeClosed = req.query.include_closed === "true";
+  const includeClosed = req.query.include_closed === "true" && canManageJobs;
 
   try {
     const jobs = await jobService.findAll({

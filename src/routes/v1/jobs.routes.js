@@ -8,8 +8,17 @@ const checkUserStatus = require("../../middleware/checkUserStatus");
 const ownership = require("../../middleware/ownership");
 const { writeLimiter } = require("../../middleware/rateLimits");
 
+const optionalAuthenticate = (req, res, next) => {
+  if (!req.headers.authorization) {
+    next();
+    return;
+  }
+
+  authenticate(req, res, next);
+};
+
 // jobseeker
-router.get("/", jobControllers.findAll);
+router.get("/", optionalAuthenticate, jobControllers.findAll);
 
 router.post(
   "/:id/apply",

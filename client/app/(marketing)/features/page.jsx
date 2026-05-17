@@ -66,33 +66,24 @@ const workflow = [
   },
 ];
 
-const quickFacts = [
-  "Job browsing and detail pages",
-  "Saved jobs for jobseekers",
-  "Application submission with cover letter",
-  "Application status tracking",
-  "Employer job management",
-  "Notifications for hiring activity",
-];
-
 export default function FeaturesPage() {
   return (
     <main>
-      <section className="site-section py-12">
-        <div className="site-container grid gap-8 lg:grid-cols-[1fr_360px] lg:items-center">
-          <div>
+      <section className="site-section py-10 lg:py-16">
+        <div className="site-container">
+          <div className="mx-auto max-w-5xl text-center">
             <p className="site-accent text-xs font-semibold uppercase tracking-widest">
               Features
             </p>
-            <h1 className="mt-3 max-w-3xl text-3xl font-semibold leading-tight md:text-4xl">
-              Essential tools for managing jobs, applications, and candidates
+            <h1 className="marketing-title mt-4 text-3xl font-semibold leading-tight md:text-5xl">
+              Essential tools for managing jobs, applications, and candidates.
             </h1>
-            <p className="site-muted mt-4 max-w-2xl text-sm leading-6">
-              HireNova gives jobseekers and employers a simple workspace for
-              the core hiring flow: posting jobs, finding roles, applying,
-              saving opportunities, reviewing applicants, and tracking status.
+            <p className="site-muted mx-auto mt-5 max-w-2xl text-base leading-7">
+              HireNova gives jobseekers and employers a simple workspace for the
+              core hiring flow by posting jobs, finding roles, applying, saving
+              opportunities, reviewing applicants, and tracking status.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
                 href="/jobs"
                 className="site-button rounded-md px-4 py-2 text-sm font-medium transition"
@@ -107,23 +98,6 @@ export default function FeaturesPage() {
               </Link>
             </div>
           </div>
-
-          <aside className="site-border site-card site-elevated rounded-xl border p-5">
-            <p className="text-sm font-semibold">Available in HireNova</p>
-            <div className="mt-4 grid gap-2">
-              {quickFacts.map((item) => (
-                <div
-                  key={item}
-                  className="site-border site-panel flex items-center gap-3 rounded-lg border p-3"
-                >
-                  <span className="site-success inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border">
-                    <Icon name="check" />
-                  </span>
-                  <span className="text-sm font-medium">{item}</span>
-                </div>
-              ))}
-            </div>
-          </aside>
         </div>
       </section>
 
@@ -154,7 +128,7 @@ export default function FeaturesPage() {
                         <h3 className="text-sm font-semibold">
                           {feature.title}
                         </h3>
-                        <p className="site-muted mt-1 text-xs leading-5">
+                        <p className="site-muted mt-1 min-h-10 text-xs leading-5">
                           {feature.desc}
                         </p>
                       </div>
@@ -193,9 +167,7 @@ export default function FeaturesPage() {
                   </span>
                 </div>
                 <h3 className="mt-4 text-base font-semibold">{item.title}</h3>
-                <p className="site-muted mt-2 text-xs leading-5">
-                  {item.desc}
-                </p>
+                <p className="site-muted mt-2 text-xs leading-5">{item.desc}</p>
               </article>
             ))}
           </div>

@@ -31,7 +31,11 @@ export const metadata = {
 };
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+    <html
+      lang="en"
+      className="h-full antialiased"
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

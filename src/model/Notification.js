@@ -18,6 +18,7 @@ const notificationSchema = new Schema(
         "job_pending_review",
         "job_approved",
         "job_declined",
+        "message",
         "system",
       ],
       default: "system",

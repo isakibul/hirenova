@@ -5,7 +5,8 @@
   --foreground: #172117;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Space Grotesk", "Inter", "Segoe UI", Arial, sans-serif;
+  --font-sans: Georgia, "Times New Roman", serif;
+  --font-display: Georgia, "Times New Roman", serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --site-bg: #fbfcf8;
   --site-fg: #172117;
@@ -99,6 +100,11 @@ body {
 
 .site-muted {
   color: var(--site-muted);
+}
+
+.marketing-title {
+  font-family: var(--font-display);
+  font-weight: 600;
 }
 
 .site-soft {

@@ -71,6 +71,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
             limit: "10",
             sort_by: sortBy,
             sort_type: sortType,
+            include_closed: "true",
         });
         if (search) {
             params.set("search", search);

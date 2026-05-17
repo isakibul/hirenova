@@ -143,30 +143,35 @@ export default function Nav() {
     <header className="site-border site-nav sticky top-0 z-20 border-b py-3">
       <div className="site-section">
         <div className="site-container flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
-            Hire<span className="site-accent">Nova</span>
-          </Link>
+          <div className="flex items-center gap-14">
+            <Link
+              href="/"
+              className="marketing-title inline-flex h-9 items-center text-2xl tracking-tight mb-1"
+            >
+              Hire<span className="site-accent">Nova</span>
+            </Link>
 
-          <nav className="hidden gap-5 text-[13px] md:flex">
-            <Link
-              href="/features"
-              className="site-link transition hover:text-(--site-accent)"
-            >
-              Features
-            </Link>
-            <Link
-              href="/about"
-              className="site-link transition hover:text-(--site-accent)"
-            >
-              About
-            </Link>
-            <Link
-              href="/jobs"
-              className="site-link transition hover:text-(--site-accent)"
-            >
-              Jobs
-            </Link>
-          </nav>
+            <nav className="hidden items-center gap-5 text-base font-semibold md:flex">
+              <Link
+                href="/features"
+                className="site-link inline-flex h-9 items-center transition hover:text-(--site-accent)"
+              >
+                Features
+              </Link>
+              <Link
+                href="/about"
+                className="site-link inline-flex h-9 items-center transition hover:text-(--site-accent)"
+              >
+                About
+              </Link>
+              <Link
+                href="/jobs"
+                className="site-link inline-flex h-9 items-center transition hover:text-(--site-accent)"
+              >
+                Jobs
+              </Link>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-3">
             <NotificationsMenu enabled={isAuthenticated} />
@@ -193,75 +198,75 @@ export default function Nav() {
                     className="site-border site-card absolute right-0 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg border py-2"
                     role="menu"
                   >
-                <div className="border-b border-(--site-border) px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="site-badge flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-                      <Icon name="user" />
+                    <div className="border-b border-(--site-border) px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="site-badge flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+                          <Icon name="user" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold">
+                            {displayName}
+                          </p>
+                          {userEmail && displayName !== userEmail ? (
+                            <p className="site-muted mt-0.5 truncate text-xs">
+                              {userEmail}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">
-                        {displayName}
-                      </p>
-                      {userEmail && displayName !== userEmail ? (
-                        <p className="site-muted mt-0.5 truncate text-xs">
-                          {userEmail}
-                        </p>
+
+                    <div className="py-1">
+                      {roleMenuItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsProfileOpen(false)}
+                          className="group mx-2 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition hover:bg-(--site-panel) hover:text-(--site-accent)"
+                          role="menuitem"
+                        >
+                          <span className="site-border site-panel flex h-8 w-8 items-center justify-center rounded-md border transition group-hover:border-(--site-accent)">
+                            <Icon name={item.icon} />
+                          </span>
+                          {item.label}
+                        </Link>
+                      ))}
+                      {roleMenuItems.length > 0 ? (
+                        <div className="mx-4 my-1 border-t border-(--site-border)" />
                       ) : null}
+                      {accountMenuItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsProfileOpen(false)}
+                          className="group mx-2 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition hover:bg-(--site-panel) hover:text-(--site-accent)"
+                          role="menuitem"
+                        >
+                          <span className="site-border site-panel flex h-8 w-8 items-center justify-center rounded-md border transition group-hover:border-(--site-accent)">
+                            <Icon name={item.icon} />
+                          </span>
+                          {item.label}
+                        </Link>
+                      ))}
+                      <ThemeToggle variant="menu" />
                     </div>
-                  </div>
-                </div>
 
-                <div className="py-1">
-                  {roleMenuItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setIsProfileOpen(false)}
-                      className="group mx-2 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition hover:bg-(--site-panel) hover:text-(--site-accent)"
-                      role="menuitem"
-                    >
-                      <span className="site-border site-panel flex h-8 w-8 items-center justify-center rounded-md border transition group-hover:border-(--site-accent)">
-                        <Icon name={item.icon} />
-                      </span>
-                      {item.label}
-                    </Link>
-                  ))}
-                  {roleMenuItems.length > 0 ? (
-                    <div className="mx-4 my-1 border-t border-(--site-border)" />
-                  ) : null}
-                  {accountMenuItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setIsProfileOpen(false)}
-                      className="group mx-2 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition hover:bg-(--site-panel) hover:text-(--site-accent)"
-                      role="menuitem"
-                    >
-                      <span className="site-border site-panel flex h-8 w-8 items-center justify-center rounded-md border transition group-hover:border-(--site-accent)">
-                        <Icon name={item.icon} />
-                      </span>
-                      {item.label}
-                    </Link>
-                  ))}
-                  <ThemeToggle variant="menu" />
-                </div>
-
-                <div className="border-t border-(--site-border) pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void logout();
-                      window.location.href = "/";
-                    }}
-                    className="group mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium transition hover:bg-(--site-panel) hover:text-(--site-accent)"
-                    role="menuitem"
-                  >
-                    <span className="site-border site-panel flex h-8 w-8 items-center justify-center rounded-md border transition group-hover:border-(--site-accent)">
-                      <Icon name="logOut" />
-                    </span>
-                    Sign Out
-                  </button>
-                </div>
+                    <div className="border-t border-(--site-border) pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void logout();
+                          window.location.href = "/";
+                        }}
+                        className="group mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium transition hover:bg-(--site-panel) hover:text-(--site-accent)"
+                        role="menuitem"
+                      >
+                        <span className="site-border site-panel flex h-8 w-8 items-center justify-center rounded-md border transition group-hover:border-(--site-accent)">
+                          <Icon name="logOut" />
+                        </span>
+                        Sign Out
+                      </button>
+                    </div>
                   </div>
                 ) : null}
               </div>

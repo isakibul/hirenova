@@ -58,6 +58,26 @@ npm run build
 npm run check
 ```
 
+## End-to-End Tests
+
+The browser E2E suite uses Playwright Chromium, the real Next.js frontend, the
+real Express API, and a dedicated Mongo database named `hirenova_e2e`.
+
+Start the local infrastructure first:
+
+```bash
+docker compose up -d mongodb redis mailhog
+```
+
+Then run:
+
+```bash
+npm run test:e2e
+```
+
+The suite seeds deterministic jobseeker, employer, admin, job, application,
+notification, and conversation records before each run.
+
 ## Structure
 
 - `app/(marketing)`: public marketing and informational pages.
