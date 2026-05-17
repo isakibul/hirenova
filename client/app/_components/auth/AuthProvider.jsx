@@ -29,15 +29,6 @@ function storeAccessToken(accessToken) {
   window.localStorage.removeItem(authStorageKey);
 }
 
-function getInitialAuth() {
-  const accessToken = getStoredAuth().accessToken ?? "";
-
-  return {
-    accessToken,
-    user: accessToken ? getUserFromAccessToken(accessToken) : null,
-  };
-}
-
 export function useAuth() {
   const value = useContext(AuthContext);
 
@@ -49,10 +40,8 @@ export function useAuth() {
 }
 
 export default function AuthProvider({ children }) {
-  const [auth, setAuth] = useState(getInitialAuth);
-  const [status, setStatus] = useState(() =>
-    getInitialAuth().accessToken ? "authenticated" : "loading",
-  );
+  const [auth, setAuth] = useState({ accessToken: "", user: null });
+  const [status, setStatus] = useState("loading");
 
   const persistAuth = useCallback((nextAuth) => {
     setAuth(nextAuth);
@@ -71,14 +60,15 @@ export default function AuthProvider({ children }) {
 
     async function hydrateSession() {
       try {
-        const body = await requestBackendJson("/auth/profile", {
+        const body = await requestBackendJson("/auth/session", {
           cache: "no-store",
         });
+        const user = body.data ?? null;
 
         if (!ignore) {
           persistAuth({
-            accessToken: storedAccessToken,
-            user: body.data ?? getUserFromAccessToken(storedAccessToken),
+            accessToken: user ? storedAccessToken : "",
+            user,
           });
         }
       } catch {

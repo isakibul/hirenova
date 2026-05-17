@@ -16,6 +16,12 @@ const paths = {
       <path d="M13 15V8"/>
       <path d="M17 15v-2"/>
     </>),
+    calendar: (<>
+      <path d="M7 3v4"/>
+      <path d="M17 3v4"/>
+      <path d="M4 9h16"/>
+      <path d="M5 5h14v16H5z"/>
+    </>),
     check: (<>
       <path d="M20 6 9 17l-5-5"/>
     </>),
@@ -97,6 +103,10 @@ const paths = {
       <circle cx="12" cy="12" r="8"/>
       <circle cx="12" cy="12" r="4"/>
       <circle cx="12" cy="12" r="1"/>
+    </>),
+    tag: (<>
+      <path d="M4 4h7l9 9-7 7-9-9z"/>
+      <path d="M8 8h.01"/>
     </>),
     trash: (<>
       <path d="M4 7h16"/>

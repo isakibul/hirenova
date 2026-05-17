@@ -18,6 +18,7 @@ const resumeUpload = multer({
 
 router.post("/signup", authLimiter, authController.register);
 router.post("/login", authLimiter, authController.login);
+router.get("/session", authController.session);
 router.post(
   "/resend-confirmation",
   passwordLimiter,

@@ -670,11 +670,9 @@ export default function ManageNewsletterClient({
                   </p>
                 </div>
               ) : (
-                <div className="min-w-[890px]">
-                  <div className="site-panel grid grid-cols-[minmax(210px,1fr)_120px_136px_104px_240px] gap-3 border-b border-[var(--site-border)] px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[var(--site-muted)]">
+                <div className="min-w-[720px]">
+                  <div className="site-panel grid grid-cols-[minmax(260px,1fr)_104px_240px] gap-3 border-b border-[var(--site-border)] px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[var(--site-muted)]">
                     <span className="whitespace-nowrap">Email</span>
-                    <span className="whitespace-nowrap">Source</span>
-                    <span className="whitespace-nowrap">Subscribed Date</span>
                     <span className="whitespace-nowrap">Status</span>
                     <span className="whitespace-nowrap text-right">
                       Action
@@ -685,21 +683,21 @@ export default function ManageNewsletterClient({
                     return (
                       <div
                         key={subscriptionId}
-                        className="grid grid-cols-[minmax(210px,1fr)_120px_136px_104px_240px] items-center gap-3 border-b border-[var(--site-border)] px-4 py-4 transition last:border-b-0 hover:bg-[var(--site-panel)]"
+                        className="grid grid-cols-[minmax(260px,1fr)_104px_240px] items-center gap-3 border-b border-[var(--site-border)] px-4 py-4 transition last:border-b-0 hover:bg-[var(--site-panel)]"
                       >
                         <div className="min-w-0">
-                          <p className="truncate whitespace-nowrap text-sm font-medium">
+                          <p className="truncate whitespace-nowrap text-base font-semibold">
                             {subscription.email}
                           </p>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate whitespace-nowrap text-sm">
-                            {formatSource(subscription.source)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="whitespace-nowrap text-sm">
-                            {formatDate(subscription.subscribedAt)}
+                          <p className="site-muted mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                            <span className="inline-flex items-center gap-1.5">
+                              <Icon name="tag" />
+                              {formatSource(subscription.source)}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5">
+                              <Icon name="calendar" />
+                              {formatDate(subscription.subscribedAt)}
+                            </span>
                           </p>
                         </div>
                         <div>

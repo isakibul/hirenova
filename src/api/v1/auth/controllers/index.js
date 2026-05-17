@@ -7,6 +7,7 @@ const changePassword = require("./changePassword");
 const getProfile = require("./getProfile");
 const updateProfile = require("./updateProfile");
 const logout = require("./logout");
+const session = require("./session");
 const resendConfirmation = require("./resendConfirmation");
 const deactivateAccount = require("./deactivateAccount");
 const uploadResume = require("./uploadResume");
@@ -22,6 +23,7 @@ module.exports = {
   getProfile,
   updateProfile,
   logout,
+  session,
   resendConfirmation,
   deactivateAccount,
   uploadResume,

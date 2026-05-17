@@ -18,6 +18,7 @@ const cacheTtlMs = Number(
 const minRecommendationScore = Number(
   process.env.JOB_RECOMMENDATION_MIN_SCORE || 50,
 );
+const explanationCacheVersion = "second-person-v1";
 const explanationCache = new Map();
 
 const normalize = (value = "") =>
@@ -271,6 +272,7 @@ const getCacheKey = ({ user, job, match }) =>
     .createHash("sha256")
     .update(
       JSON.stringify({
+        version: explanationCacheVersion,
         user: {
           skills: toList(user.skills),
           experience: user.experience,
@@ -352,7 +354,7 @@ const buildAiMessages = ({ user, job, match }) => [
   {
     role: "system",
     content:
-      "You write concise job match explanations for HireNova. Use only the provided structured facts. Be specific, honest, and avoid hype. Return one sentence under 35 words.",
+      "You write concise job match explanations for HireNova. Address the signed-in user directly with you/your, never as the candidate or they/their. Use only the provided structured facts. Be specific, honest, and avoid hype. Return one sentence under 35 words.",
   },
   {
     role: "user",
@@ -373,6 +375,59 @@ const buildAiMessages = ({ user, job, match }) => [
     }),
   },
 ];
+
+const useOriginalCase = (replacement, original) =>
+  original[0] === original[0]?.toUpperCase()
+    ? replacement[0].toUpperCase() + replacement.slice(1)
+    : replacement;
+
+const normalizeExplanationPerspective = (explanation = "") =>
+  String(explanation)
+    .replace(/\bthe candidate has\b/gi, (match) =>
+      useOriginalCase("you have", match),
+    )
+    .replace(/\bcandidate has\b/gi, (match) =>
+      useOriginalCase("you have", match),
+    )
+    .replace(/\bthe candidate is\b/gi, (match) =>
+      useOriginalCase("you are", match),
+    )
+    .replace(/\bcandidate is\b/gi, (match) =>
+      useOriginalCase("you are", match),
+    )
+    .replace(/\bthe candidate lacks\b/gi, (match) =>
+      useOriginalCase("you lack", match),
+    )
+    .replace(/\bcandidate lacks\b/gi, (match) =>
+      useOriginalCase("you lack", match),
+    )
+    .replace(/\bthe candidate meets\b/gi, (match) =>
+      useOriginalCase("you meet", match),
+    )
+    .replace(/\bcandidate meets\b/gi, (match) =>
+      useOriginalCase("you meet", match),
+    )
+    .replace(/\bthe candidate may\b/gi, (match) =>
+      useOriginalCase("you may", match),
+    )
+    .replace(/\bcandidate may\b/gi, (match) =>
+      useOriginalCase("you may", match),
+    )
+    .replace(/\bthe candidate's\b/gi, (match) =>
+      useOriginalCase("your", match),
+    )
+    .replace(/\bcandidate's\b/gi, (match) =>
+      useOriginalCase("your", match),
+    )
+    .replace(/\bthe candidate\b/gi, (match) =>
+      useOriginalCase("you", match),
+    )
+    .replace(/\bcandidate\b/gi, (match) => useOriginalCase("you", match))
+    .replace(/\btheir\b/gi, (match) => useOriginalCase("your", match))
+    .replace(/\btheirs\b/gi, (match) => useOriginalCase("yours", match))
+    .replace(/\bthey\b/gi, (match) => useOriginalCase("you", match))
+    .replace(/\bthem\b/gi, (match) => useOriginalCase("you", match))
+    .trim();
 
 const requestAiExplanation = async ({ user, job, match }) => {
   if (!process.env.OPENROUTER_API_KEY) {
@@ -425,9 +480,11 @@ const requestAiExplanation = async ({ user, job, match }) => {
       return "";
     }
 
-    const explanation = String(body?.choices?.[0]?.message?.content ?? "")
-      .replace(/^["']|["']$/g, "")
-      .trim();
+    const explanation = normalizeExplanationPerspective(
+      String(body?.choices?.[0]?.message?.content ?? "")
+        .replace(/^["']|["']$/g, "")
+        .trim(),
+    );
 
     if (explanation) {
       await setCachedExplanationValue(cacheKey, explanation);
@@ -562,5 +619,6 @@ module.exports = {
   getRecommendedJobs,
   scoreJobForUser,
   getCachedExplanationValue,
+  normalizeExplanationPerspective,
   setCachedExplanationValue,
 };

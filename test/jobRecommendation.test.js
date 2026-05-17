@@ -5,6 +5,7 @@ const { User } = require("../src/model");
 const jobService = require("../src/lib/job");
 const {
   getRecommendedJobs,
+  normalizeExplanationPerspective,
   scoreJobForUser,
 } = require("../src/lib/jobRecommendation");
 
@@ -100,4 +101,15 @@ test("job recommendations are available to employer and admin roles", async (t) 
     assert.equal(result.availableItems, 1);
     assert.equal(role, roles[index]);
   }
+});
+
+test("AI job recommendation explanations address the user directly", () => {
+  const explanation = normalizeExplanationPerspective(
+    "The candidate has strong Node.js skills, but their preferred location may not align with the role.",
+  );
+
+  assert.equal(
+    explanation,
+    "You have strong Node.js skills, but your preferred location may not align with the role.",
+  );
 });
