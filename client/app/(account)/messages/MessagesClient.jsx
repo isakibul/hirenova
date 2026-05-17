@@ -147,10 +147,6 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
   }, [selectedId]);
 
   useEffect(() => {
-    if (!effectiveAccessToken) {
-      return undefined;
-    }
-
     let ignore = false;
     const realtime = acquireRealtimeSocket(effectiveAccessToken);
 

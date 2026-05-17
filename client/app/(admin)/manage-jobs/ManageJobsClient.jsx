@@ -459,9 +459,9 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
             const jobId = getJobId(job);
             const isSelected = editingJobId === jobId;
             return (<tr key={jobId} className={isSelected ? "bg-[var(--site-panel)]" : ""}>
-                          <td className="border-t border-[var(--site-border)] px-4 py-3 align-top">
-                            <div className="flex gap-3">
-                              <span className="site-badge mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
+                          <td className="border-t border-[var(--site-border)] px-4 py-3 align-middle">
+                            <div className="flex items-center gap-3">
+                              <span className="site-badge flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
                                 <Icon name="briefcase"/>
                               </span>
                               <div className="min-w-0">
@@ -482,13 +482,13 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
                               </div>
                             </div>
                           </td>
-                          <td className="whitespace-nowrap border-t border-[var(--site-border)] px-4 py-3 align-top">
+                          <td className="whitespace-nowrap border-t border-[var(--site-border)] px-4 py-3 align-middle">
                             {formatJobType(job.jobType)}
                           </td>
-                          <td className="whitespace-nowrap border-t border-[var(--site-border)] px-4 py-3 align-top">
+                          <td className="whitespace-nowrap border-t border-[var(--site-border)] px-4 py-3 align-middle">
                             {formatSalary(job.salary)}
                           </td>
-                          <td className="whitespace-nowrap border-t border-[var(--site-border)] px-4 py-3 align-top text-xs">
+                          <td className="whitespace-nowrap border-t border-[var(--site-border)] px-4 py-3 align-middle text-xs">
                             <span className={`inline-flex rounded-md border px-2 py-1 font-semibold ${getStatusClass(job)}`}>
                               {formatJobStatus(job)}
                             </span>
@@ -496,7 +496,7 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
                                 Expires {formatDate(job.expiresAt)}
                               </p>) : null}
                           </td>
-                          <td className="border-t border-[var(--site-border)] px-4 py-3 align-top text-xs">
+                          <td className="border-t border-[var(--site-border)] px-4 py-3 align-middle text-xs">
                             <span className={`inline-flex max-w-full rounded-md border px-2 py-1 font-semibold ${getApprovalClass(job.approvalStatus)}`}>
                               {formatApprovalStatus(job.approvalStatus)}
                             </span>
@@ -504,8 +504,8 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
                                 {job.rejectionNote}
                               </p>) : null}
                           </td>
-                          <td className="border-t border-[var(--site-border)] px-4 py-3 align-top">
-                            <div className="flex flex-nowrap justify-start gap-2">
+                          <td className="border-t border-[var(--site-border)] px-4 py-3 align-middle">
+                            <div className="flex flex-nowrap items-center justify-start gap-2">
                               <Link href={`/jobs/${jobId}`} className="site-border site-field inline-flex min-w-[64px] justify-center rounded-md border px-3 py-1.5 text-xs font-semibold">
                                 View
                               </Link>

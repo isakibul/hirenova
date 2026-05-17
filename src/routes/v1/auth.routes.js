@@ -49,6 +49,6 @@ router.patch(
   authController.changePassword
 );
 router.patch("/deactivate", writeLimiter, authenticate, authController.deactivateAccount);
-router.post("/logout", authenticate, authController.logout);
+router.post("/logout", authController.logout);
 
 module.exports = router;

@@ -1,29 +1,29 @@
-const jwt = require("jsonwebtoken");
 const { addTokenToBlacklist } = require("../../../../utils/tokenBlacklist");
 const { decodeToken } = require("../../../../lib/token");
-const { badRequest } = require("../../../../utils/error");
+const { clearAuthCookie, getAuthCookie } = require("../../../../utils/authCookie");
+
+const getBearerToken = (req) => {
+  const [scheme, token] = (req.headers.authorization || "").split(" ");
+  return scheme?.toLowerCase() === "bearer" ? token : "";
+};
 
 const logout = async (req, res, next) => {
   try {
-    const token = req.token;
-
-    const decoded = decodeToken({ token });
-
-    if (!decoded || !decoded.exp) {
-      throw badRequest("Invalid token");
-    }
+    const token = req.token || getBearerToken(req) || getAuthCookie(req);
+    const decoded = token ? decodeToken({ token }) : null;
 
     const currentTime = Math.floor(Date.now() / 1000);
-    const expiresIn = decoded.exp - currentTime;
+    const expiresIn = decoded?.exp ? decoded.exp - currentTime : 0;
 
     if (expiresIn > 0) {
       await addTokenToBlacklist(token, expiresIn);
     }
 
+    clearAuthCookie(res);
     res.status(200).json({ message: "Logout successful" });
   } catch (e) {
-    next(e);
-    res.status(500).json({ message: "Logout failed" });
+    clearAuthCookie(res);
+    res.status(200).json({ message: "Logout successful" });
   }
 };
 

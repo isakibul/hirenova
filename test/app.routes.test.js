@@ -23,6 +23,15 @@ function routeExists(path, method) {
   );
 }
 
+function routeHandlerCount(path, method) {
+  const layer = getRouteLayers().find(
+    (routeLayer) =>
+      routeLayer.route.path === path && routeLayer.route.methods[method],
+  );
+
+  return layer?.route.stack.length ?? 0;
+}
+
 test("app exposes the health check route", () => {
   assert.equal(routeExists("/health", "get"), true);
 });
@@ -30,7 +39,14 @@ test("app exposes the health check route", () => {
 test("core v1 routes are wired", () => {
   assert.equal(routeExists("/signup", "post"), true);
   assert.equal(routeExists("/", "get"), true);
+  assert.equal(routeExists("/smart-match/recommendations", "get"), true);
+  assert.equal(routeExists("/recommended", "get"), true);
   assert.equal(routeExists("/:id/apply", "post"), true);
   assert.equal(routeExists("/users", "get"), true);
   assert.equal(routeExists("/conversations", "get"), true);
+});
+
+test("smart match is restricted by authentication, not by role authorization", () => {
+  assert.equal(routeHandlerCount("/smart-match/recommendations", "get"), 4);
+  assert.equal(routeHandlerCount("/recommended", "get"), 4);
 });

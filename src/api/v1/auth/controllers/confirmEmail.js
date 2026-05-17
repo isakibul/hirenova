@@ -1,6 +1,7 @@
 const { verifyEmailToken, generateToken } = require("../../../../lib/token");
 const { findUserByEmail } = require("../../../../lib/user/index");
 const { notFound } = require("../../../../utils/error");
+const { setAuthCookie } = require("../../../../utils/authCookie");
 
 const confirmEmail = async (req, res, next) => {
   try {
@@ -23,6 +24,7 @@ const confirmEmail = async (req, res, next) => {
     };
 
     const access_token = generateToken({ payload });
+    setAuthCookie(res, access_token);
 
     const response = {
       message: "Email confirmed successfully.",

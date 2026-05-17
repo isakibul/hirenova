@@ -76,7 +76,7 @@ export default function FeaturesPage() {
               Features
             </p>
             <h1 className="marketing-title mt-4 text-3xl font-semibold leading-tight md:text-5xl">
-              Essential tools for managing jobs, applications, and candidates.
+              Essential tools for Managing Jobs, Applications, and Candidates.
             </h1>
             <p className="site-muted mx-auto mt-5 max-w-2xl text-base leading-7">
               HireNova gives jobseekers and employers a simple workspace for the

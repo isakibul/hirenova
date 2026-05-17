@@ -1,5 +1,8 @@
 import { getApiMessage } from "./ui.js";
 
+let memoryAccessToken = "";
+const authStorageKey = "hirenova-auth";
+
 export function getBackendApiUrl() {
   return (
     process.env.NEXT_PUBLIC_BACKEND_API_URL?.replace(/\/$/, "") ??
@@ -8,16 +11,24 @@ export function getBackendApiUrl() {
 }
 
 export function getStoredAccessToken() {
+  if (memoryAccessToken) {
+    return memoryAccessToken;
+  }
+
   if (typeof window === "undefined") {
     return "";
   }
 
   try {
-    return JSON.parse(window.localStorage.getItem("hirenova-auth") ?? "{}")
+    return JSON.parse(window.localStorage.getItem(authStorageKey) ?? "{}")
       .accessToken ?? "";
   } catch {
     return "";
   }
+}
+
+export function setMemoryAccessToken(accessToken = "") {
+  memoryAccessToken = accessToken;
 }
 
 export function getBackendPath(path) {
@@ -49,6 +60,7 @@ export async function backendFetch(path, init = {}) {
 
   return fetch(getBackendPath(path), {
     ...init,
+    credentials: init.credentials ?? "include",
     headers,
   });
 }

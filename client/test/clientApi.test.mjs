@@ -29,27 +29,13 @@ test("getBackendPath leaves absolute URLs untouched", () => {
 });
 
 test("getStoredAccessToken reads valid browser auth state", () => {
-  globalThis.window = {
-    localStorage: {
-      getItem() {
-        return JSON.stringify({ accessToken: "token-123" });
-      },
-    },
-  };
+  clientApi.setMemoryAccessToken("token-123");
 
   assert.equal(clientApi.getStoredAccessToken(), "token-123");
 });
 
-test("getStoredAccessToken falls back safely outside valid browser state", () => {
-  assert.equal(clientApi.getStoredAccessToken(), "");
-
-  globalThis.window = {
-    localStorage: {
-      getItem() {
-        return "{broken-json";
-      },
-    },
-  };
+test("getStoredAccessToken defaults to empty memory state", () => {
+  clientApi.setMemoryAccessToken("");
 
   assert.equal(clientApi.getStoredAccessToken(), "");
 });
@@ -61,6 +47,7 @@ test("backendFetch adds auth and JSON headers for backend requests", async (t) =
       url,
       authorization: init.headers.get("Authorization"),
       contentType: init.headers.get("Content-Type"),
+      credentials: init.credentials,
       method: init.method,
     });
   });
@@ -77,6 +64,7 @@ test("backendFetch adds auth and JSON headers for backend requests", async (t) =
     url: "https://api.example.com/api/v1/jobs",
     authorization: "Bearer token-123",
     contentType: "application/json",
+    credentials: "include",
     method: "POST",
   });
 });

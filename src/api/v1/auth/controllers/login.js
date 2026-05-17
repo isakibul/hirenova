@@ -1,5 +1,6 @@
 const authService = require("../../../../lib/auth");
 const { loginSchema } = require("../../../../lib/validators/authValidator");
+const { setAuthCookie } = require("../../../../utils/authCookie");
 
 const login = async (req, res, next) => {
   try {
@@ -19,6 +20,7 @@ const login = async (req, res, next) => {
       email,
       password,
     });
+    setAuthCookie(res, access_token);
 
     const response = {
       code: 200,

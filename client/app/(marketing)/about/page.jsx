@@ -47,8 +47,8 @@ export default function AboutPage() {
               About HireNova
             </p>
             <h1 className="marketing-title mt-4 text-3xl font-semibold leading-tight md:text-5xl">
-              A hiring platform for finding jobs, managing applications, and
-              reviewing candidates.
+              A hiring platform for Finding Jobs, Managing Applications, and
+              Reviewing Candidates.
             </h1>
             <p className="site-muted mx-auto mt-5 max-w-2xl text-base leading-7">
               HireNova helps jobseekers keep their search organized and helps

@@ -254,7 +254,7 @@ export default function MessagesMenu({
   }, [selectedId]);
 
   useEffect(() => {
-    if (!enabled || !accessToken) {
+    if (!enabled) {
       return undefined;
     }
 

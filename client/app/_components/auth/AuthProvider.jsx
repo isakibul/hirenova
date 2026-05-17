@@ -3,30 +3,39 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { getAccessToken, getUserFromAccessToken } from "@lib/backendToken";
-import { requestBackendJson } from "@lib/clientApi";
+import { requestBackendJson, setMemoryAccessToken } from "@lib/clientApi";
 
-const storageKey = "hirenova-auth";
 const AuthContext = createContext(null);
+const authStorageKey = "hirenova-auth";
 
-function readStoredAuth() {
+function getStoredAuth() {
   if (typeof window === "undefined") {
-    return { accessToken: "", user: null };
+    return {};
   }
 
   try {
-    const parsed = JSON.parse(window.localStorage.getItem(storageKey) ?? "{}");
-
-    if (!parsed.accessToken) {
-      return { accessToken: "", user: null };
-    }
-
-    return {
-      accessToken: parsed.accessToken,
-      user: parsed.user ?? getUserFromAccessToken(parsed.accessToken),
-    };
+    return JSON.parse(window.localStorage.getItem(authStorageKey) ?? "{}");
   } catch {
-    return { accessToken: "", user: null };
+    return {};
   }
+}
+
+function storeAccessToken(accessToken) {
+  if (accessToken) {
+    window.localStorage.setItem(authStorageKey, JSON.stringify({ accessToken }));
+    return;
+  }
+
+  window.localStorage.removeItem(authStorageKey);
+}
+
+function getInitialAuth() {
+  const accessToken = getStoredAuth().accessToken ?? "";
+
+  return {
+    accessToken,
+    user: accessToken ? getUserFromAccessToken(accessToken) : null,
+  };
 }
 
 export function useAuth() {
@@ -40,32 +49,50 @@ export function useAuth() {
 }
 
 export default function AuthProvider({ children }) {
-  const [auth, setAuth] = useState({ accessToken: "", user: null });
-  const [status, setStatus] = useState("unauthenticated");
+  const [auth, setAuth] = useState(getInitialAuth);
+  const [status, setStatus] = useState(() =>
+    getInitialAuth().accessToken ? "authenticated" : "loading",
+  );
 
   const persistAuth = useCallback((nextAuth) => {
     setAuth(nextAuth);
-    setStatus(nextAuth.accessToken ? "authenticated" : "unauthenticated");
-
-    if (nextAuth.accessToken) {
-      window.localStorage.setItem(storageKey, JSON.stringify(nextAuth));
-    } else {
-      window.localStorage.removeItem(storageKey);
-    }
+    setStatus(nextAuth.accessToken || nextAuth.user ? "authenticated" : "unauthenticated");
+    setMemoryAccessToken(nextAuth.accessToken);
+    storeAccessToken(nextAuth.accessToken);
   }, []);
 
   useEffect(() => {
-    const storedAuth = readStoredAuth();
+    let ignore = false;
+    const storedAccessToken = getStoredAuth().accessToken ?? "";
 
-    if (storedAuth.accessToken) {
-      const timeoutId = window.setTimeout(() => {
-        persistAuth(storedAuth);
-      }, 0);
-
-      return () => window.clearTimeout(timeoutId);
+    if (storedAccessToken) {
+      setMemoryAccessToken(storedAccessToken);
     }
 
-    return undefined;
+    async function hydrateSession() {
+      try {
+        const body = await requestBackendJson("/auth/profile", {
+          cache: "no-store",
+        });
+
+        if (!ignore) {
+          persistAuth({
+            accessToken: storedAccessToken,
+            user: body.data ?? getUserFromAccessToken(storedAccessToken),
+          });
+        }
+      } catch {
+        if (!ignore) {
+          persistAuth({ accessToken: "", user: null });
+        }
+      }
+    }
+
+    void hydrateSession();
+
+    return () => {
+      ignore = true;
+    };
   }, [persistAuth]);
 
   const authenticateWithToken = useCallback(
@@ -98,13 +125,11 @@ export default function AuthProvider({ children }) {
     const token = auth.accessToken;
     persistAuth({ accessToken: "", user: null });
 
-    if (token) {
-      await requestBackendJson("/auth/logout", {
-        method: "POST",
-        accessToken: token,
-        body: JSON.stringify({}),
-      }).catch(() => undefined);
-    }
+    await requestBackendJson("/auth/logout", {
+      method: "POST",
+      accessToken: token,
+      body: JSON.stringify({}),
+    }).catch(() => undefined);
   }, [auth.accessToken, persistAuth]);
 
   const value = useMemo(

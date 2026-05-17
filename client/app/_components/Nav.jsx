@@ -35,7 +35,7 @@ function getUserRole(role) {
   return undefined;
 }
 export default function Nav() {
-  const { accessToken, isAuthenticated, logout, status, user } = useAuth();
+  const { isAuthenticated, logout, status, user } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const userRole = getUserRole(user?.role);
@@ -178,7 +178,6 @@ export default function Nav() {
             <MessagesMenu
               enabled={isAuthenticated}
               currentUserId={user?.id}
-              accessToken={accessToken}
             />
             {isAuthenticated ? (
               <div className="relative" ref={profileMenuRef}>
@@ -254,9 +253,9 @@ export default function Nav() {
                     <div className="border-t border-(--site-border) pt-1">
                       <button
                         type="button"
-                        onClick={() => {
-                          void logout();
-                          window.location.href = "/";
+                        onClick={async () => {
+                          await logout();
+                          window.location.assign("/");
                         }}
                         className="group mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium transition hover:bg-(--site-panel) hover:text-(--site-accent)"
                         role="menuitem"

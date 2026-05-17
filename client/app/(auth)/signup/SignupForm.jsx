@@ -1,7 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
 import LoadingCircle from "@components/LoadingCircle";
-import SelectField from "@components/forms/SelectField";
 import StatusNotice from "@components/StatusNotice";
 import { requestJson } from "@lib/clientApi";
 import { emailError, getVisibleErrors, hasValidationErrors, passwordError, touchAll, usernameError, } from "@lib/formValidation";
@@ -15,8 +14,8 @@ const initialState = {
     role: "jobseeker",
 };
 const accountTypeOptions = [
-    { value: "jobseeker", label: "Job seeker" },
-    { value: "employer", label: "Employer" },
+    { value: "jobseeker", label: "A job", description: "Explore opportunities that match your goals." },
+    { value: "employer", label: "Candidates", description: "Connect with people who fit your needs." },
 ];
 function validateSignupForm(form) {
     return {
@@ -132,11 +131,22 @@ export default function SignupForm({ initialEmail = "", }) {
         <FieldError id="signup-password-error" message={visibleErrors.password}/>
       </label>
 
-      <label className="site-soft mt-4 block text-xs font-medium">
-        Account type
-        <SelectField value={form.role} onChange={(nextValue) => updateField("role", nextValue)} onBlur={() => markTouched("role")} options={accountTypeOptions} className="site-field mt-1.5 min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" ariaInvalid={Boolean(visibleErrors.role)} ariaDescribedBy={visibleErrors.role ? "signup-role-error" : undefined}/>
+      <fieldset className="site-soft mt-4 block text-xs font-medium" onBlur={() => markTouched("role")}>
+        <legend>I am looking for...</legend>
+        <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
+          {accountTypeOptions.map((option) => {
+            const isSelected = form.role === option.value;
+            return (<label key={option.value} className={`site-border site-field flex min-h-20 cursor-pointer gap-3 rounded-md border p-3 text-sm transition ${isSelected ? "border-[var(--site-accent)] ring-1 ring-[var(--site-accent)]" : "hover:border-[var(--site-accent)]"}`}>
+              <input type="radio" name="role" value={option.value} checked={isSelected} onChange={() => updateField("role", option.value)} className="mt-1 h-4 w-4 accent-[var(--site-accent)]"/>
+              <span>
+                <span className="block font-semibold">{option.label}</span>
+                <span className="site-muted mt-1 block text-xs leading-5">{option.description}</span>
+              </span>
+            </label>);
+          })}
+        </div>
         <FieldError id="signup-role-error" message={visibleErrors.role}/>
-      </label>
+      </fieldset>
 
       <StatusNotice className="mt-4 text-xs">{error}</StatusNotice>
       <StatusNotice className="mt-4 text-xs" tone="success">{success}</StatusNotice>

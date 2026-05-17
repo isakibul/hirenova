@@ -1,8 +1,8 @@
 # HireNova Client
 
 Next.js App Router frontend for HireNova. The app uses JavaScript/JSX,
-client-side auth state backed by the Express API JWT, direct backend API
-helpers, and Tailwind CSS.
+HttpOnly cookie-backed auth from the Express API, direct backend API helpers,
+and Tailwind CSS.
 
 ## Setup
 
@@ -85,8 +85,8 @@ notification, and conversation records before each run.
 - `app/(jobs)`: job browsing and detail pages.
 - `app/(account)`: authenticated user pages.
 - `app/(admin)`: admin management pages.
-- `app/_components/auth/AuthProvider.jsx`: browser auth provider that stores
-  the backend access token in `localStorage`.
+- `app/_components/auth/AuthProvider.jsx`: browser auth provider that hydrates
+  the current user from the backend HttpOnly auth cookie.
 - `app/_components`: shared UI and provider components.
 - `app/_lib`: shared helpers for API URLs, backend calls, environment values,
   realtime connections, validation, and UI formatting.

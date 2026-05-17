@@ -2,7 +2,6 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { expect } = require("@playwright/test");
 
-const storageKey = "hirenova-auth";
 const dataPath = path.join(__dirname, ".auth", "e2e-data.json");
 const apiURL = process.env.E2E_API_URL || "http://127.0.0.1:4100/api/v1";
 
@@ -21,34 +20,36 @@ async function apiLogin(request, role) {
 
   expect(response.ok()).toBeTruthy();
   const body = await response.json();
+  const setCookie = response.headers()["set-cookie"] ?? "";
   return {
     accessToken: body.data.accessToken,
+    setCookie,
     user: seed.users[role],
   };
 }
 
+async function addAuthCookie(page, setCookie) {
+  const [cookiePair] = setCookie.split(";");
+  const separatorIndex = cookiePair.indexOf("=");
+
+  if (separatorIndex === -1) {
+    return;
+  }
+
+  await page.context().addCookies([
+    {
+      name: cookiePair.slice(0, separatorIndex),
+      value: cookiePair.slice(separatorIndex + 1),
+      url: apiURL.replace(/\/api\/v1\/?$/, ""),
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+}
+
 async function loginAs(page, request, role) {
   const auth = await apiLogin(request, role);
-  await page
-    .evaluate(
-      ({ key, value }) => {
-        window.localStorage.setItem(key, JSON.stringify(value));
-      },
-      {
-        key: storageKey,
-        value: auth,
-      },
-    )
-    .catch(() => undefined);
-  await page.addInitScript(
-    ({ key, value }) => {
-      window.localStorage.setItem(key, JSON.stringify(value));
-    },
-    {
-      key: storageKey,
-      value: auth,
-    },
-  );
+  await addAuthCookie(page, auth.setCookie);
   return auth;
 }
 
@@ -82,6 +83,7 @@ async function selectOptionByText(page, buttonName, optionName) {
 }
 
 module.exports = {
+  addAuthCookie,
   apiLogin,
   apiURL,
   createApprovedJob,

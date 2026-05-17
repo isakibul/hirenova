@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 
 const tokenService = require("../lib/token");
 const userService = require("../lib/user");
+const { getAuthCookie } = require("../utils/authCookie");
 const { isTokenBlacklisted } = require("../utils/tokenBlacklist");
 const { getAllowedOrigins } = require("../config/env");
 
@@ -26,7 +27,8 @@ const initRealtime = (server) => {
     try {
       const token =
         socket.handshake.auth?.token ||
-        socket.handshake.headers.authorization?.replace(/^Bearer\s+/i, "");
+        socket.handshake.headers.authorization?.replace(/^Bearer\s+/i, "") ||
+        getAuthCookie({ headers: socket.handshake.headers });
 
       if (!token || (await isTokenBlacklisted(token))) {
         return next(new Error("Authentication required"));

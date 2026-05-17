@@ -6,10 +6,11 @@ const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const checkUserStatus = require("../../middleware/checkUserStatus");
 const ownership = require("../../middleware/ownership");
-const { writeLimiter } = require("../../middleware/rateLimits");
+const { assistantLimiter, writeLimiter } = require("../../middleware/rateLimits");
+const { getAuthCookie } = require("../../utils/authCookie");
 
 const optionalAuthenticate = (req, res, next) => {
-  if (!req.headers.authorization) {
+  if (!req.headers.authorization && !getAuthCookie(req)) {
     next();
     return;
   }
@@ -19,6 +20,20 @@ const optionalAuthenticate = (req, res, next) => {
 
 // jobseeker
 router.get("/", optionalAuthenticate, jobControllers.findAll);
+router.get(
+  "/smart-match/recommendations",
+  assistantLimiter,
+  authenticate,
+  checkUserStatus,
+  jobControllers.recommended
+);
+router.get(
+  "/recommended",
+  assistantLimiter,
+  authenticate,
+  checkUserStatus,
+  jobControllers.recommended
+);
 
 router.post(
   "/:id/apply",

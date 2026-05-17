@@ -100,3 +100,74 @@ test("authenticate attaches user context once for a valid token", async () => {
   assert.equal(req.token, "valid-token");
   assert.equal(touchCount, 1);
 });
+
+test("authenticate accepts an HttpOnly auth cookie when bearer auth is absent", async () => {
+  const authenticate = createAuthenticate({
+    tokenService: {
+      verifyToken() {
+        return { id: "user-1" };
+      },
+    },
+    userService: {
+      async findUserById() {
+        return {
+          _doc: { email: "person@example.com", role: "jobseeker" },
+          id: "user-1",
+          lastSeenAt: new Date(),
+        };
+      },
+      async touchLastSeen() {},
+    },
+    async isTokenBlacklisted() {
+      return false;
+    },
+  });
+  const req = { headers: { cookie: "hirenova_access=valid-cookie-token" } };
+  const next = createNextSpy();
+
+  await authenticate(req, {}, next);
+
+  assert.equal(next.calls.length, 1);
+  assert.equal(next.calls[0], undefined);
+  assert.equal(req.token, "valid-cookie-token");
+});
+
+test("authenticate falls back to a valid cookie when bearer auth is stale", async () => {
+  const authenticate = createAuthenticate({
+    tokenService: {
+      verifyToken({ token }) {
+        if (token === "stale-bearer-token") {
+          throw new Error("jwt expired");
+        }
+
+        return { id: "user-1" };
+      },
+    },
+    userService: {
+      async findUserById() {
+        return {
+          _doc: { email: "person@example.com", role: "jobseeker" },
+          id: "user-1",
+          lastSeenAt: new Date(),
+        };
+      },
+      async touchLastSeen() {},
+    },
+    async isTokenBlacklisted() {
+      return false;
+    },
+  });
+  const req = {
+    headers: {
+      authorization: "Bearer stale-bearer-token",
+      cookie: "hirenova_access=valid-cookie-token",
+    },
+  };
+  const next = createNextSpy();
+
+  await authenticate(req, {}, next);
+
+  assert.equal(next.calls.length, 1);
+  assert.equal(next.calls[0], undefined);
+  assert.equal(req.token, "valid-cookie-token");
+});

@@ -10,7 +10,7 @@ import {
   touchAll,
 } from "@lib/formValidation";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 function validateLoginForm(form) {
   return {
@@ -20,6 +20,7 @@ function validateLoginForm(form) {
 }
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [form, setForm] = useState({
     email: "",
@@ -62,7 +63,12 @@ export default function LoginForm() {
         email: form.email,
         password: form.password,
       });
-      router.push("/jobs");
+      const nextPath = searchParams.get("next");
+      router.push(
+        nextPath?.startsWith("/") && !nextPath.startsWith("//")
+          ? nextPath
+          : "/jobs",
+      );
       router.refresh();
     } catch (caughtError) {
       setError(

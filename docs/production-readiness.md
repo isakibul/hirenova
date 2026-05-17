@@ -36,6 +36,9 @@ Set these environment variables in production:
 - `CLIENT_URL`
 - `CORS_ORIGINS`
 - `ACCESS_TOKEN_SECRET`
+- `ACCESS_TOKEN_EXPIRES_IN`
+- `AUTH_COOKIE_SECURE=true`
+- `AUTH_COOKIE_SAMESITE`
 - `EMAIL_SECRET`
 - `OBSERVABILITY_HASH_SECRET`
 - `EMAIL_HOST`
@@ -44,13 +47,21 @@ Set these environment variables in production:
 - `EMAIL_USER`
 - `EMAIL_PASS`
 - `EMAIL_FROM`
+- `OPENROUTER_API_KEY`
+- `OPENROUTER_MODEL`
+- `OPENROUTER_RECOMMENDATION_MODEL`
 - `RATE_LIMIT_STORE=redis`
 
 Keep `CLIENT_URL` and `CORS_ORIGINS` pinned to the deployed frontend origin,
 with comma-separated values only when you intentionally support multiple
 frontends. Use strong, unique secrets for auth, email verification, and
-observability hashing. Configure a real SMTP provider before enabling
-newsletter campaigns.
+observability hashing. Keep auth cookies `Secure` in production; use
+`AUTH_COOKIE_SAMESITE=lax` for same-site frontend/API deployments and `none`
+only when the frontend and API must operate cross-site over HTTPS. Configure a real SMTP provider before enabling
+newsletter campaigns. Smart Match recommendations still return deterministic
+match reasons if OpenRouter is unavailable, but production AI explanations need
+`OPENROUTER_API_KEY`, Redis, and a recommendation-capable model configured
+server-side.
 
 The API validates the production environment at startup. It fails fast when
 required production values are missing, placeholder secrets are still present,

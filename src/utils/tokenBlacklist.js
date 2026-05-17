@@ -2,7 +2,7 @@ const { client } = require("../config/redisClient");
 
 const addTokenToBlacklist = async (token, expiresInSeconds) => {
   try {
-    await client.set(token, "blacklisted", { Ex: expiresInSeconds });
+    await client.set(token, "blacklisted", { EX: expiresInSeconds });
   } catch (e) {
     console.error("Error adding token to blacklist:", e);
   }

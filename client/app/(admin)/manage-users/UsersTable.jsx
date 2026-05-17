@@ -163,9 +163,9 @@ export default function UsersTable({
                       isSelected ? "bg-[var(--site-panel)]" : ""
                     }`}
                   >
-                    <td className="px-4 py-4 align-top">
-                      <div className="flex gap-3">
-                        <span className="site-badge mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
+                    <td className="px-4 py-4 align-middle">
+                      <div className="flex items-center gap-3">
+                        <span className="site-badge flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
                           <Icon name="user" />
                         </span>
                         <div className="min-w-0">
@@ -183,7 +183,7 @@ export default function UsersTable({
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-4 align-top">
+                    <td className="px-4 py-4 align-middle">
                       <SelectField
                         value={user.role}
                         onChange={(nextRole) =>
@@ -199,16 +199,16 @@ export default function UsersTable({
                         <p className="site-muted mt-1 text-xs">Updating...</p>
                       ) : null}
                     </td>
-                    <td className="px-4 py-4 align-top">
-                      <span className="site-badge rounded px-2 py-1 text-xs font-semibold">
+                    <td className="px-4 py-4 align-middle">
+                      <span className="site-badge inline-flex min-h-7 items-center rounded px-2 py-1 text-xs font-semibold">
                         {formatStatus(user.status)}
                       </span>
                     </td>
-                    <td className="site-muted whitespace-nowrap px-4 py-4 align-top text-xs">
+                    <td className="site-muted whitespace-nowrap px-4 py-4 align-middle text-xs">
                       {formatDate(user.createdAt)}
                     </td>
-                    <td className="px-4 py-4 align-top">
-                      <div className="flex justify-end gap-2">
+                    <td className="px-4 py-4 align-middle">
+                      <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => onSelectUser(user)}

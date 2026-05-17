@@ -3,7 +3,6 @@
 import { io } from "socket.io-client";
 
 let realtimeSocket;
-let realtimeToken = "";
 let subscriberCount = 0;
 let disconnectTimer;
 
@@ -31,29 +30,17 @@ function getRealtimeUrl() {
   return "http://localhost:4000";
 }
 
-export function acquireRealtimeSocket(accessToken) {
-  if (!accessToken) {
-    return null;
-  }
-
+export function acquireRealtimeSocket(accessToken = "") {
   if (disconnectTimer) {
     window.clearTimeout(disconnectTimer);
     disconnectTimer = undefined;
   }
 
-  if (realtimeSocket && realtimeToken !== accessToken) {
-    realtimeSocket.disconnect();
-    realtimeSocket = undefined;
-    subscriberCount = 0;
-  }
-
   if (!realtimeSocket) {
-    realtimeToken = accessToken;
     realtimeSocket = io(getRealtimeUrl(), {
-      auth: {
-        token: accessToken,
-      },
+      auth: accessToken ? { token: accessToken } : undefined,
       autoConnect: true,
+      withCredentials: true,
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
@@ -74,7 +61,6 @@ export function acquireRealtimeSocket(accessToken) {
           if (subscriberCount === 0 && realtimeSocket) {
             realtimeSocket.disconnect();
             realtimeSocket = undefined;
-            realtimeToken = "";
           }
         }, 1000);
       }
