@@ -17,19 +17,36 @@ function getRouteLayers(router = app.router) {
   });
 }
 
-function routeExists(path, method) {
-  return getRouteLayers().some(
+function routeExists(path, method, router = app.router) {
+  return getRouteLayers(router).some(
     (layer) => layer.route.path === path && layer.route.methods[method],
   );
 }
 
-function routeHandlerCount(path, method) {
-  const layer = getRouteLayers().find(
+function routeHandlerCount(path, method, router = app.router) {
+  const layer = getRouteLayers(router).find(
     (routeLayer) =>
       routeLayer.route.path === path && routeLayer.route.methods[method],
   );
 
   return layer?.route.stack.length ?? 0;
+}
+
+function loadFreshV1Router(nodeEnv) {
+  const previousNodeEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = nodeEnv;
+  delete require.cache[require.resolve("../src/routes/v1")];
+
+  try {
+    return require("../src/routes/v1");
+  } finally {
+    if (previousNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = previousNodeEnv;
+    }
+    delete require.cache[require.resolve("../src/routes/v1")];
+  }
 }
 
 test("app exposes the health check route", () => {
@@ -49,4 +66,12 @@ test("core v1 routes are wired", () => {
 test("smart match is restricted by authentication, not by role authorization", () => {
   assert.equal(routeHandlerCount("/smart-match/recommendations", "get"), 4);
   assert.equal(routeHandlerCount("/recommended", "get"), 4);
+});
+
+test("e2e seed route is available only in test environment", () => {
+  const testRouter = loadFreshV1Router("test");
+  const productionRouter = loadFreshV1Router("production");
+
+  assert.equal(routeExists("/seed", "post", testRouter), true);
+  assert.equal(routeExists("/seed", "post", productionRouter), false);
 });

@@ -14,7 +14,8 @@
     "build:client": "npm --prefix client run build",
     "check:backend": "npm test",
     "check:client": "npm --prefix client run check",
-    "check": "npm run check:backend && npm run check:client"
+    "check": "npm run check:backend",
+    "check:all": "npm run check:backend && npm run check:client"
   },
   "keywords": [
     "hiring-platform",

@@ -10,6 +10,8 @@
     "start:e2e": "next build && next start --hostname 127.0.0.1",
     "test": "node --test --no-warnings \"test/**/*.test.mjs\"",
     "test:e2e": "playwright test",
+    "test:e2e:local": "playwright test",
+    "test:e2e:external": "E2E_START_BACKEND=false playwright test",
     "lint": "eslint",
     "check": "npm run test && npm run lint && npm run build"
   },

@@ -34,3 +34,16 @@ The root `docker-compose.yml` includes MailHog for development email delivery.
 Use `EMAIL_HOST=localhost`, `EMAIL_PORT=1025`, and `EMAIL_SECURE=false`.
 Open `http://localhost:8025` to inspect confirmation, reset, and newsletter
 campaign emails.
+
+## Backend Tests
+
+The backend test surface is self-contained and does not require the `client/`
+folder:
+
+```bash
+npm run check
+```
+
+Browser E2E seeding is exposed only when the API runs with `NODE_ENV=test`.
+Production and development route wiring does not mount the `/api/v1/e2e`
+helpers.

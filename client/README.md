@@ -56,6 +56,8 @@ try the default Next.js dev bundler.
 npm run lint
 npm run build
 npm run check
+npm run test:e2e:local
+npm run test:e2e:external
 ```
 
 ## End-to-End Tests
@@ -69,14 +71,22 @@ Start the local infrastructure first:
 docker compose up -d mongodb redis mailhog
 ```
 
-Then run:
+Then run the monorepo-local E2E command:
 
 ```bash
-npm run test:e2e
+npm run test:e2e:local
 ```
 
 The suite seeds deterministic jobseeker, employer, admin, job, application,
-notification, and conversation records before each run.
+notification, and conversation records through the backend test API before each
+run. When the client is cut out into its own repository, start the backend
+separately with `NODE_ENV=test`, matching `E2E_SEED_SECRET`, a test database,
+Redis, and valid test email settings such as
+`EMAIL_FROM=noreply@hirenova.test`. Then point Playwright at that backend:
+
+```bash
+E2E_API_URL=http://127.0.0.1:4100/api/v1 npm run test:e2e:external
+```
 
 ## Structure
 

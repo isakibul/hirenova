@@ -7,6 +7,7 @@ const baseURL = process.env.E2E_BASE_URL || `http://127.0.0.1:${frontendPort}`;
 const apiURL =
   process.env.E2E_API_URL || `http://127.0.0.1:${backendPort}/api/v1`;
 const databaseName = process.env.E2E_DB_NAME || "hirenova_e2e";
+const seedSecret = process.env.E2E_SEED_SECRET || "hirenova-e2e-seed-secret";
 const env = {
   NODE_ENV: "test",
   PORT: String(backendPort),
@@ -25,7 +26,32 @@ const env = {
   EMAIL_PORT: process.env.EMAIL_PORT || "1025",
   EMAIL_SECURE: process.env.EMAIL_SECURE || "false",
   EMAIL_FROM: process.env.EMAIL_FROM || "HireNova E2E <noreply@hirenova.test>",
+  E2E_SEED_SECRET: seedSecret,
 };
+const webServer = [
+  process.env.E2E_START_BACKEND === "false"
+    ? null
+    : {
+        command: "npm start",
+        cwd: rootDir,
+        env,
+        url: `http://127.0.0.1:${backendPort}/health`,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
+  {
+    command: `npm run start:e2e -- --port ${frontendPort}`,
+    cwd: ".",
+    env: {
+      ...env,
+      BACKEND_API_URL: apiURL,
+      NEXT_PUBLIC_BACKEND_API_URL: apiURL,
+    },
+    url: baseURL,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
+].filter(Boolean);
 
 module.exports = defineConfig({
   testDir: "./E2E",
@@ -44,28 +70,7 @@ module.exports = defineConfig({
     screenshot: "only-on-failure",
     video: "retain-on-failure",
   },
-  webServer: [
-    {
-      command: "npm start",
-      cwd: rootDir,
-      env,
-      url: `http://127.0.0.1:${backendPort}/health`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-    },
-    {
-      command: `npm run start:e2e -- --port ${frontendPort}`,
-      cwd: ".",
-      env: {
-        ...env,
-        BACKEND_API_URL: apiURL,
-        NEXT_PUBLIC_BACKEND_API_URL: apiURL,
-      },
-      url: baseURL,
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-    },
-  ],
+  webServer,
   projects: [
     {
       name: "chromium",

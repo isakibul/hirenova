@@ -11,8 +11,40 @@ Run these before deploying:
 npm run check
 ```
 
-The root check runs backend unit tests, client unit tests, client lint, and the
-client production build.
+The root check is intentionally backend-only so the API can be copied out of
+the monorepo and validated without the `client/` app. For a full monorepo
+release candidate, run:
+
+```bash
+npm run check:all
+```
+
+`check:all` runs backend unit tests plus the client unit tests, lint, and
+production build.
+
+## Separated Testing
+
+Backend-only repository or copied backend folder:
+
+```bash
+npm install
+npm run check
+```
+
+Client-only repository or copied `client/` folder:
+
+```bash
+npm install
+npm run check
+```
+
+For client E2E after separation, start the backend separately with
+`NODE_ENV=test`, matching `E2E_SEED_SECRET`, a test database, Redis, and valid
+test email settings such as `EMAIL_FROM=noreply@hirenova.test`. Then run:
+
+```bash
+E2E_API_URL=http://127.0.0.1:4100/api/v1 npm run test:e2e:external
+```
 
 ## Critical E2E Flows
 
@@ -71,7 +103,8 @@ or Redis-backed rate limiting is not enabled.
 
 A release candidate is ready only when:
 
-- `npm run check` passes.
+- `npm run check:all` passes for monorepo releases, or `npm run check` passes
+  for backend-only releases.
 - All critical E2E flows above pass in staging.
 - Staging CORS, email, Redis-backed rate limiting, and Socket.IO origins match
   the production topology.
