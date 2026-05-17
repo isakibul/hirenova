@@ -111,9 +111,10 @@ export default function Nav() {
             ]
           : [];
   const userEmail = user?.email;
+  const userName = user?.username || user?.name;
   const displayName =
-    user?.name && user.name !== userEmail
-      ? user.name
+    userName && userName !== userEmail
+      ? userName
       : (userEmail ?? "Profile");
   useEffect(() => {
     if (!isProfileOpen) {
