@@ -24,9 +24,9 @@ const features = [
 ];
 
 const stats = [
-  { value: "3", label: "workspaces" },
-  { value: "12+", label: "core flows" },
-  { value: "48", label: "checks passing" },
+  { value: "Search", label: "filtered jobs" },
+  { value: "Track", label: "applications" },
+  { value: "Hire", label: "with company profiles" },
 ];
 
 function getSignupPath(email) {
