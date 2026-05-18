@@ -45,8 +45,8 @@ export default function NotificationsMenu({ currentUserId = "", enabled = false 
         nextNotifications.filter((notification) => !notification.readAt).length;
       setNotifications(nextNotifications);
       setUnreadCount(nextUnreadCount);
-    } catch (error) {
-      console.error("Unable to load notifications:", error);
+    } catch {
+      // Keep the notification menu quiet if the session changes mid-request.
     }
   }, [currentUserId, enabled]);
 
