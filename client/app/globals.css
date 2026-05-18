@@ -107,6 +107,11 @@ body {
   font-weight: 600;
 }
 
+.brand-logo {
+  font-family: var(--font-brand), var(--font-dm-sans), Arial, sans-serif;
+  font-weight: 700;
+}
+
 .site-soft {
   color: var(--site-soft);
 }

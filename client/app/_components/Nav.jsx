@@ -147,7 +147,7 @@ export default function Nav() {
           <div className="flex items-center gap-14">
             <Link
               href="/"
-              className="marketing-title inline-flex h-9 items-center text-2xl tracking-tight mb-1"
+              className="brand-logo mb-1 inline-flex h-9 items-center text-2xl tracking-tight"
             >
               Hire<span className="site-accent">Nova</span>
             </Link>

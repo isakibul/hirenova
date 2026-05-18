@@ -66,7 +66,7 @@ export default function Footer() {
       <div className="site-container">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:items-start">
           <section className="max-w-md">
-            <Link href="/" className="text-xl font-semibold tracking-tight">
+            <Link href="/" className="brand-logo text-xl tracking-tight">
               Hire<span className="site-accent">Nova</span>
             </Link>
             <p className="site-muted mt-3 text-sm leading-6">
