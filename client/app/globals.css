@@ -10,6 +10,7 @@
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --site-bg: #fbfcf8;
   --site-fg: #172117;
+  --site-title: #253125;
   --site-muted: #59655a;
   --site-soft: #263324;
   --site-border: #d8ddcf;
@@ -39,6 +40,7 @@
   --foreground: #f7f5ec;
   --site-bg: #101713;
   --site-fg: #f7f5ec;
+  --site-title: #ece8da;
   --site-muted: #bcc8b8;
   --site-soft: #f0eadc;
   --site-border: #334236;
@@ -103,6 +105,7 @@ body {
 }
 
 .marketing-title {
+  color: var(--site-title);
   font-family: var(--font-display);
   font-weight: 700;
 }
