@@ -307,8 +307,8 @@ export default function JobsResults({
           const company = job.company;
           const companyId = company?.id ?? job.author;
           const companyHref = companyId ? `/companies/${companyId}` : "";
+          const location = job.location ?? "Location not set";
           const details = [
-            job.location ?? "Location not set",
             formatJobType(job.jobType),
             formatSalary(job.salary),
             formatExperience(job),
@@ -336,9 +336,13 @@ export default function JobsResults({
                         </span>
                       ) : null}
                     </div>
-                    <p className="site-muted mt-1 text-xs">
-                      {details.join(" · ")}
-                    </p>
+                    <div className="site-muted mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                      <span className="inline-flex items-center gap-1">
+                        <Icon name="mapPin" />
+                        {location}
+                      </span>
+                      <span>{details.join(" · ")}</span>
+                    </div>
                     {company?.name ? (
                       <Link
                         href={companyHref || `/jobs/${job.id}`}

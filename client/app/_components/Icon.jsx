@@ -54,6 +54,10 @@ const paths = {
       <path d="M15 12H3"/>
       <path d="M21 19V5"/>
     </>),
+    mapPin: (<>
+      <path d="M12 21s7-4.7 7-11a7 7 0 1 0-14 0c0 6.3 7 11 7 11Z"/>
+      <circle cx="12" cy="10" r="2.5"/>
+    </>),
     mail: (<>
       <path d="M4 6h16v12H4z"/>
       <path d="m4 7 8 6 8-6"/>
