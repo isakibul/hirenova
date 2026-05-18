@@ -85,11 +85,11 @@ export default function ApplicationsPage() {
 
         <StatusNotice>{error}</StatusNotice>
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 grid items-stretch gap-4 md:grid-cols-2">
           {isLoading ? (
-            <CardListSkeleton count={3} />
+            <CardListSkeleton count={4} />
           ) : applications.length === 0 ? (
-            <div className="site-border site-card rounded-lg border p-6">
+            <div className="site-border site-card rounded-lg border p-6 md:col-span-2">
               <div className="site-badge inline-flex h-10 w-10 items-center justify-center rounded-md">
                 <Icon name="file" />
               </div>
@@ -103,14 +103,18 @@ export default function ApplicationsPage() {
               const job = application.job ?? {};
               const jobId = job._id ?? job.id;
 
+              const CardTag = jobId ? Link : "div";
+              const cardProps = jobId ? { href: `/jobs/${jobId}` } : {};
+
               return (
-                <div
+                <CardTag
                   key={application.id ?? application._id}
-                  className="site-border site-card rounded-lg border p-5"
+                  {...cardProps}
+                  className="site-border site-card block h-full rounded-lg border p-5 transition hover:border-[var(--site-accent)]"
                 >
                   <div className="grid gap-4 md:grid-cols-[1fr_180px] md:items-start">
                     <div>
-                      <p className="text-lg font-semibold">
+                      <p className={jobId ? "site-link text-lg font-semibold" : "text-lg font-semibold"}>
                         {job.title ?? "Untitled job"}
                       </p>
                       <p className="site-muted mt-1 text-sm">
@@ -118,21 +122,13 @@ export default function ApplicationsPage() {
                         {formatDate(application.createdAt)}
                       </p>
                     </div>
-                    <span
+                  <span
                       className={`rounded-md border px-3 py-2 text-center text-xs font-semibold ${getStatusClass(application.status)}`}
                     >
                       {application.status ?? "submitted"}
                     </span>
                   </div>
-                  {jobId ? (
-                    <Link
-                      href={`/jobs/${jobId}`}
-                      className="site-link mt-4 inline-block text-sm font-semibold"
-                    >
-                      View job
-                    </Link>
-                  ) : null}
-                </div>
+                </CardTag>
               );
             })
           )}

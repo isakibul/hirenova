@@ -177,6 +177,30 @@ export default function JobsBrowser({
     void applyQuery(query, "createdAt:dsc", false);
   }
 
+  function clearSearch() {
+    const form = formRef.current;
+
+    if (!form) {
+      const { search, location, ...queryWithoutSearch } = browserState.query;
+      void applyQuery({ ...queryWithoutSearch, page: 1 }, browserState.sortValue, browserState.smartMatch);
+      return;
+    }
+
+    const searchInput = form.elements.namedItem("search");
+    const locationInput = form.elements.namedItem("location");
+
+    if (searchInput instanceof HTMLInputElement) {
+      searchInput.value = "";
+    }
+
+    if (locationInput instanceof HTMLInputElement) {
+      locationInput.value = "";
+    }
+
+    const { query, sortValue, smartMatch } = buildQueryFromForm(form);
+    void applyQuery(query, sortValue, smartMatch);
+  }
+
   function changePage(nextPage) {
     void applyQuery(
       {
@@ -190,7 +214,7 @@ export default function JobsBrowser({
 
   return (
     <form ref={formRef} action="/jobs" className="mt-6" onSubmit={handleSubmit}>
-      <div className="site-border site-card site-panel grid gap-3 rounded-lg border p-4 lg:grid-cols-[1fr_1fr_170px_130px]">
+      <div className="site-border site-card site-panel grid gap-3 rounded-lg border p-4 lg:grid-cols-[1fr_1fr_170px_130px_130px]">
         <label className="relative">
           <span className="site-muted pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
             <Icon name="search" />
@@ -222,6 +246,14 @@ export default function JobsBrowser({
 
         <button className="site-button h-10 rounded-md px-3 text-sm font-semibold transition">
           Search
+        </button>
+
+        <button
+          type="button"
+          onClick={clearSearch}
+          className="site-border site-field h-10 rounded-md border px-3 text-sm font-semibold"
+        >
+          Clear Search
         </button>
       </div>
 
