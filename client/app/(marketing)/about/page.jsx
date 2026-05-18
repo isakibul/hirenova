@@ -19,24 +19,6 @@ const values = [
   },
 ];
 
-const audiences = [
-  {
-    icon: "user",
-    title: "Jobseekers",
-    desc: "Create a profile, browse jobs, save roles, apply, and track applications.",
-  },
-  {
-    icon: "briefcase",
-    title: "Employers",
-    desc: "Post jobs, manage listings, review applicants, and update application statuses.",
-  },
-  {
-    icon: "search",
-    title: "Hiring teams",
-    desc: "Review candidate information and keep application decisions easier to follow.",
-  },
-];
-
 export default function AboutPage() {
   return (
     <main>
@@ -89,42 +71,6 @@ export default function AboutPage() {
                 </p>
               </article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="site-section py-10">
-        <div className="site-container">
-          <div className="site-border site-card rounded-xl border p-5 md:p-6">
-            <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
-              <div>
-                <p className="site-accent text-xs font-semibold uppercase tracking-widest">
-                  Who it serves
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold">
-                  Built for both sides of hiring
-                </h2>
-              </div>
-
-              <div className="grid items-stretch gap-3 md:grid-cols-3">
-                {audiences.map((audience) => (
-                  <article
-                    key={audience.title}
-                    className="site-border site-panel h-full rounded-lg border p-4"
-                  >
-                    <span className="site-badge inline-flex h-8 w-8 items-center justify-center rounded-md">
-                      <Icon name={audience.icon} />
-                    </span>
-                    <h3 className="mt-3 text-sm font-semibold">
-                      {audience.title}
-                    </h3>
-                    <p className="site-muted mt-2 text-xs leading-5">
-                      {audience.desc}
-                    </p>
-                  </article>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </section>
