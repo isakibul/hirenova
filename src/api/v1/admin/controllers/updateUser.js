@@ -18,6 +18,7 @@ const adminUserSchema = Joi.object({
   companyName: Joi.string().max(120).allow("").optional(),
   companyWebsite: Joi.string().uri().max(500).allow("").optional(),
   companySize: Joi.string().max(50).allow("").optional(),
+  companyAbout: Joi.string().max(2500).allow("").optional(),
 });
 
 const updateUser = async (req, res, next) => {

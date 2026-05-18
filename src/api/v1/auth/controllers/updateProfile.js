@@ -13,6 +13,7 @@ const profileSchema = Joi.object({
   companyName: Joi.string().max(120).allow("").optional(),
   companyWebsite: Joi.string().uri().max(500).allow("").optional(),
   companySize: Joi.string().max(50).allow("").optional(),
+  companyAbout: Joi.string().max(2500).allow("").optional(),
 });
 
 function sanitizeUser(user) {
@@ -48,6 +49,7 @@ const updateProfile = async (req, res, next) => {
       companyName: value.companyName,
       companyWebsite: value.companyWebsite,
       companySize: value.companySize,
+      companyAbout: value.companyAbout,
     });
 
     res.status(200).json({

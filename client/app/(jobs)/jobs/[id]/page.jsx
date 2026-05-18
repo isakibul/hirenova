@@ -165,6 +165,9 @@ export default async function JobDetailsPage({ params }) {
                 {company.website ? (<a href={company.website} target="_blank" rel="noreferrer" className="site-link mt-3 inline-flex text-sm font-semibold">
                     Visit website
                   </a>) : null}
+                {company.about ? (<p className="site-muted mt-3 line-clamp-4 text-sm leading-6">
+                    {company.about}
+                  </p>) : null}
                 <Link href={companyHref} className="site-button mt-4 inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold">
                   View Company Profile
                 </Link>

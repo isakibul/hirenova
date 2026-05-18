@@ -139,6 +139,14 @@ export default async function CompanyProfilePage({ params }) {
             </div>
 
             <div className="site-border mt-6 border-t pt-6">
+              <h2 className="text-lg font-semibold">About Company</h2>
+              <p className="site-muted mt-3 text-sm leading-7">
+                {company.about ||
+                  "This company has not added an overview yet. Check open roles and visit the company website for more details."}
+              </p>
+            </div>
+
+            <div className="site-border mt-6 border-t pt-6">
               <h2 className="text-lg font-semibold">Open Roles</h2>
               {jobs.length ? (
                 <div className="mt-4 space-y-3">

@@ -234,6 +234,7 @@ export default function SettingsClient({ user: userProp }) {
                 `Company name: ${profile.companyName || "Not set"}`,
                 `Company website: ${profile.companyWebsite || "Not set"}`,
                 `Company size: ${profile.companySize || "Not set"}`,
+                `About company: ${profile.companyAbout || "Not set"}`,
                 "",
                 "Local Preferences",
                 ...Object.entries(settings).map(([key, value]) => `${key}: ${String(value)}`),

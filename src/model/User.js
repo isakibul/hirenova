@@ -93,6 +93,10 @@ const userSchema = new Schema(
       type: String,
       maxLength: 50,
     },
+    companyAbout: {
+      type: String,
+      maxLength: 2500,
+    },
     lastSeenAt: {
       type: Date,
     },

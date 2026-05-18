@@ -244,7 +244,7 @@ const getSingleUser = async (id) => {
 
 const getCompanyProfile = async (id) => {
   const user = await User.findById(id).select(
-    "username email role status companyName companyWebsite companySize createdAt updatedAt"
+    "username email role status companyName companyWebsite companySize companyAbout createdAt updatedAt"
   );
 
   if (!user || !["employer", "admin", "superadmin"].includes(user.role)) {
@@ -269,6 +269,7 @@ const getCompanyProfile = async (id) => {
     username: user.username,
     website: user.companyWebsite || "",
     size: user.companySize || "",
+    about: user.companyAbout || "",
     role: user.role,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
@@ -291,6 +292,7 @@ const updateProfile = async (
     companyName,
     companyWebsite,
     companySize,
+    companyAbout,
   }
 ) => {
   const user = await User.findById(id);
@@ -333,6 +335,7 @@ const updateProfile = async (
     if (companyName !== undefined) user.companyName = companyName;
     if (companyWebsite !== undefined) user.companyWebsite = companyWebsite;
     if (companySize !== undefined) user.companySize = companySize;
+    if (companyAbout !== undefined) user.companyAbout = companyAbout;
   }
 
   await user.save();

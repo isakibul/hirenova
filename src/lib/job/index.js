@@ -107,6 +107,7 @@ const serializeCompany = (author) => {
     name: author.companyName || author.username || "Company",
     website: author.companyWebsite || "",
     size: author.companySize || "",
+    about: author.companyAbout || "",
     username: author.username || "",
   };
 };
@@ -585,7 +586,7 @@ const findAll = async ({
   });
 
   const jobs = await Job.find(filter)
-    .populate("author", "username companyName companyWebsite companySize role")
+    .populate("author", "username companyName companyWebsite companySize companyAbout role")
     .sort(`${sortType === "dsc" ? "-" : ""}${safeSortBy}`)
     .skip(page * limit - limit)
     .limit(limit);
@@ -631,7 +632,7 @@ const findSingle = async ({ id, expand = "" }) => {
   const expandFields = expand.split(",").map((item) => item.trim());
 
   const job = await Job.findById(id)
-    .populate("author", "username companyName companyWebsite companySize role")
+    .populate("author", "username companyName companyWebsite companySize companyAbout role")
     .lean();
 
   if (!job) throw notFound();

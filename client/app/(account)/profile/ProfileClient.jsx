@@ -62,6 +62,7 @@ function getProfileForm(data = {}) {
         companyName: data.companyName ?? "",
         companyWebsite: data.companyWebsite ?? "",
         companySize: data.companySize ?? "",
+        companyAbout: data.companyAbout ?? "",
     };
 }
 function buildProfilePayload(form, resumeUrl = form.resumeUrl, role = "jobseeker") {
@@ -80,6 +81,7 @@ function buildProfilePayload(form, resumeUrl = form.resumeUrl, role = "jobseeker
         payload.companyName = form.companyName.trim();
         payload.companyWebsite = form.companyWebsite.trim();
         payload.companySize = form.companySize.trim();
+        payload.companyAbout = form.companyAbout.trim();
     }
     return payload;
 }
@@ -159,6 +161,7 @@ export default function ProfileClient() {
         companyName: "",
         companyWebsite: "",
         companySize: "",
+        companyAbout: "",
     });
     const [passwordForm, setPasswordForm] = useState(emptyPasswordForm);
     const [profileTouched, setProfileTouched] = useState({});
@@ -617,6 +620,10 @@ export default function ProfileClient() {
                       <label className="block">
                         <span className="text-sm font-medium">Company Size</span>
                         <input value={profileForm.companySize} onChange={(event) => updateProfileField("companySize", event.target.value)} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="11-50"/>
+                      </label>
+                      <label className="block sm:col-span-2">
+                        <span className="text-sm font-medium">About Company</span>
+                        <textarea value={profileForm.companyAbout} onChange={(event) => updateProfileField("companyAbout", event.target.value)} disabled={!isEditingProfile} maxLength={2500} rows={5} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="Share what your company does, the teams you hire for, and what candidates can expect from your workplace."/>
                       </label>
                     </div>
                   </section>) : null}
