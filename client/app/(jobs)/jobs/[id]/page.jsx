@@ -107,7 +107,7 @@ export default async function JobDetailsPage({ params }) {
     }
     const skills = job.skillsRequired ?? [];
     const postedDate = formatDate(job.createdAt);
-    const updatedDate = formatDate(job.updatedAt);
+    const updatedDate = job.updatedAt ? formatDate(job.updatedAt) : "";
     const jobStatus = getJobStatus(job);
     const isClosed = jobStatus !== "Open Role";
     const company = job.company;
@@ -126,7 +126,8 @@ export default async function JobDetailsPage({ params }) {
                   {job.title ?? "Untitled job"}
                 </h1>
                 <p className="site-muted mt-3 text-sm">
-                  Posted {postedDate} · Updated {updatedDate}
+                  Posted {postedDate}
+                  {updatedDate ? ` · Updated ${updatedDate}` : ""}
                 </p>
                 {company?.name ? (<Link href={companyHref} className="site-link mt-3 inline-flex items-center gap-2 text-base font-semibold">
                     <Icon name="briefcase"/>
