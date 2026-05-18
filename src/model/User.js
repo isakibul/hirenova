@@ -27,6 +27,30 @@ const userSchema = new Schema(
       enum: apiContract.roles.user,
       required: true,
     },
+    roleChangeRequest: {
+      requestedRole: {
+        type: String,
+        enum: apiContract.roles.adminManaged,
+      },
+      status: {
+        type: String,
+        enum: apiContract.users.roleChangeRequestStatuses,
+      },
+      requestedAt: {
+        type: Date,
+      },
+      reviewedAt: {
+        type: Date,
+      },
+      reviewedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+      note: {
+        type: String,
+        maxLength: 300,
+      },
+    },
     status: {
       type: String,
       enum: apiContract.users.statuses,

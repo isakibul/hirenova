@@ -28,6 +28,12 @@ router.get("/confirm-email/:token", authController.confirmEmail);
 router.get("/profile", authenticate, authController.getProfile);
 router.patch("/profile", writeLimiter, authenticate, authController.updateProfile);
 router.post(
+  "/role-request/employer",
+  writeLimiter,
+  authenticate,
+  authController.requestEmployerRole
+);
+router.post(
   "/profile/resume",
   writeLimiter,
   authenticate,

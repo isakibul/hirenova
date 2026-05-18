@@ -14,6 +14,8 @@ const getAuditLogs = require("./getAuditLogs");
 const getEmailEvents = require("./getEmailEvents");
 const getSystemMonitorSummary = require("./getSystemMonitorSummary");
 const getOperationsSummary = require("./getOperationsSummary");
+const getRoleChangeRequests = require("./getRoleChangeRequests");
+const reviewRoleChangeRequest = require("./reviewRoleChangeRequest");
 
 module.exports = {
   addUser,
@@ -32,4 +34,6 @@ module.exports = {
   getEmailEvents,
   getSystemMonitorSummary,
   getOperationsSummary,
+  getRoleChangeRequests,
+  reviewRoleChangeRequest,
 };

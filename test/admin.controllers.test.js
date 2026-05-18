@@ -3,16 +3,19 @@ const { afterEach, test } = require("node:test");
 
 const removeUser = require("../src/api/v1/admin/controllers/removeUser");
 const updateUser = require("../src/api/v1/admin/controllers/updateUser");
+const reviewRoleChangeRequest = require("../src/api/v1/admin/controllers/reviewRoleChangeRequest");
 const userService = require("../src/lib/user");
 
 const originalFindUserById = userService.findUserById;
 const originalRemoveUser = userService.removeUser;
 const originalUpdateUserByAdmin = userService.updateUserByAdmin;
+const originalReviewRoleChangeRequest = userService.reviewRoleChangeRequest;
 
 afterEach(() => {
   userService.findUserById = originalFindUserById;
   userService.removeUser = originalRemoveUser;
   userService.updateUserByAdmin = originalUpdateUserByAdmin;
+  userService.reviewRoleChangeRequest = originalReviewRoleChangeRequest;
 });
 
 const createResponse = () => ({
@@ -77,4 +80,41 @@ test("admin updateUser rejects changing your own role", async () => {
 
   assert.equal(res.statusCode, 403);
   assert.equal(res.body.message, "You cannot change your own role.");
+});
+
+test("admin reviewRoleChangeRequest passes reviewer and decision to service", async () => {
+  let captured;
+  userService.reviewRoleChangeRequest = async (payload) => {
+    captured = payload;
+    return {
+      id: "user-1",
+      username: "jobseeker1",
+      role: "employer",
+      roleChangeRequest: { status: "approved" },
+    };
+  };
+
+  const res = createResponse();
+  await reviewRoleChangeRequest(
+    {
+      params: { id: "user-1" },
+      body: { decision: "approved" },
+      user: { id: "admin-1", role: "admin" },
+      protocol: "http",
+      get: () => "localhost:4000",
+      originalUrl: "/api/v1/admin/role-requests/user-1",
+    },
+    res,
+    (error) => {
+      throw error;
+    },
+  );
+
+  assert.deepEqual(captured, {
+    id: "user-1",
+    reviewerId: "admin-1",
+    decision: "approved",
+  });
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.message, "Employer access approved.");
 });

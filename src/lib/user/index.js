@@ -1,5 +1,6 @@
-const { User } = require("../../model");
+const { Notification, User } = require("../../model");
 const { badRequest, notFound } = require("../../utils/error");
+const notificationService = require("../notification");
 
 const normalizeEmail = (email = "") => email.trim().toLowerCase();
 const escapeRegExp = (value) =>
@@ -64,6 +65,89 @@ const getUserFilter = ({ search = "", role = "" }) => {
   return filter;
 };
 
+const sanitizeRoleChangeRequest = (request = {}) => {
+  if (!request?.status) {
+    return undefined;
+  }
+
+  return {
+    requestedRole: request.requestedRole,
+    status: request.status,
+    requestedAt: request.requestedAt,
+    reviewedAt: request.reviewedAt,
+    reviewedBy: request.reviewedBy?.toString?.() ?? request.reviewedBy,
+    note: request.note,
+  };
+};
+
+const notifyAdminsForRoleChangeRequest = async (user) => {
+  const admins = await User.find({
+    role: { $in: ["admin", "superadmin"] },
+    status: { $ne: "suspended" },
+  }).select("_id");
+
+  const requestUserId = user.id ?? user._id?.toString();
+  const requestedAt = user.roleChangeRequest?.requestedAt
+    ? new Date(user.roleChangeRequest.requestedAt).toISOString()
+    : "";
+  const notifications = [];
+
+  for (const admin of admins) {
+    const existing = await Notification.findOne({
+      recipient: admin._id,
+      type: "role_change_requested",
+      "metadata.user": requestUserId,
+      "metadata.requestedRole": "employer",
+      "metadata.requestedAt": requestedAt,
+    });
+
+    if (existing) {
+      if (existing.readAt) {
+        existing.readAt = null;
+        await existing.save();
+      }
+    } else {
+      notifications.push({
+      recipient: admin._id,
+      type: "role_change_requested",
+      title: "Employer access requested",
+      message: `${user.username ?? user.email} requested employer access.`,
+      link: "/manage-users",
+      metadata: {
+        user: requestUserId,
+        requestedRole: "employer",
+        requestedAt,
+      },
+      });
+    }
+  }
+
+  await notificationService.createManyNotifications(notifications);
+};
+
+const notifyUserForRoleChangeReview = async ({ user, decision }) => {
+  await notificationService.createNotification({
+    recipient: user._id,
+    type:
+      decision === "approved"
+        ? "role_change_approved"
+        : "role_change_declined",
+    title:
+      decision === "approved"
+        ? "Employer access approved"
+        : "Employer access declined",
+    message:
+      decision === "approved"
+        ? "Your employer access request was approved. You can now complete your hiring profile."
+        : "Your employer access request was declined. You can update your note and request again.",
+    link: "/profile",
+    metadata: {
+      requestedRole: "employer",
+      decision,
+    },
+  });
+};
+
 const getAllUser = async ({ page, limit, sortType, sortBy, search, role }) => {
   const sortStr = `${sortType === "dsc" ? "-" : ""}${sortBy}`;
   const filter = getUserFilter({ search, role });
@@ -76,6 +160,7 @@ const getAllUser = async ({ page, limit, sortType, sortBy, search, role }) => {
   return users.map((user) => ({
     ...user._doc,
     id: user.id,
+    roleChangeRequest: sanitizeRoleChangeRequest(user.roleChangeRequest),
   }));
 };
 
@@ -207,12 +292,116 @@ const updateProfile = async (
   if (resumeUrl !== undefined) user.resumeUrl = resumeUrl;
   if (experience !== undefined) user.experience = experience;
   if (preferredLocation !== undefined) user.preferredLocation = preferredLocation;
-  if (companyName !== undefined) user.companyName = companyName;
-  if (companyWebsite !== undefined) user.companyWebsite = companyWebsite;
-  if (companySize !== undefined) user.companySize = companySize;
+  if (user.role !== "jobseeker") {
+    if (companyName !== undefined) user.companyName = companyName;
+    if (companyWebsite !== undefined) user.companyWebsite = companyWebsite;
+    if (companySize !== undefined) user.companySize = companySize;
+  }
 
   await user.save();
 
+  return { ...user._doc, id: user._id.toString() };
+};
+
+const requestEmployerRoleChange = async (id, note = "") => {
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw notFound("User not found");
+  }
+
+  if (user.role !== "jobseeker") {
+    throw badRequest("Only job seekers can request employer access.");
+  }
+
+  if (user.status !== "active") {
+    throw badRequest("Your account must be active before requesting employer access.");
+  }
+
+  if (user.roleChangeRequest?.status === "pending") {
+    user.roleChangeRequest.note = note;
+    await user.save();
+    await notifyAdminsForRoleChangeRequest(user);
+    return { ...user._doc, id: user._id.toString() };
+  }
+
+  user.roleChangeRequest = {
+    requestedRole: "employer",
+    status: "pending",
+    requestedAt: new Date(),
+    note,
+  };
+
+  await user.save();
+  await notifyAdminsForRoleChangeRequest(user);
+  return { ...user._doc, id: user._id.toString() };
+};
+
+const getRoleChangeRequestFilter = ({ status = "pending" } = {}) => {
+  const allowedStatuses = ["pending", "approved", "declined"];
+  const filter = {
+    "roleChangeRequest.status": allowedStatuses.includes(status)
+      ? status
+      : "pending",
+  };
+
+  return filter;
+};
+
+const getRoleChangeRequests = async ({
+  page,
+  limit,
+  sortType,
+  sortBy,
+  status,
+}) => {
+  const sortStr = `${sortType === "dsc" ? "-" : ""}${sortBy}`;
+  const filter = getRoleChangeRequestFilter({ status });
+
+  const users = await User.find(filter)
+    .select("username email role status roleChangeRequest createdAt updatedAt")
+    .sort(sortStr)
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  if (filter["roleChangeRequest.status"] === "pending") {
+    await Promise.all(users.map((user) => notifyAdminsForRoleChangeRequest(user)));
+  }
+
+  return users.map((user) => ({
+    ...user._doc,
+    id: user._id.toString(),
+    roleChangeRequest: sanitizeRoleChangeRequest(user.roleChangeRequest),
+  }));
+};
+
+const countRoleChangeRequests = async ({ status = "pending" } = {}) => {
+  return User.countDocuments(getRoleChangeRequestFilter({ status }));
+};
+
+const reviewRoleChangeRequest = async ({ id, reviewerId, decision }) => {
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw notFound("User not found");
+  }
+
+  if (user.roleChangeRequest?.status !== "pending") {
+    throw badRequest("This role change request is no longer pending.");
+  }
+
+  const reviewedAt = new Date();
+
+  user.roleChangeRequest.status = decision;
+  user.roleChangeRequest.reviewedAt = reviewedAt;
+  user.roleChangeRequest.reviewedBy = reviewerId;
+
+  if (decision === "approved") {
+    user.role = user.roleChangeRequest.requestedRole;
+  }
+
+  await user.save();
+  await notifyUserForRoleChangeReview({ user, decision });
   return { ...user._doc, id: user._id.toString() };
 };
 
@@ -253,6 +442,10 @@ module.exports = {
   getSingleUser,
   updateProfile,
   updateUserByAdmin,
+  requestEmployerRoleChange,
+  getRoleChangeRequests,
+  countRoleChangeRequests,
+  reviewRoleChangeRequest,
   touchLastSeen,
   removeUser,
 };

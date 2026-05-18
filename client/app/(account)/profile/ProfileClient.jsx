@@ -49,7 +49,7 @@ function getRoleSummary(role) {
     if (role === "employer") {
         return "You can keep company hiring details and still maintain candidate information.";
     }
-    return "You can keep candidate details and add hiring information if your responsibilities change.";
+    return "You can keep candidate details here and request employer access when you are ready to hire.";
 }
 function getProfileForm(data = {}) {
     return {
@@ -64,8 +64,8 @@ function getProfileForm(data = {}) {
         companySize: data.companySize ?? "",
     };
 }
-function buildProfilePayload(form, resumeUrl = form.resumeUrl) {
-    return {
+function buildProfilePayload(form, resumeUrl = form.resumeUrl, role = "jobseeker") {
+    const payload = {
         username: form.username.trim(),
         email: form.email.trim().toLowerCase(),
         skills: form.skills
@@ -75,10 +75,13 @@ function buildProfilePayload(form, resumeUrl = form.resumeUrl) {
         resumeUrl: resumeUrl.trim(),
         experience: form.experience === "" ? undefined : Number(form.experience),
         preferredLocation: form.preferredLocation.trim(),
-        companyName: form.companyName.trim(),
-        companyWebsite: form.companyWebsite.trim(),
-        companySize: form.companySize.trim(),
     };
+    if (role !== "jobseeker") {
+        payload.companyName = form.companyName.trim();
+        payload.companyWebsite = form.companyWebsite.trim();
+        payload.companySize = form.companySize.trim();
+    }
+    return payload;
 }
 function mergeCommaList(currentValue, nextItems = []) {
     const values = [
@@ -166,6 +169,10 @@ export default function ProfileClient() {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isSavingPassword, setIsSavingPassword] = useState(false);
+    const [isRequestingEmployerRole, setIsRequestingEmployerRole] = useState(false);
+    const [isEmployerRequestFormOpen, setIsEmployerRequestFormOpen] = useState(false);
+    const [isEditingEmployerRequest, setIsEditingEmployerRequest] = useState(false);
+    const [roleRequestNote, setRoleRequestNote] = useState("");
     const [resumeFile, setResumeFile] = useState(null);
     const [isParsingResume, setIsParsingResume] = useState(false);
     const [parsedResume, setParsedResume] = useState(null);
@@ -176,6 +183,11 @@ export default function ProfileClient() {
     const passwordErrors = validatePasswordForm(passwordForm);
     const visibleProfileErrors = getVisibleErrors(profileErrors, profileTouched, profileSubmitAttempted);
     const visiblePasswordErrors = getVisibleErrors(passwordErrors, passwordTouched, passwordSubmitAttempted);
+    const isJobseeker = profile?.role === "jobseeker";
+    const canEditHiringProfile = profile?.role && profile.role !== "jobseeker";
+    const roleChangeRequest = profile?.roleChangeRequest;
+    const hasPendingEmployerRequest = roleChangeRequest?.status === "pending";
+    const shouldShowEmployerRequestForm = hasPendingEmployerRequest || isEmployerRequestFormOpen;
     const loadProfile = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -183,6 +195,9 @@ export default function ProfileClient() {
             const body = await requestJson("/auth/profile", {}, "Unable to load profile.");
             setProfile(body.data);
             setProfileForm(getProfileForm(body.data));
+            setRoleRequestNote(body.data?.roleChangeRequest?.note ?? "");
+            setIsEmployerRequestFormOpen(body.data?.roleChangeRequest?.status === "pending");
+            setIsEditingEmployerRequest(false);
             setResumeFile(null);
             setParsedResume(null);
             setParsedFieldSelection({});
@@ -230,7 +245,7 @@ export default function ProfileClient() {
             }
             const body = await requestJson("/auth/profile", {
                 method: "PATCH",
-                body: JSON.stringify(buildProfilePayload(profileForm, resumeUrl)),
+                body: JSON.stringify(buildProfilePayload(profileForm, resumeUrl, profile?.role)),
             }, "Unable to update profile.");
             setProfile(body.data);
             setProfileForm(getProfileForm(body.data));
@@ -297,6 +312,39 @@ export default function ProfileClient() {
         }
         finally {
             setIsSavingPassword(false);
+        }
+    }
+    async function handleEmployerRoleRequest() {
+        setIsRequestingEmployerRole(true);
+        setNotice(null);
+        setError(null);
+        try {
+            const body = await requestJson("/auth/role-request/employer", {
+                method: "POST",
+                body: JSON.stringify({ note: roleRequestNote.trim() }),
+            }, "Unable to submit employer access request.");
+            const submittedRequest = body.data?.roleChangeRequest ?? {
+                requestedRole: "employer",
+                status: "pending",
+                requestedAt: new Date().toISOString(),
+                note: roleRequestNote.trim(),
+            };
+            setProfile({
+                ...body.data,
+                roleChangeRequest: submittedRequest,
+            });
+            setRoleRequestNote(submittedRequest.note ?? roleRequestNote.trim());
+            setIsEmployerRequestFormOpen(true);
+            setIsEditingEmployerRequest(false);
+            setNotice(getMessage(body, "Employer access request submitted."));
+        }
+        catch (caughtError) {
+            setError(caughtError instanceof Error
+                ? caughtError.message
+                : "Unable to submit employer access request.");
+        }
+        finally {
+            setIsRequestingEmployerRole(false);
         }
     }
     function updateProfileField(field, value) {
@@ -550,29 +598,85 @@ export default function ProfileClient() {
                   </div>
                 </section>
 
-                <section className="border-t border-[var(--site-border)] pt-4">
-                  <div>
-                    <h3 className="text-sm font-semibold">Hiring Profile</h3>
-                    <p className="site-muted mt-1 text-xs">
-                      Company details are kept with your account for current or
-                      future hiring workflows.
-                    </p>
-                  </div>
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="text-sm font-medium">Company Name</span>
-                      <input value={profileForm.companyName} onChange={(event) => updateProfileField("companyName", event.target.value)} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="Acme Inc."/>
-                    </label>
-                    <label className="block">
-                      <span className="text-sm font-medium">Company Website</span>
-                      <input value={profileForm.companyWebsite} onChange={(event) => updateProfileField("companyWebsite", event.target.value)} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="https://..."/>
-                    </label>
-                    <label className="block">
-                      <span className="text-sm font-medium">Company Size</span>
-                      <input value={profileForm.companySize} onChange={(event) => updateProfileField("companySize", event.target.value)} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="11-50"/>
-                    </label>
-                  </div>
-                </section>
+                {canEditHiringProfile ? (<section className="border-t border-[var(--site-border)] pt-4">
+                    <div>
+                      <h3 className="text-sm font-semibold">Hiring Profile</h3>
+                      <p className="site-muted mt-1 text-xs">
+                        Keep your company details ready for hiring workflows.
+                      </p>
+                    </div>
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                      <label className="block">
+                        <span className="text-sm font-medium">Company Name</span>
+                        <input value={profileForm.companyName} onChange={(event) => updateProfileField("companyName", event.target.value)} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="Acme Inc."/>
+                      </label>
+                      <label className="block">
+                        <span className="text-sm font-medium">Company Website</span>
+                        <input value={profileForm.companyWebsite} onChange={(event) => updateProfileField("companyWebsite", event.target.value)} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="https://..."/>
+                      </label>
+                      <label className="block">
+                        <span className="text-sm font-medium">Company Size</span>
+                        <input value={profileForm.companySize} onChange={(event) => updateProfileField("companySize", event.target.value)} disabled={!isEditingProfile} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="11-50"/>
+                      </label>
+                    </div>
+                  </section>) : null}
+
+                {isJobseeker ? (<section className="border-t border-[var(--site-border)] pt-4">
+                    <div>
+                      <h3 className="text-sm font-semibold">Employer Access</h3>
+                      <p className="site-muted mt-1 text-xs">
+                        Request approval before creating a hiring profile.
+                      </p>
+                    </div>
+                    <div className="mt-4">
+                      {!shouldShowEmployerRequestForm ? (<button type="button" onClick={() => {
+                            setIsEmployerRequestFormOpen(true);
+                            setIsEditingEmployerRequest(true);
+                        }} className="site-button inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition sm:w-auto">
+                          <Icon name="briefcase"/>
+                          Request Employer Access
+                        </button>) : (<div className="space-y-3 rounded-md border border-[var(--site-border)] p-3">
+                          {hasPendingEmployerRequest ? (<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                              <div>
+                                <p className="text-sm font-semibold">
+                                  Employer access request pending
+                                </p>
+                                <p className="site-muted mt-1 text-xs">
+                                  Requested {formatDate(roleChangeRequest?.requestedAt)}
+                                </p>
+                              </div>
+                              <button type="button" onClick={() => setIsEditingEmployerRequest(true)} disabled={isEditingEmployerRequest || isRequestingEmployerRole} className="site-border site-field inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold disabled:opacity-60">
+                                <Icon name="edit"/>
+                                Edit
+                              </button>
+                            </div>) : null}
+                          <label className="block">
+                            <span className="text-sm font-medium">Request Note</span>
+                            <textarea value={roleRequestNote} onChange={(event) => setRoleRequestNote(event.target.value)} disabled={hasPendingEmployerRequest && !isEditingEmployerRequest} maxLength={300} rows={3} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-70" placeholder="Share why you need employer access."/>
+                          </label>
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                              <button type="button" onClick={handleEmployerRoleRequest} disabled={isRequestingEmployerRole || (hasPendingEmployerRequest && !isEditingEmployerRequest)} className="site-button inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-70 sm:w-auto">
+                                {isRequestingEmployerRole ? (<LoadingCircle className="h-3.5 w-3.5" label="Submitting request" />) : (<Icon name="briefcase"/>)}
+                                {isRequestingEmployerRole
+                                    ? "Submitting"
+                                    : hasPendingEmployerRequest
+                                        ? isEditingEmployerRequest
+                                            ? "Save Request"
+                                            : "Request Submitted"
+                                        : "Submit Request"}
+                              </button>
+                              {!hasPendingEmployerRequest ? (<button type="button" onClick={() => {
+                                    setIsEmployerRequestFormOpen(false);
+                                    setIsEditingEmployerRequest(false);
+                                    setRoleRequestNote("");
+                                }} disabled={isRequestingEmployerRole} className="site-border site-field inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-70">
+                                  <Icon name="x"/>
+                                  Cancel
+                                </button>) : null}
+                            </div>
+                        </div>)}
+                    </div>
+                  </section>) : null}
 
                 <dl className="grid gap-4 border-t border-[var(--site-border)] pt-4 sm:grid-cols-2">
                   <div>

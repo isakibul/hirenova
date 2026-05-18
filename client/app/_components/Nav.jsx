@@ -175,7 +175,7 @@ export default function Nav() {
           </div>
 
           <div className="flex items-center gap-3">
-            <NotificationsMenu enabled={isAuthenticated} />
+            <NotificationsMenu enabled={isAuthenticated} currentUserId={user?.id} />
             <MessagesMenu
               enabled={isAuthenticated}
               currentUserId={user?.id}

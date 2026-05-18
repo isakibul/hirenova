@@ -10,7 +10,7 @@ import {
   hasValidationErrors,
   touchAll,
 } from "@lib/formValidation";
-import { getRecordId as getUserId } from "@lib/ui";
+import { getApiMessage, getRecordId as getUserId } from "@lib/ui";
 import { useCallback, useEffect, useState } from "react";
 import UserSidePanel from "./UserSidePanel";
 import UsersTable from "./UsersTable";
@@ -29,6 +29,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
     const effectiveUserId = currentUserId ?? user?.id;
     const effectiveUserRole = currentUserRole ?? user?.role ?? "admin";
     const [users, setUsers] = useState([]);
+    const [roleRequests, setRoleRequests] = useState([]);
     const [pagination, setPagination] = useState();
     const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
@@ -46,6 +47,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingUserId, setLoadingUserId] = useState(null);
     const [roleUpdatingUserId, setRoleUpdatingUserId] = useState(null);
+    const [reviewingRoleRequestId, setReviewingRoleRequestId] = useState(null);
     const [statusUpdatingUserId, setStatusUpdatingUserId] = useState(null);
     const [deletingUserId, setDeletingUserId] = useState(null);
     const [rolePendingChange, setRolePendingChange] = useState(null);
@@ -119,12 +121,23 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
             setIsLoading(false);
         }
     }, [page, roleFilter, search, sortBy, sortType]);
+    const loadRoleRequests = useCallback(async () => {
+        try {
+            const body = await requestJson("/admin/role-requests?status=pending&limit=6&sort_type=asc", {}, "Unable to load role requests.");
+            setRoleRequests(body.data ?? []);
+            window.dispatchEvent(new Event("hirenova:notifications-refresh"));
+        }
+        catch {
+            setRoleRequests([]);
+        }
+    }, []);
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
             void loadUsers();
+            void loadRoleRequests();
         }, 0);
         return () => window.clearTimeout(timeoutId);
-    }, [loadUsers]);
+    }, [loadRoleRequests, loadUsers]);
     useEffect(() => {
         if ((!userPendingDelete && !rolePendingChange && !statusPendingChange) ||
             deletingUserId ||
@@ -257,6 +270,43 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
         }
         finally {
             setRoleUpdatingUserId(null);
+        }
+    }
+    async function reviewRoleRequest(user, decision) {
+        const userId = getUserId(user);
+        if (!userId) {
+            return;
+        }
+        setReviewingRoleRequestId(userId);
+        setNotice(null);
+        setError(null);
+        try {
+            const body = await requestJson(`/admin/role-requests/${userId}`, {
+                method: "PATCH",
+                body: JSON.stringify({ decision }),
+            }, "Unable to review role request.");
+            setNotice(getApiMessage(body, decision === "approved"
+                ? "Employer access approved."
+                : "Employer access request declined."));
+            if (selectedUserId === userId) {
+                setSelectedUser((current) => current
+                    ? {
+                        ...current,
+                        role: decision === "approved" ? "employer" : current.role,
+                        roleChangeRequest: body.data?.roleChangeRequest,
+                    }
+                    : current);
+            }
+            await loadUsers();
+            await loadRoleRequests();
+        }
+        catch (caughtError) {
+            setError(caughtError instanceof Error
+                ? caughtError.message
+                : "Unable to review role request.");
+        }
+        finally {
+            setReviewingRoleRequestId(null);
         }
     }
     function requestStatusChange(user) {
@@ -432,6 +482,7 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
             isFormOpen={isFormOpen}
             isSubmitting={isSubmitting}
             isSuperAdmin={isSuperAdmin}
+            onReviewRoleRequest={reviewRoleRequest}
             onRequestRoleChange={requestRoleChange}
             onRequestStatusChange={requestStatusChange}
             onSubmit={handleSubmit}
@@ -439,7 +490,9 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
             onTouchField={markFormTouched}
             onUpdateField={updateFormField}
             roleOptionsForUser={getRoleOptionsForUser}
+            roleRequests={roleRequests}
             roleUpdatingUserId={roleUpdatingUserId}
+            reviewingRoleRequestId={reviewingRoleRequestId}
             selectedUser={selectedUser}
             selectedUserId={selectedUserId}
             statusUpdatingUserId={statusUpdatingUserId}

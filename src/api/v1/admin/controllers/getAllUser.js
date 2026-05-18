@@ -27,7 +27,15 @@ const getAllUser = async (req, res, next) => {
     const data = getTransformedItems({
       items: user,
       path: "./user",
-      selection: ["id", "username", "email", "role", "status", "createdAt"],
+      selection: [
+        "id",
+        "username",
+        "email",
+        "role",
+        "status",
+        "roleChangeRequest",
+        "createdAt",
+      ],
     });
 
     const totalItems = await userService.count({ search, role });

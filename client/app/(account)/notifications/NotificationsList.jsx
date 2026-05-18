@@ -28,6 +28,9 @@ function getTypeLabel(type) {
     job_pending_review: "Review",
     job_approved: "Approved",
     job_declined: "Declined",
+    role_change_requested: "Role request",
+    role_change_approved: "Role approved",
+    role_change_declined: "Role declined",
     message: "Message",
     system: "System",
   };

@@ -12,6 +12,7 @@ export default function UserSidePanel({
   isFormOpen,
   isSubmitting,
   isSuperAdmin,
+  onReviewRoleRequest,
   onRequestRoleChange,
   onRequestStatusChange,
   onSubmit,
@@ -19,7 +20,9 @@ export default function UserSidePanel({
   onTouchField,
   onUpdateField,
   roleOptionsForUser,
+  roleRequests = [],
   roleUpdatingUserId,
+  reviewingRoleRequestId,
   selectedUser,
   selectedUserId,
   statusUpdatingUserId,
@@ -145,6 +148,81 @@ export default function UserSidePanel({
           and role/status changes remain available below.
         </div>
       )}
+
+      <div className="border-t border-[var(--site-border)]">
+        <div className="px-4 py-3">
+          <h3 className="font-semibold">Employer Requests</h3>
+          <p className="site-muted mt-1 text-xs">
+            Approve job seekers before they receive hiring access.
+          </p>
+        </div>
+        {roleRequests.length ? (
+          <div className="space-y-3 p-4 pt-0">
+            {roleRequests.map((requestUser) => {
+              const requestUserId =
+                requestUser.id ?? requestUser._id?.toString?.();
+              const isReviewing = reviewingRoleRequestId === requestUserId;
+
+              return (
+                <div
+                  key={requestUserId}
+                  className="rounded-md border border-[var(--site-border)] p-3 text-sm"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="site-badge flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
+                      <Icon name="briefcase" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-semibold">
+                        {requestUser.username ?? "Unnamed user"}
+                      </p>
+                      <p className="site-muted mt-1 break-all text-xs">
+                        {requestUser.email ?? "Email not set"}
+                      </p>
+                      {requestUser.roleChangeRequest?.note ? (
+                        <p className="site-muted mt-2 text-xs leading-5">
+                          {requestUser.roleChangeRequest.note}
+                        </p>
+                      ) : null}
+                      <p className="site-muted mt-2 text-xs">
+                        Requested{" "}
+                        {formatDate(requestUser.roleChangeRequest?.requestedAt)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onReviewRoleRequest(requestUser, "approved")
+                      }
+                      disabled={isReviewing}
+                      className="site-button inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-semibold disabled:opacity-60"
+                    >
+                      <Icon name="check" />
+                      {isReviewing ? "Reviewing" : "Approve"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onReviewRoleRequest(requestUser, "declined")
+                      }
+                      disabled={isReviewing}
+                      className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-2 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-50"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="site-muted p-4 pt-0 text-sm">
+            No pending employer requests.
+          </div>
+        )}
+      </div>
 
       <div className="border-t border-[var(--site-border)]">
         <div className="px-4 py-3">

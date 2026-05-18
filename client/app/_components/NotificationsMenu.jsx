@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { requestJson } from "@lib/clientApi";
 import Icon from "./Icon";
 
@@ -18,14 +18,20 @@ function formatTime(value) {
   }).format(new Date(value));
 }
 
-export default function NotificationsMenu({ enabled = false }) {
+export default function NotificationsMenu({ currentUserId = "", enabled = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const menuRef = useRef(null);
 
-  async function loadNotifications() {
+  const loadNotifications = useCallback(async (userId = currentUserId) => {
     if (!enabled) {
+      return;
+    }
+
+    if (!userId) {
+      setNotifications([]);
+      setUnreadCount(0);
       return;
     }
 
@@ -33,12 +39,16 @@ export default function NotificationsMenu({ enabled = false }) {
       const body = await requestJson("/notifications?limit=6", {
         cache: "no-store",
       });
-      setNotifications(body.data ?? []);
-      setUnreadCount(body.meta?.unreadCount ?? 0);
-    } catch {
-      // Keep the notification menu quiet if the session expires mid-request.
+      const nextNotifications = body.data ?? [];
+      const nextUnreadCount =
+        body.meta?.unreadCount ??
+        nextNotifications.filter((notification) => !notification.readAt).length;
+      setNotifications(nextNotifications);
+      setUnreadCount(nextUnreadCount);
+    } catch (error) {
+      console.error("Unable to load notifications:", error);
     }
-  }
+  }, [currentUserId, enabled]);
 
   async function markOneAsRead(notification) {
     const id = notification.id ?? notification._id;
@@ -81,29 +91,40 @@ export default function NotificationsMenu({ enabled = false }) {
       return undefined;
     }
 
-    let ignore = false;
+    const timeoutId = window.setTimeout(loadNotifications, 0);
 
-    async function loadInitialNotifications() {
-      try {
-        const body = await requestJson("/notifications?limit=6", {
-          cache: "no-store",
-        });
+    const intervalId = window.setInterval(loadNotifications, 30000);
 
-        if (!ignore) {
-          setNotifications(body.data ?? []);
-          setUnreadCount(body.meta?.unreadCount ?? 0);
-        }
-      } catch {
-        // Keep the notification menu quiet if the session expires mid-request.
+    function handleFocus() {
+      loadNotifications();
+    }
+
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("hirenova:notifications-refresh", handleFocus);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("hirenova:notifications-refresh", handleFocus);
+    };
+  }, [currentUserId, enabled, loadNotifications]);
+
+  useEffect(() => {
+    if (!enabled || !isOpen) {
+      return undefined;
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        loadNotifications();
       }
     }
 
-    loadInitialNotifications();
-
-    return () => {
-      ignore = true;
-    };
-  }, [enabled]);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [currentUserId, enabled, isOpen, loadNotifications]);
 
   useEffect(() => {
     if (!isOpen) {

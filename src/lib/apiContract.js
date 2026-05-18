@@ -7,6 +7,7 @@ module.exports = {
   },
   users: {
     statuses: ["pending", "active", "suspended"],
+    roleChangeRequestStatuses: ["pending", "approved", "declined"],
   },
   jobs: {
     types: ["full-time", "part-time", "remote", "contract"],

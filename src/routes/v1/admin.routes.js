@@ -46,6 +46,20 @@ router.delete(
 );
 
 router.get(
+  "/role-requests",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.getRoleChangeRequests
+);
+
+router.patch(
+  "/role-requests/:id",
+  authenticate,
+  authorize(["admin", "superadmin"]),
+  adminControllers.reviewRoleChangeRequest
+);
+
+router.get(
   "/newsletter",
   authenticate,
   authorize(["admin", "superadmin"]),
