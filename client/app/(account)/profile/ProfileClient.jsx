@@ -687,12 +687,6 @@ export default function ProfileClient() {
 
                 <dl className="grid gap-4 border-t border-[var(--site-border)] pt-4 sm:grid-cols-2">
                   <div>
-                    <dt className="site-muted text-xs font-medium">User ID</dt>
-                    <dd className="mt-1 break-all text-sm font-semibold">
-                      {profile?.id ?? "Not available"}
-                    </dd>
-                  </div>
-                  <div>
                     <dt className="site-muted text-xs font-medium">Updated</dt>
                     <dd className="mt-1 text-sm font-semibold">
                       {formatDate(profile?.updatedAt)}
