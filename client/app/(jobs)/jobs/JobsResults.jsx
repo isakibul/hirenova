@@ -304,6 +304,8 @@ export default function JobsResults({
         ) : null}
 
         {!isLoading && jobs.map((job) => {
+          const company = job.company;
+          const companyHref = company?.id ? `/companies/${company.id}` : "";
           const details = [
             job.location ?? "Location not set",
             formatJobType(job.jobType),
@@ -336,6 +338,15 @@ export default function JobsResults({
                     <p className="site-muted mt-1 text-xs">
                       {details.join(" · ")}
                     </p>
+                    {company?.name ? (
+                      <Link
+                        href={companyHref || `/jobs/${job.id}`}
+                        className="site-link mt-2 inline-flex items-center gap-1.5 text-xs font-semibold"
+                      >
+                        <Icon name="briefcase" />
+                        {company.name}
+                      </Link>
+                    ) : null}
                     {job.match?.reason ? (
                       <div className="site-border mt-3 max-w-3xl rounded-md border p-3">
                         <p className="site-accent text-[11px] font-semibold uppercase tracking-wide">

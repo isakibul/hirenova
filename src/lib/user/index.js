@@ -1,4 +1,4 @@
-const { Notification, User } = require("../../model");
+const { Job, Notification, User } = require("../../model");
 const { badRequest, notFound } = require("../../utils/error");
 const notificationService = require("../notification");
 
@@ -242,6 +242,43 @@ const getSingleUser = async (id) => {
   return { ...user._doc, id: user._id.toString() };
 };
 
+const getCompanyProfile = async (id) => {
+  const user = await User.findById(id).select(
+    "username email role status companyName companyWebsite companySize createdAt updatedAt"
+  );
+
+  if (!user || !["employer", "admin", "superadmin"].includes(user.role)) {
+    throw notFound("Company not found");
+  }
+
+  const jobs = await Job.find({
+    author: user._id,
+    status: "open",
+    approvalStatus: "approved",
+  })
+    .select(
+      "title location jobType salary experienceRequired experienceMin experienceMax skillsRequired expiresAt createdAt"
+    )
+    .sort("-createdAt")
+    .limit(6)
+    .lean();
+
+  return {
+    id: user._id.toString(),
+    name: user.companyName || user.username || "Company",
+    username: user.username,
+    website: user.companyWebsite || "",
+    size: user.companySize || "",
+    role: user.role,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    jobs: jobs.map((job) => ({
+      ...job,
+      id: job._id.toString(),
+    })),
+  };
+};
+
 const updateProfile = async (
   id,
   {
@@ -440,6 +477,7 @@ module.exports = {
   countJobseekers,
   getJobseekerProfile,
   getSingleUser,
+  getCompanyProfile,
   updateProfile,
   updateUserByAdmin,
   requestEmployerRoleChange,

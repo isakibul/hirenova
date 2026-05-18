@@ -69,6 +69,7 @@ const findAll = async (req, res, next) => {
         "reviewedAt",
         "expiresAt",
         "closedAt",
+        "company",
         "updatedAt",
         "createdAt",
       ],

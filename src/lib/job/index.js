@@ -91,6 +91,39 @@ const preserveCurrentDeclineNote = (job) => {
   ];
 };
 
+const serializeCompany = (author) => {
+  if (!author) {
+    return null;
+  }
+
+  const id = author._id?.toString?.() ?? author.id?.toString?.() ?? author.toString?.();
+
+  if (!id || typeof author !== "object") {
+    return null;
+  }
+
+  return {
+    id,
+    name: author.companyName || author.username || "Company",
+    website: author.companyWebsite || "",
+    size: author.companySize || "",
+    username: author.username || "",
+  };
+};
+
+const serializeJob = (job) => {
+  const source = job._doc ?? job;
+  return {
+    ...source,
+    id: job.id ?? source._id?.toString(),
+    company: serializeCompany(source.author),
+    author:
+      typeof source.author === "object"
+        ? source.author?._id?.toString?.() ?? source.author?.id?.toString?.()
+        : source.author,
+  };
+};
+
 const create = async ({
   title,
   description,
@@ -552,14 +585,12 @@ const findAll = async ({
   });
 
   const jobs = await Job.find(filter)
+    .populate("author", "username companyName companyWebsite companySize role")
     .sort(`${sortType === "dsc" ? "-" : ""}${safeSortBy}`)
     .skip(page * limit - limit)
     .limit(limit);
 
-  return jobs.map((job) => ({
-    ...job._doc,
-    id: job.id,
-  }));
+  return jobs.map(serializeJob);
 };
 
 const count = ({
@@ -599,11 +630,13 @@ const findSingle = async ({ id, expand = "" }) => {
 
   const expandFields = expand.split(",").map((item) => item.trim());
 
-  const job = await Job.findById(id).lean();
+  const job = await Job.findById(id)
+    .populate("author", "username companyName companyWebsite companySize role")
+    .lean();
 
   if (!job) throw notFound();
 
-  return job;
+  return serializeJob(job);
 };
 
 const updateStatus = async ({ id, status, expiresAt }) => {

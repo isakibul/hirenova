@@ -1,5 +1,6 @@
 import FormattedText from "@components/FormattedText";
 import Icon from "@components/Icon";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import JobActions from "./JobActions";
 function getBackendApiUrl() {
@@ -100,6 +101,8 @@ export default async function JobDetailsPage({ params }) {
     const updatedDate = formatDate(job.updatedAt);
     const jobStatus = getJobStatus(job);
     const isClosed = jobStatus !== "Open Role";
+    const company = job.company;
+    const companyHref = company?.id ? `/companies/${company.id}` : "";
     return (<section className="site-section py-12">
       <div className="site-container">
         <div className="grid items-start gap-6 lg:grid-cols-[1fr_320px]">
@@ -115,6 +118,10 @@ export default async function JobDetailsPage({ params }) {
                 <p className="site-muted mt-3 text-sm">
                   Posted {postedDate} · Updated {updatedDate}
                 </p>
+                {company?.name ? (<Link href={companyHref} className="site-link mt-3 inline-flex items-center gap-2 text-sm font-semibold">
+                    <Icon name="briefcase"/>
+                    {company.name}
+                  </Link>) : null}
               </div>
               <span className={`inline-flex w-fit shrink-0 items-center gap-2 whitespace-nowrap rounded-md border px-3 py-2 text-xs font-semibold ${isClosed ? "site-danger" : "site-success"}`}>
                 <Icon name="briefcase"/>
@@ -139,6 +146,19 @@ export default async function JobDetailsPage({ params }) {
           </article>
 
           <aside className="space-y-4">
+            {company?.name ? (<div className="site-border site-card rounded-lg border p-4">
+                <p className="site-muted text-xs font-medium">Company</p>
+                <h2 className="mt-2 text-base font-semibold">{company.name}</h2>
+                {company.size ? (<p className="site-muted mt-2 text-sm">
+                    {company.size} employees
+                  </p>) : null}
+                {company.website ? (<a href={company.website} target="_blank" rel="noreferrer" className="site-link mt-3 inline-flex text-sm font-semibold">
+                    Visit website
+                  </a>) : null}
+                <Link href={companyHref} className="site-button mt-4 inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold">
+                  View Company Profile
+                </Link>
+              </div>) : null}
             <div className="site-border site-card rounded-lg border p-4">
               <h2 className="text-base font-semibold">Skills Required</h2>
               {skills.length > 0 ? (<div className="mt-3 flex flex-wrap gap-2">

@@ -70,6 +70,7 @@ export default async function JobsPage({ searchParams }) {
   const maxSalary = getParam(params, "max_salary").trim();
   const minExperience = getParam(params, "min_experience").trim();
   const maxExperience = getParam(params, "max_experience").trim();
+  const author = getParam(params, "author").trim();
   const selectedJobTypes = getParamList(params, "job_type");
   const page = getPositiveNumber(getParam(params, "page"), 1);
   const limit = Math.min(getPositiveNumber(getParam(params, "limit"), 10), 50);
@@ -92,6 +93,7 @@ export default async function JobsPage({ searchParams }) {
       max_salary: maxSalary || undefined,
       min_experience: minExperience || undefined,
       max_experience: maxExperience || undefined,
+      author: author || undefined,
       limit,
       page,
   };
