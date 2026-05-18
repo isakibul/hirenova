@@ -3,7 +3,14 @@ import AssistantChat from "./_components/AssistantChat";
 import Footer from "./_components/Footer";
 import Nav from "./_components/Nav";
 import ThemeProvider from "./_components/theme/ThemeProvider";
+import { DM_Sans } from "next/font/google";
 import "./globals.css";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 
 const themeScript = `
   (() => {
@@ -33,7 +40,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className="h-full antialiased"
+      className={`${dmSans.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
