@@ -23,10 +23,12 @@ const features = [
   },
 ];
 
-const stats = [
-  { value: "Search", label: "filtered jobs" },
-  { value: "Track", label: "applications" },
-  { value: "Hire", label: "with company profiles" },
+const companyLogos = [
+  { name: "Mads IT", initials: "MI" },
+  { name: "Acme Labs", initials: "AL" },
+  { name: "Northstar", initials: "NS" },
+  { name: "BrightHire", initials: "BH" },
+  { name: "CloudWorks", initials: "CW" },
 ];
 
 function getSignupPath(email) {
@@ -100,18 +102,26 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-3">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="site-border border-l px-4 first:border-l-0"
-                >
-                  <p className="text-2xl font-semibold">{stat.value}</p>
-                  <p className="site-muted mt-1 text-xs uppercase tracking-wide">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
+            <div className="mx-auto mt-8 max-w-3xl">
+              <p className="site-muted text-xs font-semibold uppercase tracking-widest">
+                Companies hiring with HireNova
+              </p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                {companyLogos.map((company) => (
+                  <div
+                    key={company.name}
+                    className="site-border site-panel inline-flex min-h-11 items-center gap-2 rounded-md border px-3 py-2"
+                    aria-label={company.name}
+                  >
+                    <span className="site-badge inline-flex h-7 w-7 items-center justify-center rounded text-[11px] font-bold">
+                      {company.initials}
+                    </span>
+                    <span className="text-sm font-semibold">
+                      {company.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
