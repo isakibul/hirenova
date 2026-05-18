@@ -305,7 +305,8 @@ export default function JobsResults({
 
         {!isLoading && jobs.map((job) => {
           const company = job.company;
-          const companyHref = company?.id ? `/companies/${company.id}` : "";
+          const companyId = company?.id ?? job.author;
+          const companyHref = companyId ? `/companies/${companyId}` : "";
           const details = [
             job.location ?? "Location not set",
             formatJobType(job.jobType),

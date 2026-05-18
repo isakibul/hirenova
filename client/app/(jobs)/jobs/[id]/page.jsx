@@ -12,6 +12,15 @@ async function getJob(id) {
         cache: "no-store",
     });
     const body = await response.json().catch(() => ({}));
+    if (response.ok && body.data && !body.data.company && body.data.author) {
+        const companyResponse = await fetch(`${getBackendApiUrl()}/companies/${body.data.author}`, {
+            cache: "no-store",
+        });
+        const companyBody = await companyResponse.json().catch(() => ({}));
+        if (companyResponse.ok && companyBody.data) {
+            body.data.company = companyBody.data;
+        }
+    }
     return { body, ok: response.ok, status: response.status };
 }
 function formatDate(value) {
@@ -102,7 +111,8 @@ export default async function JobDetailsPage({ params }) {
     const jobStatus = getJobStatus(job);
     const isClosed = jobStatus !== "Open Role";
     const company = job.company;
-    const companyHref = company?.id ? `/companies/${company.id}` : "";
+    const companyId = company?.id ?? job.author;
+    const companyHref = companyId ? `/companies/${companyId}` : "";
     return (<section className="site-section py-12">
       <div className="site-container">
         <div className="grid items-start gap-6 lg:grid-cols-[1fr_320px]">
@@ -118,7 +128,7 @@ export default async function JobDetailsPage({ params }) {
                 <p className="site-muted mt-3 text-sm">
                   Posted {postedDate} · Updated {updatedDate}
                 </p>
-                {company?.name ? (<Link href={companyHref} className="site-link mt-3 inline-flex items-center gap-2 text-sm font-semibold">
+                {company?.name ? (<Link href={companyHref} className="site-link mt-3 inline-flex items-center gap-2 text-base font-semibold">
                     <Icon name="briefcase"/>
                     {company.name}
                   </Link>) : null}
