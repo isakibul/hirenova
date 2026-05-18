@@ -3,7 +3,7 @@ import AssistantChat from "./_components/AssistantChat";
 import Footer from "./_components/Footer";
 import Nav from "./_components/Nav";
 import ThemeProvider from "./_components/theme/ThemeProvider";
-import { DM_Sans, Sora } from "next/font/google";
+import { DM_Sans, Fraunces, Sora } from "next/font/google";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -15,6 +15,12 @@ const dmSans = DM_Sans({
 const sora = Sora({
   subsets: ["latin"],
   variable: "--font-brand",
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-heading",
   display: "swap",
 });
 
@@ -46,7 +52,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${sora.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${sora.variable} ${fraunces.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
