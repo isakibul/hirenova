@@ -13,6 +13,9 @@ const {
   loginSchema,
   registerSchema,
 } = require("../src/lib/validators/authValidator");
+const {
+  profileSchema,
+} = require("../src/api/v1/auth/controllers/updateProfile");
 
 test("job validation accepts a complete public job payload", () => {
   const { error, value } = jobSchema.validate({
@@ -103,6 +106,23 @@ test("login validation requires email-shaped identifiers", () => {
   });
 
   assert.match(error.message, /valid email/);
+});
+
+test("profile validation accepts company about text", () => {
+  const { error, value } = profileSchema.validate({
+    username: "employer1",
+    email: "employer@example.com",
+    companyName: "Acme Inc.",
+    companyWebsite: "https://acme.example",
+    companySize: "11-50",
+    companyAbout: "We build practical hiring tools for focused teams.",
+  });
+
+  assert.equal(error, undefined);
+  assert.equal(
+    value.companyAbout,
+    "We build practical hiring tools for focused teams.",
+  );
 });
 
 test("application validation allows empty cover letters but rejects oversize text", () => {

@@ -29,6 +29,7 @@ const updateProfile = async (req, res, next) => {
   try {
     const { error, value } = profileSchema.validate(req.body, {
       abortEarly: false,
+      stripUnknown: true,
     });
 
     if (error) {
@@ -65,3 +66,4 @@ const updateProfile = async (req, res, next) => {
 };
 
 module.exports = updateProfile;
+module.exports.profileSchema = profileSchema;
