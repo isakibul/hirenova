@@ -14,17 +14,12 @@ const getSystemMonitorSummary = async (_req, res, next) => {
       auditActivity24h,
       totalAuditEvents,
       failedEmails24h,
-      recentErrors24h,
     ] = await Promise.all([
       summarizeEmailEvents(last24Hours),
       summarizeAuditActivity(last24Hours),
       AuditLog.countDocuments(),
       EmailEvent.countDocuments({
         status: "failed",
-        createdAt: { $gte: last24Hours },
-      }),
-      AuditLog.countDocuments({
-        statusCode: { $gte: 500 },
         createdAt: { $gte: last24Hours },
       }),
     ]);
@@ -38,11 +33,11 @@ const getSystemMonitorSummary = async (_req, res, next) => {
             message: `${failedEmails24h} email delivery failure${failedEmails24h === 1 ? "" : "s"} in the last 24 hours.`,
           }
         : null,
-      recentErrors24h > 0
+      health.totalErrors > 0
         ? {
             type: "api_errors",
             tone: "danger",
-            message: `${recentErrors24h} server error audit event${recentErrors24h === 1 ? "" : "s"} in the last 24 hours.`,
+            message: `${health.totalErrors} API error${health.totalErrors === 1 ? "" : "s"} observed since API start.`,
           }
         : null,
       health.slowRequests > 0
@@ -61,7 +56,7 @@ const getSystemMonitorSummary = async (_req, res, next) => {
         auditActivity24h,
         totalAuditEvents,
         failedEmails24h,
-        recentErrors24h,
+        apiErrorsSinceStart: health.totalErrors,
         alerts,
       },
     });

@@ -2,7 +2,7 @@ import { getBackendBaseUrl } from "@lib/env";
 
 async function getHealth() {
     try {
-        const response = await fetch(`${getBackendBaseUrl()}/health`, {
+        const response = await fetch(`${getBackendBaseUrl()}/health/ready`, {
             cache: "no-store",
         });
         const body = await response.json().catch(() => ({}));

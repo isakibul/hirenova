@@ -4,8 +4,10 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const hpp = require("hpp");
 const path = require("path");
+const mongoose = require("mongoose");
 
 const v1Routes = require("./routes/v1");
+const { client: redisClient } = require("./config/redisClient");
 const auditLogger = require("./middleware/auditLogger");
 const requestContext = require("./middleware/requestContext");
 const requestMetrics = require("./middleware/requestMetrics");
@@ -64,6 +66,35 @@ app.use(structuredRequestLogger);
 /**
  * Health checker route
  */
+app.get("/health/live", (_req, res, next) => {
+  try {
+    res.status(200).json({
+      status: "OK",
+      uptime: process.uptime(),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get("/health/ready", (_req, res, next) => {
+  try {
+    const checks = {
+      database: mongoose.connection.readyState === 1 ? "ready" : "not_ready",
+      redis: redisClient.isReady ? "ready" : "not_ready",
+    };
+    const isReady = Object.values(checks).every((status) => status === "ready");
+
+    res.status(isReady ? 200 : 503).json({
+      status: isReady ? "OK" : "NOT_READY",
+      uptime: process.uptime(),
+      checks,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get("/health", (_req, res, next) => {
   try {
     res.status(200).json({

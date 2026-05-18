@@ -51,6 +51,8 @@ function loadFreshV1Router(nodeEnv) {
 
 test("app exposes the health check route", () => {
   assert.equal(routeExists("/health", "get"), true);
+  assert.equal(routeExists("/health/live", "get"), true);
+  assert.equal(routeExists("/health/ready", "get"), true);
 });
 
 test("core v1 routes are wired", () => {

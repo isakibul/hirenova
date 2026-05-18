@@ -8,7 +8,9 @@ const getEmailEvents = async (req, res, next) => {
   const status = ["sent", "failed"].includes(req.query.status)
     ? req.query.status
     : "";
-  const type = ["confirmation", "password_reset"].includes(req.query.type)
+  const type = ["confirmation", "password_reset", "newsletter_campaign"].includes(
+    req.query.type
+  )
     ? req.query.type
     : "";
   const filter = {

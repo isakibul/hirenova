@@ -39,6 +39,7 @@ const emailTypeOptions = [
   { value: "", label: "All email types" },
   { value: "confirmation", label: "Confirmation" },
   { value: "password_reset", label: "Password reset" },
+  { value: "newsletter_campaign", label: "Newsletter campaign" },
 ];
 
 function MetricCard({ label, value, detail, tone = "default" }) {
@@ -333,24 +334,24 @@ export default function SystemMonitorClient() {
           ) : (
             <>
               <MetricCard
-                label="App Requests"
+                label="App Requests Since API Start"
                 value={totalRequests}
                 detail={`${health.uptimeSeconds ?? 0}s uptime; observability reads excluded`}
               />
               <MetricCard
-                label="API Errors"
+                label="API Errors Since API Start"
                 value={totalErrors}
                 detail="In-memory process counter"
                 tone={totalErrors ? "danger" : "success"}
               />
               <MetricCard
-                label="Slow Requests"
+                label="Slow Requests Since API Start"
                 value={slowRequests}
                 detail="Requests over 1000ms"
                 tone={slowRequests ? "danger" : "default"}
               />
               <MetricCard
-                label="Failed Emails"
+                label="Failed Emails Last 24h"
                 value={failedEmails24h}
                 detail="Last 24 hours"
                 tone={failedEmails24h ? "danger" : "success"}

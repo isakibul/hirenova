@@ -99,6 +99,24 @@ The API validates the production environment at startup. It fails fast when
 required production values are missing, placeholder secrets are still present,
 or Redis-backed rate limiting is not enabled.
 
+## Observability Scope
+
+HireNova includes lightweight portfolio-grade observability:
+
+- in-memory API request metrics for request volume, status classes, API errors,
+  and slow requests since the current API process started
+- persisted audit logs for successful sensitive actions, without request bodies
+  or raw IP addresses
+- persisted email delivery events with hashed recipients and delivery duration
+- `/health/live` for process liveness and `/health/ready` for MongoDB/Redis
+  readiness
+- an admin System Monitor dashboard for health, email delivery, audit activity,
+  and local alert signals
+
+For a multi-instance production deployment, move request metrics and alerts to a
+centralized observability backend such as Prometheus/Grafana, Datadog, Better
+Stack, or a cloud provider monitoring service.
+
 ## Release Gate
 
 A release candidate is ready only when:
