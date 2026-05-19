@@ -228,7 +228,7 @@ export default function SignupForm({ initialEmail = "" }) {
             return (
               <label
                 key={option.value}
-                className={`site-border site-field flex min-h-20 cursor-pointer gap-3 rounded-md border p-3 text-sm transition ${isSelected ? "border-[var(--site-accent)] ring-1 ring-[var(--site-accent)]" : "hover:border-[var(--site-accent)]"}`}
+                className={`site-border site-field flex min-h-12 cursor-pointer items-center gap-3 rounded-md border p-3 text-sm transition ${isSelected ? "border-[var(--site-accent)] ring-1 ring-[var(--site-accent)]" : "hover:border-[var(--site-accent)]"}`}
               >
                 <input
                   type="radio"
