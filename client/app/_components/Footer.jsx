@@ -151,8 +151,8 @@ export default function Footer() {
             >
               Features
             </Link>
-            <Link href="/status" className="transition hover:text-(--site-accent)">
-              Status
+            <Link href="/jobs" className="transition hover:text-(--site-accent)">
+              Jobs
             </Link>
           </div>
         </div>
