@@ -1,5 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import PasswordField from "@components/forms/PasswordField";
 import { useAuth } from "@components/auth/AuthProvider";
 import LoadingCircle from "@components/LoadingCircle";
 import {
@@ -107,8 +108,7 @@ export default function LoginForm() {
 
       <label className="site-soft mt-4 block text-xs font-medium">
         Password
-        <input
-          type="password"
+        <PasswordField
           value={form.password}
           onChange={(event) => updateField("password", event.target.value)}
           onBlur={() => markTouched("password")}
@@ -116,7 +116,8 @@ export default function LoginForm() {
           aria-describedby={
             visibleErrors.password ? "login-password-error" : undefined
           }
-          className="site-field mt-1.5 w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+          containerClassName="mt-1.5"
+          className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
           placeholder="Enter your password"
           autoComplete="current-password"
           required

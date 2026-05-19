@@ -1,5 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import PasswordField from "@components/forms/PasswordField";
 import LoadingCircle from "@components/LoadingCircle";
 import StatusNotice from "@components/StatusNotice";
 import { requestJson } from "@lib/clientApi";
@@ -127,7 +128,7 @@ export default function SignupForm({ initialEmail = "", }) {
 
       <label className="site-soft mt-4 block text-xs font-medium">
         Password
-        <input type="password" value={form.password} onChange={(event) => updateField("password", event.target.value)} onBlur={() => markTouched("password")} aria-invalid={Boolean(visibleErrors.password)} aria-describedby={visibleErrors.password ? "signup-password-error" : undefined} className="site-field mt-1.5 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="At least 8 characters" minLength={8} maxLength={50} autoComplete="new-password" required/>
+        <PasswordField value={form.password} onChange={(event) => updateField("password", event.target.value)} onBlur={() => markTouched("password")} aria-invalid={Boolean(visibleErrors.password)} aria-describedby={visibleErrors.password ? "signup-password-error" : undefined} containerClassName="mt-1.5" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="At least 8 characters" minLength={8} maxLength={50} autoComplete="new-password" required/>
         <FieldError id="signup-password-error" message={visibleErrors.password}/>
       </label>
 

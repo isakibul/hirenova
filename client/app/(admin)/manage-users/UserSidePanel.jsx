@@ -1,4 +1,5 @@
 import FieldError from "@components/forms/FieldError";
+import PasswordField from "@components/forms/PasswordField";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
 import { formatDate, formatTitle as formatStatus } from "@lib/ui";
@@ -95,8 +96,7 @@ export default function UserSidePanel({
 
           <label className="block">
             <span className="text-sm font-medium">Password</span>
-            <input
-              type="password"
+            <PasswordField
               value={form.password}
               onChange={(event) => onUpdateField("password", event.target.value)}
               onBlur={() => onTouchField("password")}
@@ -104,7 +104,8 @@ export default function UserSidePanel({
               aria-describedby={
                 visibleErrors.password ? "user-password-error" : undefined
               }
-              className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+              containerClassName="mt-1"
+              className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
               minLength={8}
               maxLength={50}
               autoComplete="new-password"

@@ -4,6 +4,7 @@ import Icon from "@components/Icon";
 import Modal from "@components/Modal";
 import StatusNotice from "@components/StatusNotice";
 import { useAuth } from "@components/auth/AuthProvider";
+import PasswordField from "@components/forms/PasswordField";
 import SelectField from "@components/forms/SelectField";
 import { useTheme } from "@components/theme/ThemeProvider";
 import { requestJson } from "@lib/clientApi";
@@ -378,7 +379,7 @@ export default function SettingsClient({ user: userProp }) {
             <div className="space-y-4 p-5">
               <label className="block">
                 <span className="text-sm font-medium">Current password</span>
-                <input type="password" value={deactivatePassword} onChange={(event) => setDeactivatePassword(event.target.value)} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" autoComplete="current-password" required/>
+                <PasswordField value={deactivatePassword} onChange={(event) => setDeactivatePassword(event.target.value)} containerClassName="mt-1" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" autoComplete="current-password" required/>
               </label>
               <label className="block">
                 <span className="text-sm font-medium">Type DEACTIVATE</span>

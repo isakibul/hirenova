@@ -1,5 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import PasswordField from "@components/forms/PasswordField";
 import Icon from "@components/Icon";
 import LoadingCircle from "@components/LoadingCircle";
 import { FormSkeleton } from "@components/Skeleton";
@@ -718,28 +719,28 @@ export default function ProfileClient() {
             <form onSubmit={handlePasswordSubmit} noValidate className="space-y-4 p-4">
               <label className="block">
                 <span className="text-sm font-medium">Current Password</span>
-                <input type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((current) => ({
+                <PasswordField value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((current) => ({
             ...current,
             currentPassword: event.target.value,
-        }))} onBlur={() => setPasswordTouched((current) => ({ ...current, currentPassword: true }))} aria-invalid={Boolean(visiblePasswordErrors.currentPassword)} aria-describedby={visiblePasswordErrors.currentPassword ? "profile-current-password-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" autoComplete="current-password" required/>
+        }))} onBlur={() => setPasswordTouched((current) => ({ ...current, currentPassword: true }))} aria-invalid={Boolean(visiblePasswordErrors.currentPassword)} aria-describedby={visiblePasswordErrors.currentPassword ? "profile-current-password-error" : undefined} containerClassName="mt-1" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" autoComplete="current-password" required/>
                 <FieldError id="profile-current-password-error" message={visiblePasswordErrors.currentPassword}/>
               </label>
 
               <label className="block">
                 <span className="text-sm font-medium">New Password</span>
-                <input type="password" value={passwordForm.newPassword} onChange={(event) => setPasswordForm((current) => ({
+                <PasswordField value={passwordForm.newPassword} onChange={(event) => setPasswordForm((current) => ({
             ...current,
             newPassword: event.target.value,
-        }))} onBlur={() => setPasswordTouched((current) => ({ ...current, newPassword: true }))} aria-invalid={Boolean(visiblePasswordErrors.newPassword)} aria-describedby={visiblePasswordErrors.newPassword ? "profile-new-password-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={8} maxLength={50} autoComplete="new-password" required/>
+        }))} onBlur={() => setPasswordTouched((current) => ({ ...current, newPassword: true }))} aria-invalid={Boolean(visiblePasswordErrors.newPassword)} aria-describedby={visiblePasswordErrors.newPassword ? "profile-new-password-error" : undefined} containerClassName="mt-1" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={8} maxLength={50} autoComplete="new-password" required/>
                 <FieldError id="profile-new-password-error" message={visiblePasswordErrors.newPassword}/>
               </label>
 
               <label className="block">
                 <span className="text-sm font-medium">Confirm Password</span>
-                <input type="password" value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm((current) => ({
+                <PasswordField value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm((current) => ({
             ...current,
             confirmPassword: event.target.value,
-        }))} onBlur={() => setPasswordTouched((current) => ({ ...current, confirmPassword: true }))} aria-invalid={Boolean(visiblePasswordErrors.confirmPassword)} aria-describedby={visiblePasswordErrors.confirmPassword ? "profile-confirm-password-error" : undefined} className="site-field mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={8} maxLength={50} autoComplete="new-password" required/>
+        }))} onBlur={() => setPasswordTouched((current) => ({ ...current, confirmPassword: true }))} aria-invalid={Boolean(visiblePasswordErrors.confirmPassword)} aria-describedby={visiblePasswordErrors.confirmPassword ? "profile-confirm-password-error" : undefined} containerClassName="mt-1" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={8} maxLength={50} autoComplete="new-password" required/>
                 <FieldError id="profile-confirm-password-error" message={visiblePasswordErrors.confirmPassword}/>
               </label>
 

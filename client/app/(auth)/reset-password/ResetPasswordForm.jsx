@@ -1,5 +1,6 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
+import PasswordField from "@components/forms/PasswordField";
 import LoadingCircle from "@components/LoadingCircle";
 import StatusNotice from "@components/StatusNotice";
 import { requestJson } from "@lib/clientApi";
@@ -95,13 +96,13 @@ export default function ResetPasswordForm({ token }) {
 
       <label className="site-soft block text-xs font-medium">
         New Password
-        <input type="password" value={form.newPassword} onChange={(event) => updateField("newPassword", event.target.value)} onBlur={() => setTouched((current) => ({ ...current, newPassword: true }))} aria-invalid={Boolean(visibleErrors.newPassword)} aria-describedby={visibleErrors.newPassword ? "reset-new-password-error" : undefined} className="site-field mt-1.5 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="At least 8 characters" autoComplete="new-password" required/>
+        <PasswordField value={form.newPassword} onChange={(event) => updateField("newPassword", event.target.value)} onBlur={() => setTouched((current) => ({ ...current, newPassword: true }))} aria-invalid={Boolean(visibleErrors.newPassword)} aria-describedby={visibleErrors.newPassword ? "reset-new-password-error" : undefined} containerClassName="mt-1.5" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="At least 8 characters" autoComplete="new-password" required/>
         <FieldError id="reset-new-password-error" message={visibleErrors.newPassword}/>
       </label>
 
       <label className="site-soft mt-4 block text-xs font-medium">
         Confirm Password
-        <input type="password" value={form.confirmPassword} onChange={(event) => updateField("confirmPassword", event.target.value)} onBlur={() => setTouched((current) => ({ ...current, confirmPassword: true }))} aria-invalid={Boolean(visibleErrors.confirmPassword)} aria-describedby={visibleErrors.confirmPassword ? "reset-confirm-password-error" : undefined} className="site-field mt-1.5 w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="Repeat new password" autoComplete="new-password" required/>
+        <PasswordField value={form.confirmPassword} onChange={(event) => updateField("confirmPassword", event.target.value)} onBlur={() => setTouched((current) => ({ ...current, confirmPassword: true }))} aria-invalid={Boolean(visibleErrors.confirmPassword)} aria-describedby={visibleErrors.confirmPassword ? "reset-confirm-password-error" : undefined} containerClassName="mt-1.5" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="Repeat new password" autoComplete="new-password" required/>
         <FieldError id="reset-confirm-password-error" message={visibleErrors.confirmPassword}/>
       </label>
 
