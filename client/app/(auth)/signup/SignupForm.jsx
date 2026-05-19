@@ -24,13 +24,11 @@ const initialState = {
 const accountTypeOptions = [
   {
     value: "jobseeker",
-    label: "A job",
-    description: "Find matching jobs.",
+    label: "A Job",
   },
   {
     value: "employer",
     label: "Candidates",
-    description: "Connect with candidates.",
   },
 ];
 function validateSignupForm(form) {
@@ -242,9 +240,6 @@ export default function SignupForm({ initialEmail = "" }) {
                 />
                 <span>
                   <span className="block font-semibold">{option.label}</span>
-                  <span className="site-muted mt-1 block text-xs leading-5">
-                    {option.description}
-                  </span>
                 </span>
               </label>
             );
