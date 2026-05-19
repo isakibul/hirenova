@@ -14,7 +14,7 @@ const isTokenBlacklisted = async (token) => {
     return result === "blacklisted";
   } catch (e) {
     console.error("Error checking token blacklist status:", e);
-    return false;
+    return process.env.NODE_ENV === "production";
   }
 };
 

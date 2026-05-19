@@ -3,8 +3,7 @@ const path = require("path");
 const { randomUUID } = require("crypto");
 
 const { getResumeExtension, validateResumeFile } = require("../../../../lib/resume");
-
-const uploadRoot = path.join(process.cwd(), "uploads", "resumes");
+const { getResumeUrl, safeUserPart, uploadRoot } = require("./resumeAccess");
 
 const uploadResume = async (req, res, next) => {
   try {
@@ -13,13 +12,12 @@ const uploadResume = async (req, res, next) => {
     await mkdir(uploadRoot, { recursive: true });
 
     const extension = getResumeExtension(req.file.originalname);
-    const safeUserPart = String(req.user.id).replace(/[^a-zA-Z0-9_-]/g, "-");
-    const filename = `${safeUserPart}-${Date.now()}-${randomUUID()}${extension}`;
+    const filename = `${safeUserPart(req.user.id)}-${Date.now()}-${randomUUID()}${extension}`;
     const destination = path.join(uploadRoot, filename);
 
     await writeFile(destination, req.file.buffer);
 
-    const resumeUrl = `${req.protocol}://${req.get("host")}/uploads/resumes/${filename}`;
+    const resumeUrl = getResumeUrl(req, filename);
 
     res.status(201).json({
       message: "Resume uploaded successfully.",

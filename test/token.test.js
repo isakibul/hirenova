@@ -7,6 +7,7 @@ const { client } = require("../src/config/redisClient");
 
 const originalAccessSecret = process.env.ACCESS_TOKEN_SECRET;
 const originalEmailSecret = process.env.EMAIL_SECRET;
+const originalNodeEnv = process.env.NODE_ENV;
 
 before(() => {
   process.env.ACCESS_TOKEN_SECRET = "test-access-secret";
@@ -16,6 +17,7 @@ before(() => {
 after(() => {
   process.env.ACCESS_TOKEN_SECRET = originalAccessSecret;
   process.env.EMAIL_SECRET = originalEmailSecret;
+  process.env.NODE_ENV = originalNodeEnv;
 });
 
 test("token service signs, decodes, and verifies access tokens", () => {
@@ -66,7 +68,7 @@ test("token blacklist writes, reads, and removes entries through Redis client", 
   assert.equal(delMock.mock.callCount(), 1);
 });
 
-test("token blacklist fails closed as not blacklisted when Redis read fails", async (t) => {
+test("token blacklist allows development reads when Redis read fails", async (t) => {
   t.mock.method(client, "get", async () => {
     throw new Error("Redis offline");
   });
@@ -74,4 +76,14 @@ test("token blacklist fails closed as not blacklisted when Redis read fails", as
 
   assert.equal(await tokenBlacklist.isTokenBlacklisted("token-2"), false);
   assert.equal(consoleError.mock.callCount(), 1);
+});
+
+test("token blacklist fails closed in production when Redis read fails", async (t) => {
+  t.mock.method(client, "get", async () => {
+    throw new Error("Redis offline");
+  });
+  t.mock.method(console, "error", () => {});
+  process.env.NODE_ENV = "production";
+
+  assert.equal(await tokenBlacklist.isTokenBlacklisted("token-3"), true);
 });

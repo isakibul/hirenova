@@ -1,5 +1,4 @@
 const { readFile } = require("fs/promises");
-const path = require("path");
 
 const {
   extractResumeText,
@@ -8,8 +7,11 @@ const {
   validateResumeFile,
 } = require("../../../../lib/resume");
 const { badRequest } = require("../../../../utils/error");
-
-const uploadRoot = path.join(process.cwd(), "uploads", "resumes");
+const {
+  assertCanAccessResume,
+  getResumeFilename,
+  getResumePath,
+} = require("./resumeAccess");
 
 const getResumeFromRequest = async (req) => {
   if (req.file) {
@@ -27,22 +29,16 @@ const getResumeFromRequest = async (req) => {
     throw badRequest("Upload or save a resume before parsing.");
   }
 
-  const parsedUrl = new URL(resumeUrl);
-  const pathname = decodeURIComponent(parsedUrl.pathname);
+  const filename = getResumeFilename(resumeUrl);
 
-  if (!pathname.startsWith("/uploads/resumes/")) {
+  if (!filename) {
     throw badRequest("Only uploaded resumes can be parsed.");
   }
 
-  const filename = path.basename(pathname);
-  const filepath = path.resolve(uploadRoot, filename);
-
-  if (!filepath.startsWith(uploadRoot)) {
-    throw badRequest("Invalid resume path.");
-  }
+  await assertCanAccessResume({ filename, user: req.user });
 
   return {
-    buffer: await readFile(filepath),
+    buffer: await readFile(getResumePath(filename)),
     filename,
   };
 };

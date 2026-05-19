@@ -27,6 +27,24 @@ async function apiLogin(request, role) {
   };
 }
 
+async function apiCsrf(request, setCookie) {
+  const authCookie = setCookie.split(";")[0];
+  const response = await request.get(`${apiURL}/auth/csrf`, {
+    headers: {
+      Cookie: authCookie,
+    },
+  });
+
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  const csrfCookie = (response.headers()["set-cookie"] ?? "").split(";")[0];
+
+  return {
+    csrfToken: body.data.csrfToken,
+    cookie: [authCookie, csrfCookie].filter(Boolean).join("; "),
+  };
+}
+
 async function addAuthCookie(page, setCookie) {
   const [cookiePair] = setCookie.split(";");
   const separatorIndex = cookiePair.indexOf("=");
@@ -53,10 +71,11 @@ async function loginAs(page, request, role) {
 }
 
 async function createApprovedJob(request, setCookie, title) {
-  const cookie = setCookie.split(";")[0];
+  const csrf = await apiCsrf(request, setCookie);
   const response = await request.post(`${apiURL}/jobs`, {
     headers: {
-      Cookie: cookie,
+      Cookie: csrf.cookie,
+      "X-CSRF-Token": csrf.csrfToken,
     },
     data: {
       title,
@@ -84,6 +103,7 @@ async function selectOptionByText(page, buttonName, optionName) {
 
 module.exports = {
   addAuthCookie,
+  apiCsrf,
   apiLogin,
   apiURL,
   createApprovedJob,

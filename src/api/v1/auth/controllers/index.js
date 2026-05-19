@@ -13,6 +13,8 @@ const deactivateAccount = require("./deactivateAccount");
 const uploadResume = require("./uploadResume");
 const parseResume = require("./parseResume");
 const requestEmployerRole = require("./requestEmployerRole");
+const csrf = require("./csrf");
+const downloadResume = require("./downloadResume");
 
 module.exports = {
   login,
@@ -30,4 +32,6 @@ module.exports = {
   uploadResume,
   parseResume,
   requestEmployerRole,
+  csrf,
+  downloadResume,
 };

@@ -32,6 +32,7 @@ const validateRuntimeEnv = (env = process.env) => {
     "CORS_ORIGINS",
     "ACCESS_TOKEN_SECRET",
     "EMAIL_SECRET",
+    "CSRF_SECRET",
     "OBSERVABILITY_HASH_SECRET",
     "EMAIL_HOST",
     "EMAIL_PORT",
@@ -44,10 +45,14 @@ const validateRuntimeEnv = (env = process.env) => {
     }
   });
 
-  ["ACCESS_TOKEN_SECRET", "EMAIL_SECRET", "OBSERVABILITY_HASH_SECRET"].forEach(
+  ["ACCESS_TOKEN_SECRET", "EMAIL_SECRET", "CSRF_SECRET", "OBSERVABILITY_HASH_SECRET"].forEach(
     (name) => {
       if (isPlaceholderSecret(env[name])) {
         errors.push(`${name} must be set to a strong non-placeholder secret.`);
+      }
+
+      if (env[name]?.trim() && env[name].trim().length < 32) {
+        errors.push(`${name} must be at least 32 characters long.`);
       }
     },
   );

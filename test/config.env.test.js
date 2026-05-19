@@ -29,8 +29,10 @@ test("validateRuntimeEnv requires production hardening values", () => {
     CLIENT_URL: "https://app.example.com",
     CORS_ORIGINS: "https://app.example.com",
     ACCESS_TOKEN_SECRET: "replace-with-a-strong-access-token-secret",
-    EMAIL_SECRET: "real-email-secret",
-    OBSERVABILITY_HASH_SECRET: "real-observability-secret",
+    EMAIL_SECRET: "short-email-secret",
+    CSRF_SECRET: "real-csrf-secret-with-at-least-32-chars",
+    OBSERVABILITY_HASH_SECRET:
+      "real-observability-secret-with-at-least-32-chars",
     EMAIL_HOST: "smtp.example.com",
     EMAIL_PORT: "587",
     EMAIL_FROM: "HireNova <no-reply@example.com>",
@@ -43,5 +45,8 @@ test("validateRuntimeEnv requires production hardening values", () => {
     errors.includes(
       "ACCESS_TOKEN_SECRET must be set to a strong non-placeholder secret.",
     ),
+  );
+  assert.ok(
+    errors.includes("EMAIL_SECRET must be at least 32 characters long."),
   );
 });

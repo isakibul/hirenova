@@ -1,5 +1,6 @@
 const Joi = require("joi");
 const { updateProfile: updateUserProfile } = require("../../../../lib/user");
+const { validateOwnResumeUrl } = require("./resumeAccess");
 
 const profileSchema = Joi.object({
   username: Joi.string().alphanum().min(3).max(50).required(),
@@ -39,6 +40,8 @@ const updateProfile = async (req, res, next) => {
         errors: error.details.map((detail) => detail.message),
       });
     }
+
+    validateOwnResumeUrl(req.user.id, value.resumeUrl);
 
     const user = await updateUserProfile(req.user.id, {
       username: value.username,

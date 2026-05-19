@@ -1,7 +1,9 @@
 import { getApiMessage } from "./ui.js";
 
 let memoryAccessToken = "";
+let memoryCsrfToken = "";
 const authStorageKey = "hirenova-auth";
+const unsafeMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 export function getBackendApiUrl() {
   return (
@@ -31,6 +33,33 @@ export function setMemoryAccessToken(accessToken = "") {
   memoryAccessToken = accessToken;
 }
 
+export function setMemoryCsrfToken(csrfToken = "") {
+  memoryCsrfToken = csrfToken;
+}
+
+function isUnsafeMethod(method = "GET") {
+  return unsafeMethods.has(String(method).toUpperCase());
+}
+
+async function getCsrfToken() {
+  if (memoryCsrfToken) {
+    return memoryCsrfToken;
+  }
+
+  const response = await fetch(getBackendPath("/auth/csrf"), {
+    cache: "no-store",
+    credentials: "include",
+  });
+  const body = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(getApiMessage(body, "Unable to prepare secure request."));
+  }
+
+  memoryCsrfToken = body.data?.csrfToken ?? "";
+  return memoryCsrfToken;
+}
+
 export function getBackendPath(path) {
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
@@ -43,24 +72,30 @@ export function getBackendPath(path) {
 }
 
 export async function backendFetch(path, init = {}) {
-  const accessToken = init.accessToken ?? getStoredAccessToken();
-  const headers = new Headers(init.headers);
+  const { accessToken: explicitAccessToken, csrf = true, ...fetchInit } = init;
+  const accessToken = explicitAccessToken ?? getStoredAccessToken();
+  const headers = new Headers(fetchInit.headers);
+  const method = fetchInit.method ?? "GET";
 
   if (accessToken && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
 
+  if (csrf !== false && isUnsafeMethod(method) && !headers.has("X-CSRF-Token")) {
+    headers.set("X-CSRF-Token", await getCsrfToken());
+  }
+
   if (
-    init.body &&
-    !(init.body instanceof FormData) &&
+    fetchInit.body &&
+    !(fetchInit.body instanceof FormData) &&
     !headers.has("Content-Type")
   ) {
     headers.set("Content-Type", "application/json");
   }
 
   return fetch(getBackendPath(path), {
-    ...init,
-    credentials: init.credentials ?? "include",
+    ...fetchInit,
+    credentials: fetchInit.credentials ?? "include",
     headers,
   });
 }

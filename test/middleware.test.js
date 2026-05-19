@@ -4,8 +4,11 @@ const { test } = require("node:test");
 
 const authorize = require("../src/middleware/authorize");
 const { createCheckUserStatus } = require("../src/middleware/checkUserStatus");
+const csrfProtection = require("../src/middleware/csrfProtection");
 const requestContext = require("../src/middleware/requestContext");
 const requestMetrics = require("../src/middleware/requestMetrics");
+const { authCookieName } = require("../src/utils/authCookie");
+const { createCsrfToken, csrfCookieName } = require("../src/utils/csrf");
 
 function createNextSpy() {
   const calls = [];
@@ -34,6 +37,45 @@ test("authorize rejects roles outside the allowed set", () => {
 
   assert.equal(next.calls.length, 1);
   assert.equal(next.calls[0].status, 403);
+});
+
+test("csrfProtection requires matching signed tokens for cookie-authenticated writes", () => {
+  const token = createCsrfToken();
+  const req = {
+    method: "POST",
+    path: "/api/v1/jobs",
+    headers: {
+      cookie: `${authCookieName}=access-token; ${csrfCookieName}=${encodeURIComponent(token)}`,
+    },
+    get(name) {
+      return name.toLowerCase() === "x-csrf-token" ? token : "";
+    },
+  };
+  const next = createNextSpy();
+
+  csrfProtection(req, {}, next);
+
+  assert.deepEqual(next.calls, [undefined]);
+});
+
+test("csrfProtection rejects missing CSRF headers when auth cookies are present", () => {
+  const token = createCsrfToken();
+  const req = {
+    method: "PATCH",
+    path: "/api/v1/auth/profile",
+    headers: {
+      cookie: `${authCookieName}=access-token; ${csrfCookieName}=${encodeURIComponent(token)}`,
+    },
+    get() {
+      return "";
+    },
+  };
+  const next = createNextSpy();
+
+  csrfProtection(req, {}, next);
+
+  assert.equal(next.calls.length, 1);
+  assert.equal(next.calls[0].status, 401);
 });
 
 test("checkUserStatus allows active users", async () => {

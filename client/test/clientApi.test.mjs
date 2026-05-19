@@ -6,6 +6,7 @@ const clientApi = await import("../app/_lib/clientApi.js");
 afterEach(() => {
   delete globalThis.window;
   delete process.env.NEXT_PUBLIC_BACKEND_API_URL;
+  clientApi.setMemoryCsrfToken("");
 });
 
 test("getBackendPath prefixes relative backend routes", () => {
@@ -43,11 +44,16 @@ test("getStoredAccessToken defaults to empty memory state", () => {
 test("backendFetch adds auth and JSON headers for backend requests", async (t) => {
   process.env.NEXT_PUBLIC_BACKEND_API_URL = "https://api.example.com/api/v1";
   const fetchMock = t.mock.method(globalThis, "fetch", async (url, init) => {
+    if (url === "https://api.example.com/api/v1/auth/csrf") {
+      return Response.json({ data: { csrfToken: "csrf-123" } });
+    }
+
     return Response.json({
       url,
       authorization: init.headers.get("Authorization"),
       contentType: init.headers.get("Content-Type"),
       credentials: init.credentials,
+      csrfToken: init.headers.get("X-CSRF-Token"),
       method: init.method,
     });
   });
@@ -59,12 +65,13 @@ test("backendFetch adds auth and JSON headers for backend requests", async (t) =
   });
   const body = await response.json();
 
-  assert.equal(fetchMock.mock.callCount(), 1);
+  assert.equal(fetchMock.mock.callCount(), 2);
   assert.deepEqual(body, {
     url: "https://api.example.com/api/v1/jobs",
     authorization: "Bearer token-123",
     contentType: "application/json",
     credentials: "include",
+    csrfToken: "csrf-123",
     method: "POST",
   });
 });

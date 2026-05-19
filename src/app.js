@@ -3,7 +3,6 @@ const helmet = require("helmet");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const hpp = require("hpp");
-const path = require("path");
 const mongoose = require("mongoose");
 
 const v1Routes = require("./routes/v1");
@@ -12,6 +11,7 @@ const auditLogger = require("./middleware/auditLogger");
 const requestContext = require("./middleware/requestContext");
 const requestMetrics = require("./middleware/requestMetrics");
 const structuredRequestLogger = require("./middleware/structuredRequestLogger");
+const csrfProtection = require("./middleware/csrfProtection");
 const { reportError } = require("./lib/observability/reporter");
 const { getAllowedOrigins } = require("./config/env");
 
@@ -54,12 +54,11 @@ app.use(
 );
 app.use(hpp());
 app.disable("x-powered-by");
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-
 /**
  * Preventing DoS attacks via payload size
  */
 app.use(express.json({ limit: "10kb" }));
+app.use(csrfProtection);
 app.use(auditLogger);
 app.use(structuredRequestLogger);
 
