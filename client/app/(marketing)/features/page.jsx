@@ -9,17 +9,17 @@ const featureGroups = [
     features: [
       {
         icon: "search",
-        title: "Browse jobs",
+        title: "Browse Jobs",
         desc: "Explore available roles with job details such as type, location, salary, experience, and required skills.",
       },
       {
         icon: "bell",
-        title: "Save jobs",
+        title: "Save Jobs",
         desc: "Bookmark roles you want to revisit before applying.",
       },
       {
         icon: "file",
-        title: "Track applications",
+        title: "Track Applications",
         desc: "See submitted applications, application dates, cover letters, and current status in one place.",
       },
     ],
@@ -31,17 +31,17 @@ const featureGroups = [
     features: [
       {
         icon: "briefcase",
-        title: "Job management",
+        title: "Job Management",
         desc: "Post roles, edit job details, close listings, and keep your hiring workspace up to date.",
       },
       {
         icon: "user",
-        title: "Applicant review",
+        title: "Applicant Review",
         desc: "View candidates who applied to your jobs with their profile details and submitted cover letters.",
       },
       {
         icon: "check",
-        title: "Status updates",
+        title: "Status Updates",
         desc: "Move applications through submitted, reviewing, shortlisted, rejected, and hired states.",
       },
     ],
