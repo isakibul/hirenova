@@ -271,23 +271,12 @@ export default function Nav() {
                 ) : null}
               </div>
             ) : (
-              <div className="site-link flex items-center gap-3 text-base font-semibold">
-                <Link
-                  href="/signup"
-                  className="inline-flex h-9 items-center transition hover:text-(--site-accent)"
-                >
-                  {status === "loading" ? "..." : "Sign Up"}
-                </Link>
-                <span className="site-muted" aria-hidden="true">
-                  |
-                </span>
-                <Link
-                  href="/login"
-                  className="inline-flex h-9 items-center transition hover:text-(--site-accent)"
-                >
-                  Log In
-                </Link>
-              </div>
+              <Link
+                href="/signup"
+                className="site-button rounded-md px-3 py-1.5 text-[13px] font-medium transition"
+              >
+                {status === "loading" ? "..." : "Get Started"}
+              </Link>
             )}
           </div>
         </div>
