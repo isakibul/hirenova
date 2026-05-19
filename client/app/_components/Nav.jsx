@@ -271,10 +271,10 @@ export default function Nav() {
                 ) : null}
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-[13px] font-semibold">
+              <div className="site-link flex items-center gap-3 text-base font-semibold">
                 <Link
                   href="/signup"
-                  className="site-button rounded-md px-3 py-1.5 transition"
+                  className="inline-flex h-9 items-center transition hover:text-(--site-accent)"
                 >
                   {status === "loading" ? "..." : "Join"}
                 </Link>
@@ -283,9 +283,9 @@ export default function Nav() {
                 </span>
                 <Link
                   href="/login"
-                  className="site-link rounded-md px-2 py-1.5 transition hover:text-(--site-accent)"
+                  className="inline-flex h-9 items-center transition hover:text-(--site-accent)"
                 >
-                  Login
+                  Log In
                 </Link>
               </div>
             )}
