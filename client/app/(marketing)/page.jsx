@@ -57,7 +57,7 @@ export default function Home() {
 
             <form
               onSubmit={handleSubmit}
-              className="site-border site-card mx-auto mt-8 grid max-w-xl gap-2 rounded-lg border p-2 sm:grid-cols-[1fr_auto_auto]"
+              className="site-border site-card mx-auto mt-8 grid max-w-xl gap-2 rounded-lg border p-2 sm:grid-cols-[1fr_auto]"
             >
               <label className="sr-only" htmlFor="home-email">
                 Email address
@@ -74,14 +74,8 @@ export default function Home() {
                 type="submit"
                 className="site-button h-11 rounded-md px-4 text-sm font-semibold transition"
               >
-                Join
+                Get Started
               </button>
-              <Link
-                href="/login"
-                className="site-border site-field inline-flex h-11 items-center justify-center rounded-md border px-4 text-sm font-semibold transition hover:border-[var(--site-accent)]"
-              >
-                Login
-              </Link>
             </form>
 
             <div className="mt-5 flex flex-wrap justify-center gap-3 text-sm">
