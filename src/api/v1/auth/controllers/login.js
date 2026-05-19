@@ -25,9 +25,7 @@ const login = async (req, res, next) => {
     const response = {
       code: 200,
       message: "Login successful",
-      data: {
-        accessToken: access_token,
-      },
+      data: null,
       link: {
         self: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
       },

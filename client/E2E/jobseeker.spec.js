@@ -15,7 +15,7 @@ test("jobseeker searches, applies, saves, updates profile, and reads notificatio
   const adminAuth = await apiLogin(request, "admin");
   const job = await createApprovedJob(
     request,
-    adminAuth.accessToken,
+    adminAuth.setCookie,
     `QA Automation Engineer E2E ${Date.now()}`,
   );
 

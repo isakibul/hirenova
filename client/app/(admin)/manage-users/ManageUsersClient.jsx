@@ -1,6 +1,5 @@
 "use client";
 
-import ConfirmDialog from "@components/ConfirmDialog";
 import Icon from "@components/Icon";
 import StatusNotice from "@components/StatusNotice";
 import { useAuth } from "@components/auth/AuthProvider";
@@ -12,14 +11,16 @@ import {
 } from "@lib/formValidation";
 import { getApiMessage, getRecordId as getUserId } from "@lib/ui";
 import { useCallback, useEffect, useState } from "react";
+import ManageUsersSummary from "./ManageUsersSummary";
+import UserConfirmDialogs from "./UserConfirmDialogs";
 import UserSidePanel from "./UserSidePanel";
 import UsersTable from "./UsersTable";
 import {
   adminManagedRoles,
   buildPayload,
+  canManagePrivilegedUser,
   emptyForm,
-  formatRole,
-  isAdminLevelRole,
+  getRoleOptionsForUser as resolveRoleOptionsForUser,
   roles,
   validateUserForm,
 } from "./userUtils";
@@ -59,22 +60,20 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
     const totalPages = pagination?.totalPage ?? 1;
     const isSuperAdmin = effectiveUserRole === "superadmin";
     const createRoleOptions = isSuperAdmin ? roles : adminManagedRoles;
+    const getRoleOptionsForUser = useCallback(
+        (targetUser) => resolveRoleOptionsForUser(targetUser, isSuperAdmin),
+        [isSuperAdmin],
+    );
     const validationErrors = validateUserForm(form, createRoleOptions);
     const visibleErrors = getVisibleErrors(validationErrors, formTouched, submitAttempted);
-    function getRoleOptionsForUser(user) {
-        if (isSuperAdmin || isAdminLevelRole(user.role)) {
-            return roles;
-        }
-        return adminManagedRoles;
-    }
     function canChangeUserRole(user) {
-        return isSuperAdmin || !isAdminLevelRole(user.role);
+        return canManagePrivilegedUser(user, isSuperAdmin);
     }
     function canDeleteUser(user) {
-        return isSuperAdmin || !isAdminLevelRole(user.role);
+        return canManagePrivilegedUser(user, isSuperAdmin);
     }
     function canChangeUserStatus(user) {
-        return isSuperAdmin || !isAdminLevelRole(user.role);
+        return canManagePrivilegedUser(user, isSuperAdmin);
     }
     function updateFormField(field, value) {
         setForm((current) => ({
@@ -415,24 +414,12 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
           </button>
         </div>
 
-        <div className="mt-6 grid items-stretch gap-3 sm:grid-cols-3">
-          <div className="site-border site-panel h-full rounded-lg border p-3">
-            <p className="site-muted text-xs font-medium">Total Users</p>
-            <p className="mt-1 text-xl font-semibold">{totalItems}</p>
-          </div>
-          <div className="site-border site-panel h-full rounded-lg border p-3">
-            <p className="site-muted text-xs font-medium">Current Page</p>
-            <p className="mt-1 text-xl font-semibold">
-              {pagination?.page ?? page}
-            </p>
-          </div>
-          <div className="site-border site-panel h-full rounded-lg border p-3">
-            <p className="site-muted text-xs font-medium">Sort</p>
-            <p className="mt-1 text-xl font-semibold">
-              {sortType === "dsc" ? "Newest" : "Oldest"}
-            </p>
-          </div>
-        </div>
+        <ManageUsersSummary
+          page={page}
+          pagination={pagination}
+          sortType={sortType}
+          totalItems={totalItems}
+        />
 
         <StatusNotice tone="success">{notice}</StatusNotice>
         <StatusNotice>{error}</StatusNotice>
@@ -501,29 +488,20 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
         </div>
       </div>
 
-      {userPendingDelete ? (<ConfirmDialog title="Delete user?" icon="trash" tone="danger" confirmLabel="Delete User" pendingLabel="Deleting..." isPending={deletingUserId === getUserId(userPendingDelete)} onCancel={() => setUserPendingDelete(null)} onConfirm={confirmDelete}>
-          This will permanently delete{" "}
-          <span className="font-semibold text-[var(--site-fg)]">
-            {userPendingDelete.username ?? userPendingDelete.email ?? "this user"}
-          </span>
-          . This action cannot be undone.
-        </ConfirmDialog>) : null}
-      {statusPendingChange ? (<ConfirmDialog title={statusPendingChange.nextStatus === "suspended" ? "Suspend user?" : "Activate user?"} icon={statusPendingChange.nextStatus === "suspended" ? "x" : "check"} tone={statusPendingChange.nextStatus === "suspended" ? "danger" : "default"} confirmLabel={statusPendingChange.nextStatus === "suspended" ? "Suspend User" : "Activate User"} pendingLabel="Updating..." isPending={statusUpdatingUserId === getUserId(statusPendingChange.user)} onCancel={() => setStatusPendingChange(null)} onConfirm={confirmStatusChange}>
-          {statusPendingChange.nextStatus === "suspended" ? "Suspending" : "Activating"}{" "}
-          <span className="font-semibold text-[var(--site-fg)]">
-            {statusPendingChange.user.username ?? statusPendingChange.user.email ?? "this user"}
-          </span>
-          {statusPendingChange.nextStatus === "suspended"
-            ? " will block them from signing in until the account is activated again."
-            : " will allow them to sign in again."}
-        </ConfirmDialog>) : null}
-      {rolePendingChange ? (<ConfirmDialog title="Change user role?" icon="user" confirmLabel="Confirm Change" pendingLabel="Updating..." isPending={roleUpdatingUserId === getUserId(rolePendingChange.user)} onCancel={() => setRolePendingChange(null)} onConfirm={confirmRoleChange}>
-          Change{" "}
-          <span className="font-semibold text-[var(--site-fg)]">
-            {rolePendingChange.user.username ?? rolePendingChange.user.email ?? "this user"}
-          </span>{" "}
-          from {formatRole(rolePendingChange.user.role)} to{" "}
-          {formatRole(rolePendingChange.nextRole)}.
-        </ConfirmDialog>) : null}
+      <UserConfirmDialogs
+        deletingUserId={deletingUserId}
+        getUserId={getUserId}
+        onCancelDelete={() => setUserPendingDelete(null)}
+        onCancelRoleChange={() => setRolePendingChange(null)}
+        onCancelStatusChange={() => setStatusPendingChange(null)}
+        onConfirmDelete={confirmDelete}
+        onConfirmRoleChange={confirmRoleChange}
+        onConfirmStatusChange={confirmStatusChange}
+        rolePendingChange={rolePendingChange}
+        roleUpdatingUserId={roleUpdatingUserId}
+        statusPendingChange={statusPendingChange}
+        statusUpdatingUserId={statusUpdatingUserId}
+        userPendingDelete={userPendingDelete}
+      />
     </section>);
 }

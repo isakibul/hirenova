@@ -5,13 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import StatusNotice from "@components/StatusNotice";
 import { useAuth } from "@components/auth/AuthProvider";
-import { getAccessToken } from "@lib/backendToken";
 import { requestBackendJson } from "@lib/clientApi";
 
 function ConfirmEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { authenticateWithToken } = useAuth();
+  const { refreshSession } = useAuth();
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -24,14 +23,10 @@ function ConfirmEmailContent() {
 
     async function confirmEmail() {
       try {
-        const body = await requestBackendJson(
+        await requestBackendJson(
           `/auth/confirm-email/${encodeURIComponent(token)}`,
         );
-        const accessToken = getAccessToken(body);
-
-        if (accessToken) {
-          authenticateWithToken(accessToken);
-        }
+        await refreshSession();
 
         router.replace("/jobs");
       } catch (caughtError) {
@@ -44,7 +39,7 @@ function ConfirmEmailContent() {
     }
 
     void confirmEmail();
-  }, [authenticateWithToken, router, searchParams]);
+  }, [refreshSession, router, searchParams]);
 
   return <StatusNotice>{error}</StatusNotice>;
 }

@@ -49,6 +49,18 @@ export function isAdminLevelRole(role) {
   return role === "admin" || role === "superadmin";
 }
 
+export function getRoleOptionsForUser(user, isSuperAdmin) {
+  if (isSuperAdmin || isAdminLevelRole(user.role)) {
+    return roles;
+  }
+
+  return adminManagedRoles;
+}
+
+export function canManagePrivilegedUser(user, isSuperAdmin) {
+  return isSuperAdmin || !isAdminLevelRole(user.role);
+}
+
 export function buildPayload(form) {
   return {
     username: form.username.trim(),

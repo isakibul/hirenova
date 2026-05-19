@@ -2,27 +2,13 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import { getAccessToken, getUserFromAccessToken } from "@lib/backendToken";
 import { requestBackendJson, setMemoryAccessToken } from "@lib/clientApi";
 
 const AuthContext = createContext(null);
 const authStorageKey = "hirenova-auth";
 
-function getStoredAuth() {
+function clearStoredAuth() {
   if (typeof window === "undefined") {
-    return {};
-  }
-
-  try {
-    return JSON.parse(window.localStorage.getItem(authStorageKey) ?? "{}");
-  } catch {
-    return {};
-  }
-}
-
-function storeAccessToken(accessToken) {
-  if (accessToken) {
-    window.localStorage.setItem(authStorageKey, JSON.stringify({ accessToken }));
     return;
   }
 
@@ -45,37 +31,46 @@ export default function AuthProvider({ children }) {
 
   const persistAuth = useCallback((nextAuth) => {
     setAuth(nextAuth);
-    setStatus(nextAuth.accessToken || nextAuth.user ? "authenticated" : "unauthenticated");
-    setMemoryAccessToken(nextAuth.accessToken);
-    storeAccessToken(nextAuth.accessToken);
+    setStatus(nextAuth.user ? "authenticated" : "unauthenticated");
+    setMemoryAccessToken("");
+    clearStoredAuth();
   }, []);
 
-  useEffect(() => {
-    let ignore = false;
-    const storedAccessToken = getStoredAuth().accessToken ?? "";
-
-    if (storedAccessToken) {
-      setMemoryAccessToken(storedAccessToken);
-    }
-
-    async function hydrateSession() {
+  const fetchSession = useCallback(
+    async () => {
       try {
         const body = await requestBackendJson("/auth/session", {
           cache: "no-store",
         });
         const user = body.data ?? null;
-
-        if (!ignore) {
-          persistAuth({
-            accessToken: user ? storedAccessToken : "",
-            user,
-          });
-        }
+        return { accessToken: "", user };
       } catch {
-        if (!ignore) {
-          persistAuth({ accessToken: "", user: null });
-        }
+        return { accessToken: "", user: null };
       }
+    },
+    [],
+  );
+
+  const refreshSession = useCallback(
+    async () => {
+      const nextAuth = await fetchSession();
+      persistAuth(nextAuth);
+      return nextAuth;
+    },
+    [fetchSession, persistAuth],
+  );
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function hydrateSession() {
+      const nextAuth = await fetchSession();
+
+      if (ignore) {
+        return;
+      }
+
+      persistAuth(nextAuth);
     }
 
     void hydrateSession();
@@ -83,56 +78,40 @@ export default function AuthProvider({ children }) {
     return () => {
       ignore = true;
     };
-  }, [persistAuth]);
-
-  const authenticateWithToken = useCallback(
-    (accessToken, fallbackEmail) => {
-      const user = getUserFromAccessToken(accessToken, fallbackEmail);
-      persistAuth({ accessToken, user });
-      return { accessToken, user };
-    },
-    [persistAuth],
-  );
+  }, [fetchSession, persistAuth]);
 
   const login = useCallback(
     async ({ email, password }) => {
-      const body = await requestBackendJson("/auth/login", {
+      await requestBackendJson("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
-      const accessToken = getAccessToken(body);
 
-      if (!accessToken) {
-        throw new Error("Login succeeded, but no access token was returned.");
-      }
-
-      return authenticateWithToken(accessToken, email);
+      return refreshSession();
     },
-    [authenticateWithToken],
+    [refreshSession],
   );
 
   const logout = useCallback(async () => {
-    const token = auth.accessToken;
     persistAuth({ accessToken: "", user: null });
 
     await requestBackendJson("/auth/logout", {
       method: "POST",
-      accessToken: token,
       body: JSON.stringify({}),
     }).catch(() => undefined);
-  }, [auth.accessToken, persistAuth]);
+  }, [persistAuth]);
 
   const value = useMemo(
     () => ({
       accessToken: auth.accessToken,
-      authenticateWithToken,
       isAuthenticated: status === "authenticated",
       login,
       logout,
+      refreshSession,
       status,
       user: auth.user,
     }),
-    [auth.accessToken, auth.user, authenticateWithToken, login, logout, status],
+    [auth.accessToken, auth.user, login, logout, refreshSession, status],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

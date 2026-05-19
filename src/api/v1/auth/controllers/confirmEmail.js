@@ -28,9 +28,7 @@ const confirmEmail = async (req, res, next) => {
 
     const response = {
       message: "Email confirmed successfully.",
-      data: {
-        access_token,
-      },
+      data: null,
       links: {
         self: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
       },

@@ -1,5 +1,6 @@
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+const usernamePattern = /^[a-zA-Z0-9]+$/;
 
 export function isBlank(value) {
   return String(value ?? "").trim() === "";
@@ -22,6 +23,10 @@ export function usernameError(value) {
 
   if (username.length > 50) {
     return "Username must be 50 characters or less.";
+  }
+
+  if (!usernamePattern.test(username)) {
+    return "Username can only contain letters and numbers.";
   }
 
   return "";

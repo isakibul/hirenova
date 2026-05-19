@@ -22,7 +22,6 @@ async function apiLogin(request, role) {
   const body = await response.json();
   const setCookie = response.headers()["set-cookie"] ?? "";
   return {
-    accessToken: body.data.accessToken,
     setCookie,
     user: seed.users[role],
   };
@@ -53,10 +52,11 @@ async function loginAs(page, request, role) {
   return auth;
 }
 
-async function createApprovedJob(request, accessToken, title) {
+async function createApprovedJob(request, setCookie, title) {
+  const cookie = setCookie.split(";")[0];
   const response = await request.post(`${apiURL}/jobs`, {
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Cookie: cookie,
     },
     data: {
       title,
