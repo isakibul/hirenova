@@ -276,7 +276,7 @@ export default function Nav() {
                   href="/signup"
                   className="inline-flex h-9 items-center transition hover:text-(--site-accent)"
                 >
-                  {status === "loading" ? "..." : "Join"}
+                  {status === "loading" ? "..." : "Sign Up"}
                 </Link>
                 <span className="site-muted" aria-hidden="true">
                   |
