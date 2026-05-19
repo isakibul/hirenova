@@ -236,7 +236,7 @@ export default function SignupForm({ initialEmail = "" }) {
                   value={option.value}
                   checked={isSelected}
                   onChange={() => updateField("role", option.value)}
-                  className="mt-1 h-4 w-4 accent-[var(--site-accent)]"
+                  className="h-4 w-4 accent-[var(--site-accent)]"
                 />
                 <span>
                   <span className="block font-semibold">{option.label}</span>
