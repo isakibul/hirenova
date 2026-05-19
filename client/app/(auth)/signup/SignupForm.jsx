@@ -141,7 +141,7 @@ export default function SignupForm({ initialEmail = "", }) {
               <input type="radio" name="role" value={option.value} checked={isSelected} onChange={() => updateField("role", option.value)} className="mt-1 h-4 w-4 accent-[var(--site-accent)]"/>
               <span>
                 <span className="block font-semibold">{option.label}</span>
-                <span className="site-muted mt-1 block text-xs leading-5">{option.description}</span>
+                <span className="site-muted mt-1 block text-[11px] leading-4">{option.description}</span>
               </span>
             </label>);
           })}
