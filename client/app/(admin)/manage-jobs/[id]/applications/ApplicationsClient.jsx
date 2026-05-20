@@ -192,20 +192,19 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
                           : "Select an applicant to review the full application."}
             </p>
           </div>
-          <div className="p-4">
-      {error ? (<div className="site-danger rounded-lg border px-4 py-3 text-sm">{error}</div>) : null}
-      {isLoading || isRankingLoading ? (<div className="site-border site-panel rounded-lg border p-6">
+          <div>
+      {error ? (<div className="site-danger m-4 rounded-lg border px-4 py-3 text-sm">{error}</div>) : null}
+      {isLoading || isRankingLoading ? (<div className="site-border site-panel m-4 rounded-lg border p-6">
           <p className="font-semibold">{isRankingLoading ? "Ranking applicants..." : "Loading applicants..."}</p>
-        </div>) : visibleApplications.length === 0 ? (<div className="site-border site-panel rounded-lg border p-6">
+        </div>) : visibleApplications.length === 0 ? (<div className="site-border site-panel m-4 rounded-lg border p-6">
           <p className="font-semibold">No applicants yet</p>
-        </div>) : <div className="space-y-3">{visibleApplications.map((application) => {
+        </div>) : <div className="divide-y divide-[var(--site-border)]">{visibleApplications.map((application) => {
         const applicant = application.applicant ?? {};
         const id = getApplicationId(application);
         const ranking = application.aiRanking;
         const isSelected = selectedApplicationId === id;
-        return (<div key={id} className={`site-border rounded-lg border p-4 transition hover:bg-[var(--site-panel)] ${isSelected ? "bg-[var(--site-panel)]" : "bg-[var(--site-bg)]"}`}>
-            <div className="grid gap-4 md:grid-cols-[1fr_190px] md:items-start">
-              <button type="button" onClick={() => setSelectedApplicationId(id)} className="min-w-0 text-left">
+        return (<div key={id} className={`grid gap-4 px-5 py-5 transition hover:bg-[var(--site-panel)] md:grid-cols-[minmax(0,1fr)_180px] md:items-start ${isSelected ? "bg-[var(--site-panel)]" : ""}`}>
+              <button type="button" onClick={() => setSelectedApplicationId(id)} className="block min-w-0 text-left">
                 <div className="flex flex-wrap items-center gap-2">
                   {ranking ? (<span className="site-badge rounded-md px-2 py-1 text-xs font-semibold">
                       #{ranking.rank} · {ranking.score}/100 · {ranking.label}
@@ -213,24 +212,21 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
                   <span className="text-lg font-semibold">{applicant.username ?? applicant.email ?? "Applicant"}</span>
                 </div>
                 <p className="site-muted mt-1 text-sm">{applicant.email ?? "No email"}</p>
-                {ranking ? (<div className="mt-4 rounded-md border border-[var(--site-border)] bg-[var(--site-panel)] p-3 text-sm">
-                    <p className="font-semibold">{ranking.source === "ai" ? "AI reason" : "Ranking reason"}</p>
-                    <p className="site-muted mt-1 leading-6">{ranking.reason}</p>
-                    <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                      {ranking.matchedSkills?.map((skill) => (<span key={skill} className="site-badge rounded px-2 py-1 font-semibold">
-                          {skill}
-                        </span>))}
-                      {ranking.missingSkills?.slice(0, 3).map((skill) => (<span key={skill} className="site-border rounded border px-2 py-1">
-                          Review {skill}
-                        </span>))}
-                    </div>
-                  </div>) : null}
-                <p className="site-muted mt-4 text-sm leading-6">{getCoverLetterPreview(application.coverLetter)}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {ranking?.matchedSkills?.length ? ranking.matchedSkills.slice(0, 5).map((skill) => (<span key={skill} className="site-badge rounded px-2 py-1 text-xs font-semibold">
+                      {skill}
+                    </span>)) : (<span className="site-badge rounded px-2 py-1 text-xs font-semibold">
+                      {getCoverLetterPreview(application.coverLetter)}
+                    </span>)}
+                </div>
               </button>
-              <div className="w-32 justify-self-end">
-                <SelectField value={application.status ?? "submitted"} onChange={(nextStatus) => requestStatusChange(application, nextStatus)} options={statusOptions} disabled={updatingId === id} className="site-field min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none"/>
+              <div className="site-muted flex flex-col gap-2 text-sm md:items-end md:text-right">
+                <p>{getStatusLabel(application.status ?? "submitted")}</p>
+                <p>{formatDate(application.createdAt, "Date not set")}</p>
+                <div className="w-36">
+                  <SelectField value={application.status ?? "submitted"} onChange={(nextStatus) => requestStatusChange(application, nextStatus)} options={statusOptions} disabled={updatingId === id} className="site-field min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none"/>
+                </div>
               </div>
-            </div>
           </div>);
     })}</div>}
           </div>
@@ -256,6 +252,7 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
                 <DetailItem label="Status" value={getStatusLabel(selectedApplication.status ?? "submitted")}/>
               </div>
               {selectedApplication.aiRanking ? (<div className="rounded-md border border-[var(--site-border)] bg-[var(--site-panel)] p-3">
+                  <p className="text-sm font-semibold">{selectedApplication.aiRanking.source === "ai" ? "AI reason" : "Ranking reason"}</p>
                   <p className="text-sm font-semibold">
                     #{selectedApplication.aiRanking.rank} · {selectedApplication.aiRanking.score}/100 · {selectedApplication.aiRanking.label}
                   </p>
