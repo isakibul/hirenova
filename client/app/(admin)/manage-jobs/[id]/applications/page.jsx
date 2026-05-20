@@ -8,6 +8,7 @@ import ApplicationsClient from "./ApplicationsClient";
 export default function JobApplicationsPage({ params }) {
   const { id } = use(params);
   const [applications, setApplications] = useState([]);
+  const [job, setJob] = useState(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -15,12 +16,16 @@ export default function JobApplicationsPage({ params }) {
     async function loadApplications() {
       setIsLoading(true);
       try {
-        const body = await requestJson(
-          `/jobs/${id}/applications`,
-          {},
-          "Unable to load applicants.",
-        );
-        setApplications(body.data ?? []);
+        const [applicationsBody, jobBody] = await Promise.all([
+          requestJson(
+            `/jobs/${id}/applications`,
+            {},
+            "Unable to load applicants.",
+          ),
+          requestJson(`/jobs/${id}`, {}, "Unable to load job details."),
+        ]);
+        setApplications(applicationsBody.data ?? []);
+        setJob(jobBody.data ?? null);
       } catch (caughtError) {
         setError(
           caughtError instanceof Error
@@ -50,6 +55,7 @@ export default function JobApplicationsPage({ params }) {
         <ApplicationsClient
           key={applications.length}
           jobId={id}
+          job={job}
           initialApplications={applications}
           isLoading={isLoading}
         />
