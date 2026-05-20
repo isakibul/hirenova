@@ -1,5 +1,1 @@
-const controllers = require("./controllers");
-
-module.exports = {
-  controllers,
-};
+module.exports = require("../../../modules/auth");

@@ -1,4 +1,4 @@
-const authService = require("../../../../lib/auth");
+const authService = require("../../../../modules/auth/auth.service");
 const Joi = require("joi");
 const apiContract = require("../../../../lib/apiContract");
 

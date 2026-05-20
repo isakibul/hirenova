@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const { test } = require("node:test");
 
 const { User } = require("../src/model");
-const jobService = require("../src/lib/job");
+const jobService = require("../src/modules/jobs/jobs.service");
 const {
   getRecommendedJobs,
   normalizeExplanationPerspective,

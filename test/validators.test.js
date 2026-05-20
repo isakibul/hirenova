@@ -4,18 +4,18 @@ const { test } = require("node:test");
 const {
   jobApprovalSchema,
   jobSchema,
-} = require("../src/lib/validators/jobValidator");
+} = require("../src/modules/jobs/jobs.validation");
 const {
   applicationSchema,
   applicationStatusSchema,
-} = require("../src/lib/validators/applicationValidator");
+} = require("../src/modules/applications/applications.validation");
 const {
   loginSchema,
   registerSchema,
-} = require("../src/lib/validators/authValidator");
+} = require("../src/modules/auth/auth.validation");
 const {
   profileSchema,
-} = require("../src/api/v1/auth/controllers/updateProfile");
+} = require("../src/modules/auth/controllers/updateProfile");
 
 test("job validation accepts a complete public job payload", () => {
   const { error, value } = jobSchema.validate({

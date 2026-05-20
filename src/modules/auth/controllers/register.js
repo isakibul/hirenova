@@ -1,0 +1,50 @@
+const authService = require("../auth.service");
+const { generateEmailToken } = require("../../../lib/token");
+const { registerSchema } = require("../auth.validation");
+const { sendConfirmationEmail } = require("../../../lib/mailer");
+const { getClientLink } = require("../../../utils/clientUrl");
+
+const register = async (req, res, next) => {
+  try {
+    const { error, value } = await registerSchema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        code: 400,
+        message: "Validation error",
+        error: error.details.map((e) => e.message).join(", "),
+      });
+    }
+
+    const { username, email, password, role } = value;
+
+    const user = await authService.register({
+      username,
+      email,
+      password,
+      role,
+    });
+
+    const emailToken = generateEmailToken({ email: user.email });
+    const confirmEmailLink = getClientLink(
+      `/confirm-email?token=${encodeURIComponent(emailToken)}`
+    );
+    await sendConfirmationEmail(email, confirmEmailLink);
+
+    const response = {
+      code: 201,
+      message:
+        "Registration successful. Please confirm your email to activate your account.",
+      links: {
+        self: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
+        confirm_email: confirmEmailLink,
+      },
+    };
+
+    res.status(201).json(response);
+  } catch (e) {
+    next(e);
+  }
+};
+
+module.exports = register;

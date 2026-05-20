@@ -1,4 +1,4 @@
-const jobService = require("../lib/job");
+const jobService = require("../modules/jobs/jobs.service");
 const { authorizationError } = require("../utils/error");
 
 const ownership =

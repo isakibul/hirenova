@@ -1,0 +1,71 @@
+const jobService = require("../jobs.service");
+const { jobSchema } = require("../jobs.validation");
+
+const updateItem = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const { error, value } = jobSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true,
+    });
+
+    if (error) {
+      return res.status(400).json({
+        code: 400,
+        message: "Validation Error",
+        errors: error.details.map((err) => err.message),
+      });
+    }
+
+    const {
+      title,
+      description,
+      location,
+      jobType,
+      skillsRequired,
+      experienceRequired,
+      experienceMin,
+      experienceMax,
+      salary,
+      status,
+      expiresAt,
+    } = value;
+
+    const employerId = req.user.id;
+
+    const { job, statusCode } = await jobService.updateItem(id, {
+      title,
+      description,
+      location,
+      jobType,
+      skillsRequired,
+      experienceRequired,
+      experienceMin,
+      experienceMax,
+      salary,
+      status,
+      expiresAt,
+      author: employerId,
+      authorRole: req.user.role,
+    });
+
+    const response = {
+      code: statusCode,
+      message:
+        statusCode === 200
+          ? "Job updated successfully"
+          : "Job created successfully",
+      data: job,
+      link: {
+        self: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
+      },
+    };
+
+    res.status(statusCode).json(response);
+  } catch (e) {
+    next(e);
+  }
+};
+
+module.exports = updateItem;

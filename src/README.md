@@ -1,21 +1,47 @@
 # Backend Structure
 
-The backend keeps HTTP wiring, request handling, and domain logic in separate
-folders:
+The backend uses a feature-module structure for core product domains. A module
+owns its routes, controllers, validation, and service entry points together:
 
-- `routes/v1`: Express route definitions. Keep these thin: authentication,
-  authorization, URL shape, and controller selection.
-- `api/v1/*/controllers`: request/response adapters. Controllers validate
-  inputs, call domain services, and return API responses.
-- `lib/*`: domain services. Put business rules, model queries, and workflow
-  logic here instead of in routes or controllers.
-- `lib/validators`: Joi schemas for request contracts. Use enum values from
-  `src/lib/apiContract.js`.
+```txt
+modules/
+  auth/
+    auth.routes.js
+    auth.service.js
+    auth.validation.js
+    controllers/
+  jobs/
+    jobs.routes.js
+    jobs.service.js
+    jobs.validation.js
+    controllers/
+  applications/
+    applications.routes.js
+    applications.service.js
+    applications.validation.js
+    controllers/
+```
+
+Shared infrastructure and cross-domain code stays outside modules:
+
+- `routes/v1`: API version composition only. Mount module routes here, but keep
+  feature route definitions inside `modules/<feature>`.
+- `modules/<feature>/controllers`: request/response adapters. Controllers
+  validate inputs, call module services, and return API responses.
+- `modules/<feature>/<feature>.service.js`: feature business rules, model
+  queries, and workflow logic.
+- `modules/<feature>/<feature>.validation.js`: Joi schemas for request
+  contracts. Use enum values from `src/lib/apiContract.js`.
+- `api/v1/*` and selected `lib/*` files may exist as compatibility shims while
+  older modules are migrated. New backend feature work should prefer
+  `modules/<feature>`.
 - `model`: Mongoose schemas and indexes. Model enums should also use
   `src/lib/apiContract.js`.
 - `middleware`: cross-cutting Express behavior such as auth, rate limits,
   logging, metrics, and request context.
 - `utils`: small framework-agnostic helpers.
+- `lib/*`: shared domain services and integrations that are not yet migrated
+  to modules, such as mailer, notifications, resume parsing, and observability.
 - `lib/apiContract.js`: enum/status contract consumed by backend validators
   and models.
 
@@ -23,10 +49,12 @@ When adding a feature, prefer this flow:
 
 1. Add or update `src/lib/apiContract.js` if the API introduces a new
    enum/status.
-2. Add route wiring in `routes/v1`.
-3. Keep the controller focused on HTTP details.
-4. Put reusable business behavior in `lib/<feature>`.
-5. Keep persistence details in `model` or service-level queries.
+2. Create or update `modules/<feature>/<feature>.routes.js`.
+3. Keep controllers focused on HTTP details.
+4. Put reusable business behavior in `modules/<feature>/<feature>.service.js`.
+5. Put request schemas in `modules/<feature>/<feature>.validation.js`.
+6. Mount the module route from `routes/v1/index.js`.
+7. Keep persistence details in `model` or service-level queries.
 
 ## Local Email
 

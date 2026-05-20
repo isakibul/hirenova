@@ -1,9 +1,9 @@
 const router = require("express").Router();
 
-const authRoutes = require("./auth.routes");
-const jobRoutes = require("./jobs.routes");
+const authRoutes = require("../../modules/auth/auth.routes");
+const jobRoutes = require("../../modules/jobs/jobs.routes");
 const adminRoutes = require("./admin.routes");
-const applicationRoutes = require("./applications.routes");
+const applicationRoutes = require("../../modules/applications/applications.routes");
 const savedJobRoutes = require("./savedJobs.routes");
 const dashboardRoutes = require("./dashboard.routes");
 const notificationRoutes = require("./notifications.routes");
