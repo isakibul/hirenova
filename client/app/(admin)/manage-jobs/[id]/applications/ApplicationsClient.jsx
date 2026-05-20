@@ -203,7 +203,7 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
         const id = getApplicationId(application);
         const ranking = application.aiRanking;
         const isSelected = selectedApplicationId === id;
-        return (<div key={id} className={`site-border rounded-lg border bg-[var(--site-bg)] p-4 ${isSelected ? "ring-2 ring-[var(--site-accent)]" : ""}`}>
+        return (<div key={id} className={`site-border rounded-lg border p-4 transition hover:bg-[var(--site-panel)] ${isSelected ? "bg-[var(--site-panel)]" : "bg-[var(--site-bg)]"}`}>
             <div className="grid gap-4 md:grid-cols-[1fr_190px] md:items-start">
               <button type="button" onClick={() => setSelectedApplicationId(id)} className="min-w-0 text-left">
                 <div className="flex flex-wrap items-center gap-2">
