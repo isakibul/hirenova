@@ -8,11 +8,12 @@
     "dev:client": "npm --prefix client run dev",
     "start": "node src/index.js",
     "test": "node --test \"test/**/*.test.js\"",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-lines=75 --test-coverage-branches=70 --test-coverage-functions=70 --test-coverage-exclude='src/modules/**/controllers/**' --test-coverage-exclude='src/routes/**' --test-coverage-exclude='src/integrations/**' --test-coverage-exclude='src/infrastructure/observability/**' --test-coverage-exclude='src/utils/*Email.js' \"test/**/*.test.js\"",
     "test:backend": "npm test",
     "test:client": "npm --prefix client run test",
     "lint:client": "npm --prefix client run lint",
     "build:client": "npm --prefix client run build",
-    "check:backend": "npm test",
+    "check:backend": "npm run test:coverage",
     "check:client": "npm --prefix client run check",
     "check": "npm run check:backend",
     "check:all": "npm run check:backend && npm run check:client"

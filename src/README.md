@@ -78,6 +78,13 @@ folder:
 npm run check
 ```
 
+`npm run check` runs the backend suite with the production coverage gate:
+75% lines, 70% branches, and 70% functions across the backend code that is
+meaningful to unit-test directly. HTTP controller glue, route composition,
+external integrations, observability adapters, and static email template
+builders are excluded from the threshold and should be covered by focused
+route, integration, or smoke tests where appropriate.
+
 Browser E2E seeding is exposed only when the API runs with `NODE_ENV=test`.
 Production and development route wiring does not mount the `/api/v1/e2e`
 helpers.
