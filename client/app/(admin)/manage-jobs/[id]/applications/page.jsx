@@ -1,9 +1,25 @@
 "use client";
 
-import Link from "next/link";
 import { requestJson } from "@lib/clientApi";
+import Link from "next/link";
 import { use, useEffect, useState } from "react";
+import { formatJobStatus } from "../../jobUtils";
 import ApplicationsClient from "./ApplicationsClient";
+
+function countByStatus(applications, status) {
+  return applications.filter(
+    (application) => (application.status ?? "submitted") === status,
+  ).length;
+}
+
+function StatCard({ label, value }) {
+  return (
+    <div className="site-border site-panel rounded-lg border p-4">
+      <p className="site-muted text-sm">{label}</p>
+      <p className="mt-2 text-2xl font-semibold">{value}</p>
+    </div>
+  );
+}
 
 export default function JobApplicationsPage({ params }) {
   const { id } = use(params);
@@ -43,10 +59,40 @@ export default function JobApplicationsPage({ params }) {
   return (
     <section className="site-section py-12">
       <div className="site-container">
-        <Link href="/manage-jobs" className="site-link text-sm font-semibold">
-          Back to jobs
-        </Link>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight">Applicants</h1>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="site-link text-xs font-bold uppercase tracking-[0.18em]">
+              Employer
+            </p>
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+              Applicants
+            </h1>
+            <p className="site-muted mt-4">
+              Review candidates, update application statuses, and rank fit for{" "}
+              {job?.title ?? "this job"}.
+            </p>
+          </div>
+          <Link
+            href="/manage-jobs"
+            className="site-border site-field inline-flex h-11 w-fit items-center rounded-md border px-4 text-sm font-semibold"
+          >
+            Back to Jobs
+          </Link>
+        </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <StatCard label="Total Candidates" value={applications.length} />
+          <StatCard
+            label="In Review"
+            value={
+              countByStatus(applications, "reviewing") +
+              countByStatus(applications, "shortlisted")
+            }
+          />
+          <StatCard
+            label="Job Status"
+            value={job ? formatJobStatus(job) : "Loading"}
+          />
+        </div>
         {error ? (
           <div className="site-danger mt-6 rounded-lg border px-4 py-3 text-sm">
             {error}

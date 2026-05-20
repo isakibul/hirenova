@@ -147,10 +147,10 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
         setPendingStatusChange(null);
     }
 
-    return (<div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
-      <div className="space-y-4">
-        <section className="site-border site-card rounded-lg border p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    return (<div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
+      <section className="site-border site-card rounded-lg border">
+        <div className="site-panel border-b border-[var(--site-border)] p-4">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <h2 className="font-semibold">AI Ranking</h2>
               <p className="site-muted mt-1 text-xs">
@@ -169,10 +169,8 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
               </span>
             </label>
           </div>
-        </section>
-
-        <section className="site-border site-card rounded-lg border">
-          <div className="border-b border-[var(--site-border)] px-4 py-3">
+        </div>
+        <div className="border-b border-[var(--site-border)] px-4 py-3">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="font-semibold">
                 {isLoading
@@ -236,8 +234,7 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
           </div>);
     })}</div>}
           </div>
-        </section>
-      </div>
+      </section>
       <aside className="space-y-4">
         <section className="site-border site-card rounded-lg border p-4">
           <div className="flex items-start justify-between gap-3">
