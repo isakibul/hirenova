@@ -40,6 +40,10 @@ const buildRedisStore = (windowMs) => {
 };
 
 const createLimiter = ({ windowMinutes, max, message }) => {
+  if (process.env.DISABLE_RATE_LIMITS === "true") {
+    return (_req, _res, next) => next();
+  }
+
   const windowMs = windowMinutes * 60 * 1000;
 
   return rateLimit({

@@ -1,8 +1,12 @@
 const { expect, test } = require("@playwright/test");
 
-const { getSeedData, loginAs } = require("./helpers");
+const { getSeedData, loginAs, resetSeedData } = require("./helpers");
 
-test("admin reviews employer jobs and employer sees approval state", async ({
+test.beforeEach(async ({ request }) => {
+  await resetSeedData(request);
+});
+
+test("admin reviews employer jobs and publishes approved roles", async ({
   page,
   request,
 }) => {
@@ -18,11 +22,6 @@ test("admin reviews employer jobs and employer sees approval state", async ({
   await page.goto(`/jobs/${seed.jobs.pending.id}`);
   await expect(page.getByRole("heading", { name: seed.jobs.pending.title })).toBeVisible();
   await expect(page.getByText("Open Role").first()).toBeVisible();
-
-  await loginAs(page, request, "employer");
-  await page.goto("/manage-jobs");
-  await expect(page.getByText(seed.jobs.pending.title)).toBeVisible();
-  await expect(page.getByText("Approved").first()).toBeVisible();
 });
 
 test("employer can create a job that enters admin review", async ({

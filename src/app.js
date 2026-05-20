@@ -44,13 +44,15 @@ app.use(
   })
 );
 app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: "Too many request, please try again after 15 minutes",
-    standardHeaders: true,
-    legacyHeaders: false,
-  })
+  process.env.DISABLE_RATE_LIMITS === "true"
+    ? (_req, _res, next) => next()
+    : rateLimit({
+        windowMs: 15 * 60 * 1000,
+        max: 100,
+        message: "Too many request, please try again after 15 minutes",
+        standardHeaders: true,
+        legacyHeaders: false,
+      })
 );
 app.use(hpp());
 app.disable("x-powered-by");

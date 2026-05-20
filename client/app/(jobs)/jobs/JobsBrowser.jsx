@@ -29,6 +29,8 @@ function buildJobsRequest(query, sortValue) {
 function buildBrowserUrl(query, sortValue, smartMatch) {
   const params = toSearchParams({
     ...query,
+    limit: Number(query.limit) === 10 ? undefined : query.limit,
+    page: Number(query.page) === 1 ? undefined : query.page,
     sort: sortValue === "createdAt:dsc" ? undefined : sortValue,
     smart_match: smartMatch ? "1" : undefined,
   });

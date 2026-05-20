@@ -1,30 +1,61 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { expect } = require("@playwright/test");
+const { expect, request: playwrightRequest } = require("@playwright/test");
 
 const dataPath = path.join(__dirname, ".auth", "e2e-data.json");
 const apiURL = process.env.E2E_API_URL || "http://127.0.0.1:4100/api/v1";
+const frontendURL = process.env.E2E_BASE_URL || "http://127.0.0.1:3100";
 
 function getSeedData() {
   return JSON.parse(fs.readFileSync(dataPath, "utf8"));
 }
 
-async function apiLogin(request, role) {
+async function apiLogin(_request, role) {
   const seed = getSeedData();
-  const response = await request.post(`${apiURL}/auth/login`, {
-    data: {
-      email: seed.users[role].email,
-      password: seed.password,
-    },
-  });
+  const context = await playwrightRequest.newContext();
+  let body = {};
 
-  expect(response.ok()).toBeTruthy();
-  const body = await response.json();
-  const setCookie = response.headers()["set-cookie"] ?? "";
-  return {
-    setCookie,
-    user: seed.users[role],
-  };
+  try {
+    const response = await context.post(`${apiURL}/auth/login`, {
+      data: {
+        email: seed.users[role].email,
+        password: seed.password,
+      },
+    });
+    body = await response.json().catch(() => ({}));
+
+    expect(response.ok(), body.message || JSON.stringify(body)).toBeTruthy();
+    return {
+      setCookie: response.headers()["set-cookie"] ?? "",
+      user: seed.users[role],
+    };
+  } finally {
+    await context.dispose();
+  }
+}
+
+async function resetSeedData(_request) {
+  const seedSecret = process.env.E2E_SEED_SECRET || "hirenova-e2e-seed-secret";
+  const context = await playwrightRequest.newContext();
+  let body = {};
+
+  try {
+    const response = await context.post(`${apiURL}/e2e/seed`, {
+      headers: {
+        "x-e2e-seed-secret": seedSecret,
+      },
+      data: {},
+    });
+    body = await response.json().catch(() => ({}));
+
+    expect(response.ok(), body.message || JSON.stringify(body)).toBeTruthy();
+    fs.mkdirSync(path.dirname(dataPath), { recursive: true });
+    fs.writeFileSync(dataPath, JSON.stringify(body.data, null, 2));
+  } finally {
+    await context.dispose();
+  }
+
+  return body.data;
 }
 
 async function apiCsrf(request, setCookie) {
@@ -53,18 +84,29 @@ async function addAuthCookie(page, setCookie) {
     return;
   }
 
+  await page.context().clearCookies();
+
+  const cookie = {
+    name: cookiePair.slice(0, separatorIndex),
+    value: cookiePair.slice(separatorIndex + 1),
+    httpOnly: true,
+    sameSite: "Lax",
+  };
+
   await page.context().addCookies([
     {
-      name: cookiePair.slice(0, separatorIndex),
-      value: cookiePair.slice(separatorIndex + 1),
+      ...cookie,
+      url: frontendURL,
+    },
+    {
+      ...cookie,
       url: apiURL.replace(/\/api\/v1\/?$/, ""),
-      httpOnly: true,
-      sameSite: "Lax",
     },
   ]);
 }
 
 async function loginAs(page, request, role) {
+  await page.goto("about:blank");
   const auth = await apiLogin(request, role);
   await addAuthCookie(page, auth.setCookie);
   return auth;
@@ -109,5 +151,6 @@ module.exports = {
   createApprovedJob,
   getSeedData,
   loginAs,
+  resetSeedData,
   selectOptionByText,
 };

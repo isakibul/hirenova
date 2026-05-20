@@ -27,6 +27,7 @@ const env = {
   EMAIL_SECURE: process.env.EMAIL_SECURE || "false",
   EMAIL_FROM: process.env.EMAIL_FROM || "HireNova E2E <noreply@hirenova.test>",
   E2E_SEED_SECRET: seedSecret,
+  DISABLE_RATE_LIMITS: "true",
 };
 const webServer = [
   process.env.E2E_START_BACKEND === "false"

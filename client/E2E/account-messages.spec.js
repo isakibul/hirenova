@@ -1,6 +1,10 @@
 const { expect, test } = require("@playwright/test");
 
-const { getSeedData, loginAs } = require("./helpers");
+const { getSeedData, loginAs, resetSeedData } = require("./helpers");
+
+test.beforeEach(async ({ request }) => {
+  await resetSeedData(request);
+});
 
 test("messaging inbox loads seeded conversation and sends a reply", async ({
   page,

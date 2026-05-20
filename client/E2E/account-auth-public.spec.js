@@ -1,6 +1,10 @@
 const { expect, test } = require("@playwright/test");
 
-const { getSeedData } = require("./helpers");
+const { getSeedData, resetSeedData } = require("./helpers");
+
+test.beforeEach(async ({ request }) => {
+  await resetSeedData(request);
+});
 
 test("marketing pages, signup, pending-login, and seeded login flow work", async ({
   page,
@@ -20,20 +24,20 @@ test("marketing pages, signup, pending-login, and seeded login flow work", async
   ).toBeVisible();
 
   await page.getByRole("textbox", { name: "Username" }).fill(`e2esignup${unique}`);
-  await page.getByLabel("Password").fill(seed.password);
+  await page.getByPlaceholder("At least 8 characters").fill(seed.password);
   await page.getByRole("button", { name: "Create Account" }).click();
   await expect(page.getByText(/registration successful/i)).toBeVisible();
 
   await page.goto("/login");
   await page.getByRole("textbox", { name: "Email", exact: true }).fill(email);
-  await page.getByLabel("Password").fill(seed.password);
+  await page.getByPlaceholder("Enter your password").fill(seed.password);
   await page.getByRole("button", { name: "Login" }).click();
   await expect(page.getByText(/your account is pending/i)).toBeVisible();
 
   await page
     .getByRole("textbox", { name: "Email", exact: true })
     .fill(seed.users.jobseeker.email);
-  await page.getByLabel("Password").fill(seed.password);
+  await page.getByPlaceholder("Enter your password").fill(seed.password);
   await page.getByRole("button", { name: "Login" }).click();
   await expect(page).toHaveURL(/\/jobs$/);
   await expect(page.getByRole("button", { name: "Open profile menu" })).toBeVisible();
