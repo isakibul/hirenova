@@ -2,41 +2,14 @@
 
 import Icon from "@components/Icon";
 import { requestJson } from "@lib/clientApi";
+import { formatDateTime, getRecordId } from "@lib/ui";
 import Link from "next/link";
 import { useState } from "react";
-
-function formatDate(value) {
-  if (!value) {
-    return "Not available";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function getTypeLabel(type) {
-  const labels = {
-    application_submitted: "Application",
-    application_status: "Status",
-    job_saved: "Saved job",
-    job_closed: "Job",
-    job_pending_review: "Review",
-    job_approved: "Approved",
-    job_declined: "Declined",
-    role_change_requested: "Role request",
-    role_change_approved: "Role approved",
-    role_change_declined: "Role declined",
-    message: "Message",
-    system: "System",
-  };
-
-  return labels[type] ?? "Update";
-}
+import {
+  getNotificationTypeLabel,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "./notificationUtils";
 
 export default function NotificationsList({
   initialNotifications = [],
@@ -46,17 +19,14 @@ export default function NotificationsList({
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
 
   async function markOneAsRead(notification) {
-    const id = notification.id ?? notification._id;
+    const id = getRecordId(notification);
     if (!id || notification.readAt) {
       return;
     }
 
+    const readAt = new Date().toISOString();
     setNotifications((current) =>
-      current.map((item) =>
-        (item.id ?? item._id) === id
-          ? { ...item, readAt: new Date().toISOString(), isRead: true }
-          : item,
-      ),
+      markNotificationRead(current, id, readAt),
     );
     setUnreadCount((current) => Math.max(current - 1, 0));
 
@@ -72,7 +42,7 @@ export default function NotificationsList({
 
     const readAt = new Date().toISOString();
     setNotifications((current) =>
-      current.map((item) => ({ ...item, readAt, isRead: true })),
+      markAllNotificationsRead(current, readAt),
     );
     setUnreadCount(0);
 
@@ -119,7 +89,7 @@ export default function NotificationsList({
           </div>
         ) : (
           notifications.map((notification) => {
-            const id = notification.id ?? notification._id;
+            const id = getRecordId(notification);
             const isUnread = !notification.readAt;
             const content = (
               <div className="flex gap-4">
@@ -141,12 +111,12 @@ export default function NotificationsList({
                       </p>
                     </div>
                     <span className="site-badge w-fit rounded-md px-2.5 py-1 text-xs font-semibold">
-                      {getTypeLabel(notification.type)}
+                      {getNotificationTypeLabel(notification.type)}
                     </span>
                   </div>
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="site-muted text-xs">
-                      {formatDate(notification.createdAt)}
+                      {formatDateTime(notification.createdAt, "Not available")}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {notification.link ? (

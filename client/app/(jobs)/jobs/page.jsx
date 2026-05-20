@@ -1,4 +1,5 @@
 import { requestServerBackend } from "@lib/serverApi";
+import { toSearchParams } from "@lib/url";
 
 import JobsBrowser from "./JobsBrowser";
 const jobTypes = [
@@ -45,12 +46,7 @@ function getPositiveNumber(value, fallback) {
   return parsed;
 }
 async function getJobs(params) {
-  const query = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== "") {
-      query.set(key, String(value));
-    }
-  });
+  const query = toSearchParams(params);
   return requestServerBackend(`/jobs?${query.toString()}`);
 }
 export default async function JobsPage({ searchParams }) {

@@ -11,7 +11,7 @@ import {
     formatJobType,
     formatSalary,
     getJobStatus,
-} from "../jobDisplay";
+} from "@lib/jobDisplay";
 
 async function getJob(id) {
     const result = await requestServerBackend(`/jobs/${id}`);

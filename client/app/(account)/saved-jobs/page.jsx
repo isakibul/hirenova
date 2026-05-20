@@ -4,18 +4,10 @@ import Icon from "@components/Icon";
 import { CardListSkeleton, MetricSkeleton } from "@components/Skeleton";
 import StatusNotice from "@components/StatusNotice";
 import { requestJson } from "@lib/clientApi";
+import { formatSalary } from "@lib/jobDisplay";
 import { formatDate } from "@lib/ui";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-function formatSalary(value) {
-  if (typeof value !== "number") return "Not disclosed";
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 export default function SavedJobsPage() {
   const [savedJobs, setSavedJobs] = useState([]);

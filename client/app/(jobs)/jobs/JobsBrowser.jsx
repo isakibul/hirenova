@@ -4,6 +4,7 @@ import Icon from "@components/Icon";
 import SelectField from "@components/forms/SelectField";
 import { backendFetch } from "@lib/clientApi";
 import { getApiMessage } from "@lib/ui";
+import { toSearchParams } from "@lib/url";
 import { useRef, useState } from "react";
 import ExperienceRangeFilter from "./ExperienceRangeFilter";
 import JobsResults from "./JobsResults";
@@ -13,18 +14,6 @@ function compactObject(values) {
   return Object.fromEntries(
     Object.entries(values).filter(([, value]) => value !== undefined && value !== ""),
   );
-}
-
-function toUrlSearch(query) {
-  const params = new URLSearchParams();
-
-  Object.entries(query).forEach(([key, value]) => {
-    if (value !== undefined && value !== "") {
-      params.set(key, String(value));
-    }
-  });
-
-  return params;
 }
 
 function buildJobsRequest(query, sortValue) {
@@ -38,7 +27,7 @@ function buildJobsRequest(query, sortValue) {
 }
 
 function buildBrowserUrl(query, sortValue, smartMatch) {
-  const params = toUrlSearch({
+  const params = toSearchParams({
     ...query,
     sort: sortValue === "createdAt:dsc" ? undefined : sortValue,
     smart_match: smartMatch ? "1" : undefined,
@@ -49,7 +38,7 @@ function buildBrowserUrl(query, sortValue, smartMatch) {
 }
 
 async function fetchJobs(query, sortValue) {
-  const params = toUrlSearch(buildJobsRequest(query, sortValue));
+  const params = toSearchParams(buildJobsRequest(query, sortValue));
   const response = await backendFetch(`/jobs?${params.toString()}`);
   const body = await response.json().catch(() => ({}));
 

@@ -8,7 +8,7 @@ import {
   formatExperience,
   formatJobType,
   formatSalary,
-} from "../../../(jobs)/jobs/jobDisplay";
+} from "@lib/jobDisplay";
 
 async function getCompany(id) {
   return requestServerBackend(`/companies/${id}`);

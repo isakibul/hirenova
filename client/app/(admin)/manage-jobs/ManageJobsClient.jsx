@@ -10,6 +10,7 @@ import Icon from "@components/Icon";
 import { requestJson } from "@lib/clientApi";
 import { getVisibleErrors, hasValidationErrors, touchAll } from "@lib/formValidation";
 import { formatDate, formatDateTime, getRecordId as getJobId } from "@lib/ui";
+import { toSearchParams } from "@lib/url";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import JobFormPanel from "./JobFormPanel";
@@ -66,22 +67,16 @@ export default function ManageJobsClient({ currentRole, initialApprovalFilter = 
     const loadJobs = useCallback(async () => {
         setIsLoading(true);
         setError(null);
-        const params = new URLSearchParams({
+        const params = toSearchParams({
             page: String(page),
             limit: "10",
             sort_by: sortBy,
             sort_type: sortType,
             include_closed: "true",
+            search,
+            status: statusFilter !== "all" ? statusFilter : "",
+            approval_status: approvalFilter !== "all" ? approvalFilter : "",
         });
-        if (search) {
-            params.set("search", search);
-        }
-        if (statusFilter !== "all") {
-            params.set("status", statusFilter);
-        }
-        if (approvalFilter !== "all") {
-            params.set("approval_status", approvalFilter);
-        }
         try {
             const body = await requestJson(`/jobs?${params.toString()}`, {}, "Unable to load jobs.");
             setJobs(body.data ?? []);

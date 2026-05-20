@@ -3,9 +3,10 @@ import FieldError from "@components/forms/FieldError";
 import PasswordField from "@components/forms/PasswordField";
 import LoadingCircle from "@components/LoadingCircle";
 import StatusNotice from "@components/StatusNotice";
+import useValidatedForm from "@components/forms/useValidatedForm";
 import { requestJson } from "@lib/clientApi";
-import { getVisibleErrors, hasValidationErrors, passwordError, touchAll, } from "@lib/formValidation";
-import { getApiMessage } from "@lib/ui";
+import { passwordError } from "@lib/formValidation";
+import { getApiMessage, getCaughtErrorMessage } from "@lib/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -28,28 +29,19 @@ function validateResetPasswordForm(form) {
 
 export default function ResetPasswordForm({ token }) {
     const router = useRouter();
-    const [form, setForm] = useState(initialState);
-    const [touched, setTouched] = useState({});
-    const [submitAttempted, setSubmitAttempted] = useState(false);
+    const { form, markTouched, prepareSubmit, resetForm, updateField: setFieldValue, visibleErrors } = useValidatedForm(initialState, validateResetPasswordForm);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const validationErrors = validateResetPasswordForm(form);
-    const visibleErrors = getVisibleErrors(validationErrors, touched, submitAttempted);
 
     function updateField(field, value) {
-        setForm((current) => ({
-            ...current,
-            [field]: value,
-        }));
+        setFieldValue(field, value);
         setError("");
         setSuccess("");
     }
 
     async function handleSubmit(event) {
         event.preventDefault();
-        setSubmitAttempted(true);
-        setTouched(touchAll(validationErrors));
         setError("");
         setSuccess("");
 
@@ -58,7 +50,7 @@ export default function ResetPasswordForm({ token }) {
             return;
         }
 
-        if (hasValidationErrors(validationErrors)) {
+        if (!prepareSubmit()) {
             return;
         }
 
@@ -76,15 +68,13 @@ export default function ResetPasswordForm({ token }) {
             }, "Unable to reset password.");
 
             setSuccess(getApiMessage(body, "Password has been reset successfully."));
-            setForm(initialState);
-            setTouched({});
-            setSubmitAttempted(false);
+            resetForm(initialState);
             window.setTimeout(() => {
                 router.push("/login");
             }, 1200);
         }
         catch (caughtError) {
-            setError(caughtError instanceof Error ? caughtError.message : "Unable to reach the server. Please try again.");
+            setError(getCaughtErrorMessage(caughtError, "Unable to reach the server. Please try again."));
         }
         finally {
             setIsSubmitting(false);
@@ -96,13 +86,13 @@ export default function ResetPasswordForm({ token }) {
 
       <label className="site-soft block text-xs font-medium">
         New Password
-        <PasswordField value={form.newPassword} onChange={(event) => updateField("newPassword", event.target.value)} onBlur={() => setTouched((current) => ({ ...current, newPassword: true }))} aria-invalid={Boolean(visibleErrors.newPassword)} aria-describedby={visibleErrors.newPassword ? "reset-new-password-error" : undefined} containerClassName="mt-1.5" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="At least 8 characters" autoComplete="new-password" required/>
+        <PasswordField value={form.newPassword} onChange={(event) => updateField("newPassword", event.target.value)} onBlur={() => markTouched("newPassword")} aria-invalid={Boolean(visibleErrors.newPassword)} aria-describedby={visibleErrors.newPassword ? "reset-new-password-error" : undefined} containerClassName="mt-1.5" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="At least 8 characters" autoComplete="new-password" required/>
         <FieldError id="reset-new-password-error" message={visibleErrors.newPassword}/>
       </label>
 
       <label className="site-soft mt-4 block text-xs font-medium">
         Confirm Password
-        <PasswordField value={form.confirmPassword} onChange={(event) => updateField("confirmPassword", event.target.value)} onBlur={() => setTouched((current) => ({ ...current, confirmPassword: true }))} aria-invalid={Boolean(visibleErrors.confirmPassword)} aria-describedby={visibleErrors.confirmPassword ? "reset-confirm-password-error" : undefined} containerClassName="mt-1.5" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="Repeat new password" autoComplete="new-password" required/>
+        <PasswordField value={form.confirmPassword} onChange={(event) => updateField("confirmPassword", event.target.value)} onBlur={() => markTouched("confirmPassword")} aria-invalid={Boolean(visibleErrors.confirmPassword)} aria-describedby={visibleErrors.confirmPassword ? "reset-confirm-password-error" : undefined} containerClassName="mt-1.5" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" placeholder="Repeat new password" autoComplete="new-password" required/>
         <FieldError id="reset-confirm-password-error" message={visibleErrors.confirmPassword}/>
       </label>
 

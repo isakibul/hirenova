@@ -3,48 +3,11 @@
 import Icon from "@components/Icon";
 import { useAuth } from "@components/auth/AuthProvider";
 import { requestJson } from "@lib/clientApi";
+import { formatExperience, formatJobType, formatSalary } from "@lib/jobDisplay";
 import { formatDate, getApiMessage } from "@lib/ui";
+import { toSearchParams } from "@lib/url";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-
-function formatJobType(value) {
-  if (!value) {
-    return "Not specified";
-  }
-  return value
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-function formatSalary(value) {
-  if (typeof value !== "number") {
-    return "Not disclosed";
-  }
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function formatExperience(job) {
-  const min =
-    typeof job.experienceMin === "number"
-      ? job.experienceMin
-      : job.experienceRequired;
-  const max = job.experienceMax;
-  if (typeof min === "number" && typeof max === "number") {
-    return min === max ? `${min} years` : `${min}-${max} years`;
-  }
-  if (typeof min === "number") {
-    return `${min}+ years`;
-  }
-  if (typeof max === "number") {
-    return `Up to ${max} years`;
-  }
-  return "Experience not set";
-}
 
 function getErrorMessage(response) {
   return getApiMessage(response, "Unable to load jobs right now.");
@@ -80,14 +43,7 @@ function buildHref(params, overrides) {
 }
 
 function buildRecommendedPath(query) {
-  const params = new URLSearchParams();
-
-  Object.entries(query).forEach(([key, value]) => {
-    if (value !== undefined && value !== "") {
-      params.set(key, String(value));
-    }
-  });
-
+  const params = toSearchParams(query);
   return `/jobs/smart-match/recommendations?${params.toString()}`;
 }
 
@@ -311,7 +267,7 @@ export default function JobsResults({
           const details = [
             formatJobType(job.jobType),
             formatSalary(job.salary),
-            formatExperience(job),
+            formatExperience(job, "Experience not set"),
           ];
           return (
             <article

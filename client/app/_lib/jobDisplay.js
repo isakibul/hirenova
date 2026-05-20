@@ -1,17 +1,24 @@
-export function formatJobType(value) {
+export const jobTypes = [
+  { value: "full-time", label: "Full Time" },
+  { value: "part-time", label: "Part Time" },
+  { value: "remote", label: "Remote" },
+  { value: "contract", label: "Contract" },
+];
+
+export function formatJobType(value, fallback = "Not specified") {
   if (!value) {
-    return "Not specified";
+    return fallback;
   }
 
-  return value
+  return String(value)
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 }
 
-export function formatSalary(value) {
+export function formatSalary(value, fallback = "Not disclosed") {
   if (typeof value !== "number") {
-    return "Not disclosed";
+    return fallback;
   }
 
   return new Intl.NumberFormat("en", {
@@ -21,7 +28,7 @@ export function formatSalary(value) {
   }).format(value);
 }
 
-export function formatExperience(job = {}) {
+export function formatExperience(job = {}, fallback = "Not specified") {
   const min =
     typeof job.experienceMin === "number"
       ? job.experienceMin
@@ -40,10 +47,10 @@ export function formatExperience(job = {}) {
     return `Up to ${max} years`;
   }
 
-  return "Not specified";
+  return fallback;
 }
 
-export function getJobStatus(job = {}) {
+export function getJobStatus(job = {}, { openLabel = "Open Role" } = {}) {
   if (job.approvalStatus === "pending") {
     return "Under Review";
   }
@@ -56,5 +63,5 @@ export function getJobStatus(job = {}) {
     return "Expired";
   }
 
-  return job.status === "closed" ? "Closed" : "Open Role";
+  return job.status === "closed" ? "Closed" : openLabel;
 }

@@ -9,7 +9,7 @@
     "start": "next start",
     "start:e2e": "next build && next start --hostname 127.0.0.1",
     "test": "node --test --no-warnings \"test/**/*.test.mjs\"",
-    "test:coverage": "node --test --no-warnings --experimental-test-coverage --test-coverage-lines=80 --test-coverage-branches=70 --test-coverage-functions=80 --test-coverage-include='app/_lib/**/*.js' --test-coverage-include='app/(admin)/manage-newsletter/newsletterUtils.js' --test-coverage-include='app/(account)/messages/messageUtils.js' --test-coverage-include='app/(jobs)/jobs/jobDisplay.js' \"test/**/*.test.mjs\"",
+    "test:coverage": "node --test --no-warnings --experimental-test-coverage --test-coverage-lines=80 --test-coverage-branches=70 --test-coverage-functions=80 --test-coverage-include='app/_lib/**/*.js' --test-coverage-include='app/(admin)/manage-newsletter/newsletterUtils.js' --test-coverage-include='app/(account)/messages/messageUtils.js' --test-coverage-include='app/(account)/notifications/notificationUtils.js' \"test/**/*.test.mjs\"",
     "test:e2e": "playwright test",
     "test:e2e:local": "playwright test",
     "test:e2e:external": "E2E_START_BACKEND=false playwright test",

@@ -8,6 +8,7 @@ import StatusNotice from "@components/StatusNotice";
 import SelectField from "@components/forms/SelectField";
 import { requestJson } from "@lib/clientApi";
 import { formatDateTime } from "@lib/ui";
+import { toQueryString } from "@lib/url";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const auditActionOptions = [
@@ -116,15 +117,7 @@ function AlertList({ alerts = [] }) {
 }
 
 function buildQuery(params) {
-  const query = new URLSearchParams();
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== "" && value !== undefined && value !== null) {
-      query.set(key, String(value));
-    }
-  });
-
-  return query.toString();
+  return toQueryString(params);
 }
 
 export default function SystemMonitorClient() {

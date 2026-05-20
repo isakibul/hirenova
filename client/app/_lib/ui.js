@@ -23,6 +23,10 @@ export function getApiMessage(body, fallback = "Something went wrong.") {
   return body?.error ?? body?.message ?? fallback;
 }
 
+export function getCaughtErrorMessage(error, fallback = "Something went wrong.") {
+  return error instanceof Error ? error.message : fallback;
+}
+
 export function getRecordId(record) {
   return record?.id ?? record?._id ?? "";
 }

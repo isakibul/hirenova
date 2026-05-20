@@ -21,6 +21,8 @@ test("getApiMessage prefers validation errors before generic messages", () => {
   assert.equal(ui.getApiMessage({ message: "Saved." }), "Saved.");
   assert.equal(ui.getApiMessage({ error: "Nope." }), "Nope.");
   assert.equal(ui.getApiMessage({}, "Try again."), "Try again.");
+  assert.equal(ui.getCaughtErrorMessage(new Error("Broken.")), "Broken.");
+  assert.equal(ui.getCaughtErrorMessage("broken", "Fallback."), "Fallback.");
 });
 
 test("format helpers produce stable display values and fallbacks", () => {

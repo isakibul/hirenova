@@ -3,20 +3,13 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { requestJson } from "@lib/clientApi";
+import { formatDateTime, getRecordId } from "@lib/ui";
+import {
+  countUnreadNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "../(account)/notifications/notificationUtils";
 import Icon from "./Icon";
-
-function formatTime(value) {
-  if (!value) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
 
 export default function NotificationsMenu({ currentUserId = "", enabled = false }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,7 +35,7 @@ export default function NotificationsMenu({ currentUserId = "", enabled = false 
       const nextNotifications = body.data ?? [];
       const nextUnreadCount =
         body.meta?.unreadCount ??
-        nextNotifications.filter((notification) => !notification.readAt).length;
+        countUnreadNotifications(nextNotifications);
       setNotifications(nextNotifications);
       setUnreadCount(nextUnreadCount);
     } catch {
@@ -51,17 +44,14 @@ export default function NotificationsMenu({ currentUserId = "", enabled = false 
   }, [currentUserId, enabled]);
 
   async function markOneAsRead(notification) {
-    const id = notification.id ?? notification._id;
+    const id = getRecordId(notification);
     if (!id || notification.readAt) {
       return;
     }
 
+    const readAt = new Date().toISOString();
     setNotifications((current) =>
-      current.map((item) =>
-        (item.id ?? item._id) === id
-          ? { ...item, readAt: new Date().toISOString(), isRead: true }
-          : item,
-      ),
+      markNotificationRead(current, id, readAt),
     );
     setUnreadCount((current) => Math.max(current - 1, 0));
 
@@ -77,7 +67,7 @@ export default function NotificationsMenu({ currentUserId = "", enabled = false 
 
     const readAt = new Date().toISOString();
     setNotifications((current) =>
-      current.map((item) => ({ ...item, readAt, isRead: true })),
+      markAllNotificationsRead(current, readAt),
     );
     setUnreadCount(0);
 
@@ -214,7 +204,7 @@ export default function NotificationsMenu({ currentUserId = "", enabled = false 
               </div>
             ) : (
               notifications.map((notification) => {
-                const id = notification.id ?? notification._id;
+                const id = getRecordId(notification);
                 const isUnread = !notification.readAt;
                 const content = (
                   <div className="flex gap-3">
@@ -233,7 +223,7 @@ export default function NotificationsMenu({ currentUserId = "", enabled = false 
                         {notification.message}
                       </p>
                       <p className="site-muted mt-2 text-[11px]">
-                        {formatTime(notification.createdAt)}
+                        {formatDateTime(notification.createdAt)}
                       </p>
                     </div>
                   </div>

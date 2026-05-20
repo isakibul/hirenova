@@ -10,6 +10,7 @@ import {
   touchAll,
 } from "@lib/formValidation";
 import { getApiMessage, getRecordId as getUserId } from "@lib/ui";
+import { toSearchParams } from "@lib/url";
 import { useCallback, useEffect, useState } from "react";
 import ManageUsersSummary from "./ManageUsersSummary";
 import UserConfirmDialogs from "./UserConfirmDialogs";
@@ -92,18 +93,14 @@ export default function ManageUsersClient({ currentUserId, currentUserRole }) {
     const loadUsers = useCallback(async () => {
         setIsLoading(true);
         setError(null);
-        const params = new URLSearchParams({
+        const params = toSearchParams({
             page: String(page),
             limit: "10",
             sort_by: sortBy,
             sort_type: sortType,
+            search,
+            role: roleFilter !== "all" ? roleFilter : "",
         });
-        if (search) {
-            params.set("search", search);
-        }
-        if (roleFilter !== "all") {
-            params.set("role", roleFilter);
-        }
         try {
             const body = await requestJson(`/admin/users?${params.toString()}`, {}, "Unable to load users.");
             setUsers(body.data ?? []);

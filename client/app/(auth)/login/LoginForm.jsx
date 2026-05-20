@@ -3,13 +3,12 @@ import FieldError from "@components/forms/FieldError";
 import PasswordField from "@components/forms/PasswordField";
 import { useAuth } from "@components/auth/AuthProvider";
 import LoadingCircle from "@components/LoadingCircle";
+import useValidatedForm from "@components/forms/useValidatedForm";
 import {
   emailError,
-  getVisibleErrors,
-  hasValidationErrors,
   required,
-  touchAll,
 } from "@lib/formValidation";
+import { getCaughtErrorMessage } from "@lib/ui";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -23,39 +22,20 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
-  const [form, setForm] = useState({
+  const { form, markTouched, prepareSubmit, updateField: setFieldValue, visibleErrors } = useValidatedForm({
     email: "",
     password: "",
-  });
-  const [touched, setTouched] = useState({});
-  const [submitAttempted, setSubmitAttempted] = useState(false);
+  }, validateLoginForm);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const validationErrors = validateLoginForm(form);
-  const visibleErrors = getVisibleErrors(
-    validationErrors,
-    touched,
-    submitAttempted,
-  );
   function updateField(field, value) {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    setFieldValue(field, value);
     setError("");
-  }
-  function markTouched(field) {
-    setTouched((current) => ({
-      ...current,
-      [field]: true,
-    }));
   }
   async function handleSubmit(event) {
     event.preventDefault();
-    setSubmitAttempted(true);
-    setTouched(touchAll(validationErrors));
     setError("");
-    if (hasValidationErrors(validationErrors)) {
+    if (!prepareSubmit()) {
       return;
     }
     setIsSubmitting(true);
@@ -72,11 +52,7 @@ export default function LoginForm() {
       );
       router.refresh();
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to reach the server. Please try again.",
-      );
+      setError(getCaughtErrorMessage(caughtError, "Unable to reach the server. Please try again."));
     } finally {
       setIsSubmitting(false);
     }

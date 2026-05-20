@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-const jobDisplay = await import("../app/(jobs)/jobs/jobDisplay.js");
+const jobDisplay = await import("../app/_lib/jobDisplay.js");
 
 test("job display helpers format public job fields", () => {
   assert.equal(jobDisplay.formatJobType("full-time"), "Full Time");

@@ -5,11 +5,11 @@ import Icon from "@components/Icon";
 import LoadingCircle from "@components/LoadingCircle";
 import { RowListSkeleton } from "@components/Skeleton";
 import { useAuth } from "@components/auth/AuthProvider";
-import { requestJson } from "@lib/clientApi";
 import { acquireRealtimeSocket } from "@lib/realtime";
 import {
   formatDateTime,
   formatPresence,
+  getCaughtErrorMessage,
   getCandidateProfileHref,
   getDisplayName,
   getOtherParticipant,
@@ -20,6 +20,12 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  deleteConversationById,
+  getConversation,
+  listConversations,
+  sendConversationMessage,
+} from "./messagesApi";
 import {
   markConversationReadById,
   removeConversationById,
@@ -55,9 +61,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
     setIsLoading(true);
     setError("");
     try {
-      const body = await requestJson("/messages/conversations", {
-        cache: "no-store",
-      }, "Unable to load messages.");
+      const body = await listConversations();
       const nextConversations = body.data ?? [];
       const nextSelectedId =
         requestedConversationId &&
@@ -70,16 +74,10 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
       setConversations(markConversationReadById(nextConversations, nextSelectedId));
       setSelectedId(nextSelectedId);
       if (nextSelectedId) {
-        requestJson(`/messages/conversations/${nextSelectedId}`, {
-          cache: "no-store",
-        }).catch(() => undefined);
+        getConversation(nextSelectedId).catch(() => undefined);
       }
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to load messages.",
-      );
+      setError(getCaughtErrorMessage(caughtError, "Unable to load messages."));
     } finally {
       setIsLoading(false);
     }
@@ -142,9 +140,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
       }
 
       try {
-        const body = await requestJson("/messages/conversations", {
-          cache: "no-store",
-        });
+        const body = await listConversations();
         if (!ignore) {
           setConversations(body.data ?? []);
         }
@@ -164,9 +160,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
       updateConversation(updatedConversation);
 
       if (selectedIdRef.current === updatedId) {
-        requestJson(`/messages/conversations/${updatedId}`, {
-          cache: "no-store",
-        })
+        getConversation(updatedId)
           .then((body) => {
             if (body?.data) {
               updateConversation(body.data);
@@ -230,10 +224,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
       markConversationReadById(current, conversationId),
     );
     try {
-      const body = await requestJson(
-        `/messages/conversations/${conversationId}`,
-        { cache: "no-store" },
-      );
+      const body = await getConversation(conversationId);
       if (body.data) {
         setConversations((current) =>
           current.map((conversation) =>
@@ -260,23 +251,12 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
     setIsSending(true);
     setError("");
     try {
-      const body = await requestJson(
-        `/messages/conversations/${conversationId}/messages`,
-        {
-          method: "POST",
-          body: JSON.stringify({ body: bodyText }),
-        },
-        "Unable to send message.",
-      );
+      const body = await sendConversationMessage(conversationId, bodyText);
       setConversations((current) => upsertConversation(current, body.data));
       setSelectedId(conversationId);
       setDraft("");
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to send message.",
-      );
+      setError(getCaughtErrorMessage(caughtError, "Unable to send message."));
     } finally {
       setIsSending(false);
     }
@@ -292,17 +272,11 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
     setIsDeleting(true);
     setError("");
     try {
-      await requestJson(`/messages/conversations/${conversationId}`, {
-        method: "DELETE",
-      }, "Unable to delete conversation.");
+      await deleteConversationById(conversationId);
       removeConversation(conversationId);
       setIsDeleteModalOpen(false);
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to delete conversation.",
-      );
+      setError(getCaughtErrorMessage(caughtError, "Unable to delete conversation."));
     } finally {
       setIsDeleting(false);
     }

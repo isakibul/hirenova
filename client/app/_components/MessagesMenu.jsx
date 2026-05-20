@@ -3,17 +3,23 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { requestJson } from "../_lib/clientApi";
 import { acquireRealtimeSocket } from "../_lib/realtime";
 import {
   formatDateTime,
   formatPresence,
   getCandidateProfileHref,
+  getCaughtErrorMessage,
   getDisplayName,
   getOtherParticipant,
   getRecordId,
   isOnline,
 } from "../_lib/ui";
+import {
+  deleteConversationById,
+  getConversation,
+  listConversations,
+  sendConversationMessage,
+} from "../(account)/messages/messagesApi";
 import {
   getUnreadSignature,
   markConversationRead,
@@ -156,9 +162,7 @@ export default function MessagesMenu({
   );
 
   async function refreshConversations({ markSelectedRead = false } = {}) {
-    const body = await requestJson("/messages/conversations", {
-      cache: "no-store",
-    }, "Unable to load messages.");
+    const body = await listConversations();
 
     const nextConversations = body.data ?? [];
     const nextSelectedId =
@@ -172,9 +176,7 @@ export default function MessagesMenu({
     setSelectedId(nextSelectedId);
 
     if (markSelectedRead && nextSelectedId) {
-      requestJson(`/messages/conversations/${nextSelectedId}`, {
-        cache: "no-store",
-      }).catch(() => undefined);
+      getConversation(nextSelectedId).catch(() => undefined);
     }
 
     const mappedConversations = nextConversations.map((conversation) =>
@@ -197,9 +199,7 @@ export default function MessagesMenu({
       await refreshConversations({ markSelectedRead: true });
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to load messages.",
+        getCaughtErrorMessage(caughtError, "Unable to load messages."),
       );
     } finally {
       setIsLoading(false);
@@ -251,9 +251,7 @@ export default function MessagesMenu({
       }
 
       try {
-        const body = await requestJson("/messages/conversations", {
-          cache: "no-store",
-        });
+        const body = await listConversations();
         if (!ignore) {
           const nextConversations = body.data ?? [];
           rememberUnreadState(nextConversations, { allowSound });
@@ -275,9 +273,7 @@ export default function MessagesMenu({
       updateConversation(updatedConversation);
 
       if (isOpenRef.current && selectedIdRef.current === updatedId) {
-        requestJson(`/messages/conversations/${updatedId}`, {
-          cache: "no-store",
-        })
+        getConversation(updatedId)
           .then((body) => {
             if (body?.data) {
               updateConversation(body.data);
@@ -360,17 +356,10 @@ export default function MessagesMenu({
   async function openConversation(conversationId) {
     setSelectedId(conversationId);
     setConversations((current) =>
-      current.map((conversation) =>
-        getRecordId(conversation) === conversationId
-          ? { ...conversation, isUnread: false }
-          : conversation,
-      ),
+      markConversationReadById(current, conversationId),
     );
     try {
-      const body = await requestJson(
-        `/messages/conversations/${conversationId}`,
-        { cache: "no-store" },
-      );
+      const body = await getConversation(conversationId);
       if (body.data) {
         setConversations((current) =>
           current.map((conversation) =>
@@ -399,34 +388,13 @@ export default function MessagesMenu({
     setIsSending(true);
     setError("");
     try {
-      const body = await requestJson(
-        `/messages/conversations/${conversationId}/messages`,
-        {
-          method: "POST",
-          body: JSON.stringify({ body: bodyText }),
-        },
-        "Unable to send message.",
-      );
-      setConversations((current) =>
-        current
-          .map((conversation) =>
-            getRecordId(conversation) === conversationId
-              ? body.data
-              : conversation,
-          )
-          .sort(
-            (first, second) =>
-              new Date(second.lastMessageAt ?? 0).getTime() -
-              new Date(first.lastMessageAt ?? 0).getTime(),
-          ),
-      );
+      const body = await sendConversationMessage(conversationId, bodyText);
+      setConversations((current) => upsertConversation(current, body.data));
       setSelectedId(conversationId);
       setDraft("");
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to send message.",
+        getCaughtErrorMessage(caughtError, "Unable to send message."),
       );
     } finally {
       setIsSending(false);
@@ -443,20 +411,12 @@ export default function MessagesMenu({
     setIsDeleting(true);
     setError("");
     try {
-      await requestJson(
-        `/messages/conversations/${conversationId}`,
-        {
-          method: "DELETE",
-        },
-        "Unable to delete conversation.",
-      );
+      await deleteConversationById(conversationId);
       removeConversation(conversationId);
       setIsDeleteModalOpen(false);
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to delete conversation.",
+        getCaughtErrorMessage(caughtError, "Unable to delete conversation."),
       );
     } finally {
       setIsDeleting(false);

@@ -3,6 +3,13 @@ import {
   minLengthError,
   optionalNumberError,
 } from "@lib/formValidation";
+import {
+  formatExperience as formatSharedExperience,
+  formatJobType as formatSharedJobType,
+  formatSalary,
+  getJobStatus,
+  jobTypes,
+} from "@lib/jobDisplay";
 
 export const emptyForm = {
   title: "",
@@ -15,13 +22,6 @@ export const emptyForm = {
   salary: "",
   expiresAt: "",
 };
-
-export const jobTypes = [
-  { value: "full-time", label: "Full Time" },
-  { value: "part-time", label: "Part Time" },
-  { value: "remote", label: "Remote" },
-  { value: "contract", label: "Contract" },
-];
 
 export const jobSortOptions = [
   { value: "updatedAt", label: "Updated Date" },
@@ -45,24 +45,10 @@ export const approvalFilterOptions = [
   { value: "declined", label: "Declined" },
 ];
 
-export function formatSalary(value) {
-  if (typeof value !== "number") {
-    return "Not disclosed";
-  }
-
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+export { formatSalary };
 
 export function formatJobStatus(job) {
-  if (job.expiresAt && new Date(job.expiresAt) <= new Date()) {
-    return "Expired";
-  }
-
-  return job.status === "closed" ? "Closed" : "Open";
+  return getJobStatus(job, { openLabel: "Open" });
 }
 
 export function getStatusClass(job) {
@@ -134,36 +120,11 @@ export function getApprovalClass(value) {
 }
 
 export function formatJobType(value) {
-  if (!value) {
-    return "Not set";
-  }
-
-  return value
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return formatSharedJobType(value, "Not set");
 }
 
 export function formatExperience(job) {
-  const min =
-    typeof job.experienceMin === "number"
-      ? job.experienceMin
-      : job.experienceRequired;
-  const max = job.experienceMax;
-
-  if (typeof min === "number" && typeof max === "number") {
-    return min === max ? `${min} years` : `${min}-${max} years`;
-  }
-
-  if (typeof min === "number") {
-    return `${min}+ years`;
-  }
-
-  if (typeof max === "number") {
-    return `Up to ${max} years`;
-  }
-
-  return "Experience not set";
+  return formatSharedExperience(job, "Experience not set");
 }
 
 export function validateJobForm(form) {

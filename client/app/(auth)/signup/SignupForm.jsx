@@ -1,18 +1,16 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
 import PasswordField from "@components/forms/PasswordField";
+import useValidatedForm from "@components/forms/useValidatedForm";
 import LoadingCircle from "@components/LoadingCircle";
 import StatusNotice from "@components/StatusNotice";
 import { requestJson } from "@lib/clientApi";
 import {
   emailError,
-  getVisibleErrors,
-  hasValidationErrors,
   passwordError,
-  touchAll,
   usernameError,
 } from "@lib/formValidation";
-import { getApiMessage } from "@lib/ui";
+import { getApiMessage, getCaughtErrorMessage } from "@lib/ui";
 import Link from "next/link";
 import { useState } from "react";
 const initialState = {
@@ -42,46 +40,27 @@ function validateSignupForm(form) {
   };
 }
 export default function SignupForm({ initialEmail = "" }) {
-  const [form, setForm] = useState({
+  const { form, markTouched, prepareSubmit, resetForm, updateField: setFieldValue, visibleErrors } = useValidatedForm({
     ...initialState,
     email: initialEmail,
-  });
-  const [touched, setTouched] = useState({});
-  const [submitAttempted, setSubmitAttempted] = useState(false);
+  }, validateSignupForm);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [createdEmail, setCreatedEmail] = useState("");
   const [resendNotice, setResendNotice] = useState("");
   const [isResending, setIsResending] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const validationErrors = validateSignupForm(form);
-  const visibleErrors = getVisibleErrors(
-    validationErrors,
-    touched,
-    submitAttempted,
-  );
   function updateField(field, value) {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    setFieldValue(field, value);
     setError("");
     setSuccess("");
     setResendNotice("");
   }
-  function markTouched(field) {
-    setTouched((current) => ({
-      ...current,
-      [field]: true,
-    }));
-  }
   async function handleSubmit(event) {
     event.preventDefault();
-    setSubmitAttempted(true);
-    setTouched(touchAll(validationErrors));
     setError("");
     setSuccess("");
-    if (hasValidationErrors(validationErrors)) {
+    if (!prepareSubmit()) {
       return;
     }
     setIsSubmitting(true);
@@ -101,15 +80,9 @@ export default function SignupForm({ initialEmail = "" }) {
       setSuccess(
         getApiMessage(body, "Account created. Please confirm your email."),
       );
-      setForm(initialState);
-      setTouched({});
-      setSubmitAttempted(false);
+      resetForm(initialState);
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to reach the server. Please try again.",
-      );
+      setError(getCaughtErrorMessage(caughtError, "Unable to reach the server. Please try again."));
     } finally {
       setIsSubmitting(false);
     }
@@ -135,11 +108,7 @@ export default function SignupForm({ initialEmail = "" }) {
       );
       setResendNotice(getApiMessage(body, "Confirmation email sent."));
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to resend confirmation email.",
-      );
+      setError(getCaughtErrorMessage(caughtError, "Unable to resend confirmation email."));
     } finally {
       setIsResending(false);
     }
