@@ -3,6 +3,7 @@ const { test } = require("node:test");
 
 const { Application, Conversation, Job, Notification, SavedJob, User } = require("../src/model");
 const applicationService = require("../src/modules/applications/applications.service");
+const applicationRankingService = require("../src/modules/applications/ranking.service");
 const jobService = require("../src/modules/jobs/jobs.service");
 const jobApproval = require("../src/modules/jobs/approval");
 const messageService = require("../src/modules/messages/messages.service");
@@ -156,6 +157,88 @@ test("application service lists and updates authorized applications", async (t) 
   assert.equal(application.saved, true);
   assert.equal(notified.type, "application_status");
   assert.equal(notified.recipient.toString(), "candidate-1");
+});
+
+test("application ranking scores candidate fit for a job", () => {
+  const ranked = applicationRankingService.scoreApplicationForJob({
+    job: {
+      title: "Senior React Engineer",
+      location: "Remote",
+      jobType: "remote",
+      skillsRequired: ["React", "Node.js", "Testing"],
+      experienceMin: 2,
+      experienceMax: 5,
+    },
+    application: {
+      coverLetter: "I have shipped React and Node.js products with testing.",
+      applicant: {
+        username: "candidate",
+        email: "candidate@example.com",
+        skills: ["React", "Node.js"],
+        experience: 3,
+        preferredLocation: "Remote",
+        resumeUrl: "https://api.example.com/resume.pdf",
+      },
+    },
+  });
+
+  assert.equal(ranked.label, "Strong fit");
+  assert.ok(ranked.score >= 80);
+  assert.deepEqual(ranked.matchedSkills, ["react", "node.js"]);
+  assert.ok(ranked.reason || ranked.deterministicReason);
+});
+
+test("application ranking returns authorized applications in score order", async (t) => {
+  const job = createDoc({
+    id: "job-rank-1",
+    title: "Senior React Engineer",
+    location: "Remote",
+    jobType: "remote",
+    skillsRequired: ["React", "Node.js"],
+    experienceMin: 2,
+    experienceMax: 5,
+    author: objectId("employer-1"),
+  });
+  const strongApplication = createDoc({
+    id: "app-strong",
+    coverLetter: "React and Node.js are my strongest tools.",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    applicant: {
+      username: "strong",
+      email: "strong@example.com",
+      skills: ["React", "Node.js"],
+      experience: 3,
+      preferredLocation: "Remote",
+      resumeUrl: "https://api.example.com/strong.pdf",
+    },
+  });
+  const weakApplication = createDoc({
+    id: "app-weak",
+    coverLetter: "I am interested in learning.",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    applicant: {
+      username: "weak",
+      email: "weak@example.com",
+      skills: ["Sales"],
+      experience: 1,
+      preferredLocation: "Dhaka",
+    },
+  });
+
+  t.mock.method(Job, "findById", async () => job);
+  t.mock.method(Application, "find", () =>
+    createQuery([weakApplication, strongApplication]),
+  );
+
+  const ranked = await applicationRankingService.rankApplicationsForJob({
+    jobId: "job-rank-1",
+    user: { id: "employer-1", role: "employer" },
+  });
+
+  assert.equal(ranked[0].id, "app-strong");
+  assert.equal(ranked[0].aiRanking.rank, 1);
+  assert.equal(ranked[0].aiRanking.source, "deterministic");
+  assert.ok(ranked[0].aiRanking.score > ranked[1].aiRanking.score);
 });
 
 test("job service builds safe filters and updates lifecycle notifications", async (t) => {

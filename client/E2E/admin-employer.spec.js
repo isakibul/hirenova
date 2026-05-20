@@ -47,3 +47,17 @@ test("employer can create a job that enters admin review", async ({
   await expect(page.getByText(title)).toBeVisible();
   await expect(page.getByText("Pending").first()).toBeVisible();
 });
+
+test("employer can turn on AI ranking for job applications", async ({
+  page,
+  request,
+}) => {
+  const seed = getSeedData();
+
+  await loginAs(page, request, "employer");
+  await page.goto(`/manage-jobs/${seed.jobs.approved.id}/applications`);
+  await expect(page.getByRole("heading", { name: "Applicants" })).toBeVisible();
+  await page.getByRole("button", { name: "Turn On AI Ranking" }).click();
+  await expect(page.getByText(/#1 · \d+\/100/)).toBeVisible();
+  await expect(page.getByText(/Ranking reason|AI reason/)).toBeVisible();
+});

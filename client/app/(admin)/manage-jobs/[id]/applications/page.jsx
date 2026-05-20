@@ -45,6 +45,7 @@ export default function JobApplicationsPage({ params }) {
         ) : null}
         <ApplicationsClient
           key={applications.length}
+          jobId={id}
           initialApplications={applications}
         />
       </div>

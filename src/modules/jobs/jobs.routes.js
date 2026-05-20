@@ -51,6 +51,14 @@ router.get(
   applicationControllers.findForJob
 );
 
+router.get(
+  "/:id/applications/ranking",
+  assistantLimiter,
+  authenticate,
+  authorize(["admin", "superadmin", "employer"]),
+  applicationControllers.rankForJob
+);
+
 router.post(
   "/:id/save",
   writeLimiter,
