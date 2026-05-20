@@ -9,9 +9,11 @@ export default function JobApplicationsPage({ params }) {
   const { id } = use(params);
   const [applications, setApplications] = useState([]);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadApplications() {
+      setIsLoading(true);
       try {
         const body = await requestJson(
           `/jobs/${id}/applications`,
@@ -25,6 +27,8 @@ export default function JobApplicationsPage({ params }) {
             ? caughtError.message
             : "Unable to load applicants.",
         );
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -47,6 +51,7 @@ export default function JobApplicationsPage({ params }) {
           key={applications.length}
           jobId={id}
           initialApplications={applications}
+          isLoading={isLoading}
         />
       </div>
     </section>

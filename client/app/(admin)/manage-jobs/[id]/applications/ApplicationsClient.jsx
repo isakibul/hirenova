@@ -2,6 +2,7 @@
 
 import ConfirmDialog from "@components/ConfirmDialog";
 import SelectField from "@components/forms/SelectField";
+import Icon from "@components/Icon";
 import { requestJson } from "@lib/clientApi";
 import { getCandidateProfileHref } from "@lib/ui";
 import Link from "next/link";
@@ -28,7 +29,7 @@ function getApplicantName(application) {
     return applicant.username ?? applicant.email ?? "this applicant";
 }
 
-export default function ApplicationsClient({ initialApplications, jobId }) {
+export default function ApplicationsClient({ initialApplications, isLoading = false, jobId }) {
     const [applications, setApplications] = useState(initialApplications);
     const [rankedApplications, setRankedApplications] = useState([]);
     const [isRankingEnabled, setIsRankingEnabled] = useState(false);
@@ -41,12 +42,12 @@ export default function ApplicationsClient({ initialApplications, jobId }) {
 
     async function loadRankedApplications() {
         setIsRankingLoading(true);
+        setIsRankingEnabled(true);
         setError("");
         try {
             const body = await requestJson(`/jobs/${jobId}/applications/ranking`, {}, "Unable to rank applicants.");
             setRankedApplications(body.data ?? []);
             setRankingSummary(body.ranking ?? null);
-            setIsRankingEnabled(true);
         }
         catch (caughtError) {
             setError(caughtError instanceof Error ? caughtError.message : "Unable to rank applicants.");
@@ -60,6 +61,15 @@ export default function ApplicationsClient({ initialApplications, jobId }) {
     function turnOffRanking() {
         setIsRankingEnabled(false);
         setError("");
+    }
+
+    async function updateRankingMode(event) {
+        if (event.target.checked) {
+            await loadRankedApplications();
+            return;
+        }
+
+        turnOffRanking();
     }
 
     async function updateStatus(application, status) {
@@ -104,31 +114,51 @@ export default function ApplicationsClient({ initialApplications, jobId }) {
         setPendingStatusChange(null);
     }
 
-    return (<div className="mt-6 space-y-4">
-      <div className="site-border site-card flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold">AI Ranking</p>
-          <p className="site-muted mt-1 text-xs">
-            {isRankingEnabled
-                ? `${rankingSummary?.totalItems ?? rankedApplications.length} applicants ranked for this role.`
-                : "Rank applicants by profile fit, skills, experience, and cover letter signals."}
-          </p>
+    return (<div className="mt-6">
+      <div className="site-border site-card rounded-lg border">
+        <div className="flex flex-col gap-3 border-b border-[var(--site-border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-semibold">
+                {isLoading
+                    ? "Loading Candidates"
+                    : `${visibleApplications.length} ${visibleApplications.length === 1 ? "Candidate" : "Candidates"}`}
+              </h2>
+              {isRankingEnabled ? (<span className="site-badge inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-semibold">
+                  <Icon name="spark"/>
+                  AI Ranking
+                </span>) : null}
+            </div>
+            <p className="site-muted mt-1 text-xs">
+              {isLoading
+                  ? "Loading applicants..."
+                  : isRankingLoading
+                  ? "Ranking applicants by fit signals..."
+                  : isRankingEnabled
+                      ? `${rankingSummary?.totalItems ?? rankedApplications.length} ranked by profile, skills, experience, and cover letter.`
+                      : "Review applicants in the default application order."}
+            </p>
+          </div>
+          <label className="site-field inline-flex h-9 w-fit items-center gap-2 rounded-md border px-3 text-xs font-semibold">
+            <input type="checkbox" checked={isRankingEnabled} onChange={updateRankingMode} disabled={isLoading || isRankingLoading || applications.length === 0} className="h-4 w-4"/>
+            <span className="inline-flex items-center gap-1">
+              <Icon name="spark"/>
+              AI Ranking
+            </span>
+          </label>
         </div>
-        {isRankingEnabled ? (<button type="button" onClick={turnOffRanking} disabled={isRankingLoading} className="site-border site-field rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-70">
-            Show Default Order
-          </button>) : (<button type="button" onClick={loadRankedApplications} disabled={isRankingLoading || applications.length === 0} className="site-button rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-70">
-            {isRankingLoading ? "Ranking..." : "Turn On AI Ranking"}
-          </button>)}
-      </div>
+        <div className="p-4">
       {error ? (<div className="site-danger rounded-lg border px-4 py-3 text-sm">{error}</div>) : null}
-      {visibleApplications.length === 0 ? (<div className="site-border site-card rounded-lg border p-6">
+      {isLoading || isRankingLoading ? (<div className="site-border site-panel rounded-lg border p-6">
+          <p className="font-semibold">{isRankingLoading ? "Ranking applicants..." : "Loading applicants..."}</p>
+        </div>) : visibleApplications.length === 0 ? (<div className="site-border site-panel rounded-lg border p-6">
           <p className="font-semibold">No applicants yet</p>
-        </div>) : visibleApplications.map((application) => {
+        </div>) : <div className="space-y-3">{visibleApplications.map((application) => {
         const applicant = application.applicant ?? {};
         const applicantHref = getCandidateProfileHref(applicant);
         const id = getApplicationId(application);
         const ranking = application.aiRanking;
-        return (<div key={id} className="site-border site-card rounded-lg border p-5">
+        return (<div key={id} className="site-border rounded-lg border bg-[var(--site-bg)] p-4">
             <div className="grid gap-4 md:grid-cols-[1fr_190px] md:items-start">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -159,7 +189,9 @@ export default function ApplicationsClient({ initialApplications, jobId }) {
               </div>
             </div>
           </div>);
-    })}
+    })}</div>}
+        </div>
+      </div>
       {pendingStatusChange ? (<ConfirmDialog title="Update application status?" icon="check" confirmLabel="Update Status" pendingLabel="Updating..." isPending={updatingId === getApplicationId(pendingStatusChange.application)} onCancel={() => setPendingStatusChange(null)} onConfirm={confirmStatusChange}>
           Change {getApplicantName(pendingStatusChange.application)} from{" "}
           <span className="font-semibold">
