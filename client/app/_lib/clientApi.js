@@ -7,6 +7,13 @@ const unsafeMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const defaultTimeoutMs = 10_000;
 
 export function getBackendApiUrl() {
+  if (
+    typeof window !== "undefined" &&
+    process.env.NEXT_PUBLIC_DIRECT_BACKEND_API !== "true"
+  ) {
+    return "/api/v1";
+  }
+
   return (
     process.env.NEXT_PUBLIC_BACKEND_API_URL?.replace(/\/$/, "") ??
     "/api/v1"

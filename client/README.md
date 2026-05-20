@@ -25,6 +25,8 @@ Required variables:
   same-origin rewrite, for example `http://localhost:4000/api/v1`.
 - `NEXT_PUBLIC_BACKEND_API_URL`: optional browser-visible backend API base URL.
   Leave it unset for the recommended same-origin `/api/v1` proxy path.
+- `NEXT_PUBLIC_DIRECT_BACKEND_API`: optional escape hatch. Leave unset or
+  `false` so browser auth uses the same-origin proxy and cookies work reliably.
 
 The backend also needs `CLIENT_URL` set to the same frontend origin. Email
 confirmation links are sent to `/confirm-email?token=...` on that URL.

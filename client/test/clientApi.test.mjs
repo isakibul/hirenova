@@ -6,6 +6,7 @@ const clientApi = await import("../app/_lib/clientApi.js");
 afterEach(() => {
   delete globalThis.window;
   delete process.env.NEXT_PUBLIC_BACKEND_API_URL;
+  delete process.env.NEXT_PUBLIC_DIRECT_BACKEND_API;
   clientApi.setMemoryCsrfToken("");
 });
 
@@ -24,6 +25,20 @@ test("getBackendPath prefixes relative backend routes", () => {
 
 test("getBackendPath defaults to the same-origin api proxy", () => {
   assert.equal(clientApi.getBackendPath("/auth/session"), "/api/v1/auth/session");
+});
+
+test("browser requests prefer same-origin proxy unless direct api is enabled", () => {
+  globalThis.window = {};
+  process.env.NEXT_PUBLIC_BACKEND_API_URL = "https://api.example.com/api/v1";
+
+  assert.equal(clientApi.getBackendPath("/auth/session"), "/api/v1/auth/session");
+
+  process.env.NEXT_PUBLIC_DIRECT_BACKEND_API = "true";
+
+  assert.equal(
+    clientApi.getBackendPath("/auth/session"),
+    "https://api.example.com/api/v1/auth/session",
+  );
 });
 
 test("getBackendPath leaves absolute URLs untouched", () => {
