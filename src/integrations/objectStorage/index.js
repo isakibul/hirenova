@@ -4,16 +4,22 @@ const {
   PutObjectCommand,
   S3Client,
 } = require("@aws-sdk/client-s3");
+const { NodeHttpHandler } = require("@smithy/node-http-handler");
 
-const { notFound } = require("../../utils/error");
+const { notFound, serviceUnavailable } = require("../../utils/error");
 
 const defaultRegion = "us-east-1";
+const defaultRequestTimeoutMs = 5000;
 const localEndpoint = "http://127.0.0.1:9000";
 const localAccessKey = "hirenova";
 const localSecretKey = "hirenova-minio-secret";
 const resumePrefix = "resumes";
 
 const getBooleanEnv = (value) => String(value ?? "").toLowerCase() === "true";
+const getPositiveInteger = (value, fallback) => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+};
 
 const getStorageConfig = (env = process.env) => ({
   endpoint:
@@ -31,7 +37,41 @@ const getStorageConfig = (env = process.env) => ({
     env.S3_FORCE_PATH_STYLE === undefined
       ? env.NODE_ENV !== "production"
       : getBooleanEnv(env.S3_FORCE_PATH_STYLE),
+  requestTimeoutMs: getPositiveInteger(
+    env.S3_REQUEST_TIMEOUT_MS,
+    defaultRequestTimeoutMs,
+  ),
 });
+
+const isStorageConnectionError = (error) =>
+  [
+    "AbortError",
+    "ECONNREFUSED",
+    "ECONNRESET",
+    "EHOSTUNREACH",
+    "ENOTFOUND",
+    "ETIMEDOUT",
+    "TimeoutError",
+  ].includes(error?.name) ||
+  [
+    "ECONNREFUSED",
+    "ECONNRESET",
+    "EHOSTUNREACH",
+    "ENOTFOUND",
+    "ETIMEDOUT",
+  ].includes(error?.code);
+
+const handleStorageError = (error) => {
+  if (error?.name === "NoSuchKey" || error?.name === "NotFound" || error?.$metadata?.httpStatusCode === 404) {
+    throw notFound("Resume not found");
+  }
+
+  if (isStorageConnectionError(error)) {
+    throw serviceUnavailable("Resume storage is unavailable. Please try again shortly.");
+  }
+
+  throw error;
+};
 
 let s3Client;
 
@@ -45,6 +85,10 @@ const getS3Client = () => {
     endpoint: config.endpoint,
     region: config.region,
     forcePathStyle: config.forcePathStyle,
+    requestHandler: new NodeHttpHandler({
+      connectionTimeout: config.requestTimeoutMs,
+      requestTimeout: config.requestTimeoutMs,
+    }),
     credentials:
       config.accessKeyId && config.secretAccessKey
         ? {
@@ -88,18 +132,22 @@ const uploadResumeObject = async ({
   const config = getStorageConfig();
   const key = getResumeObjectKey(filename);
 
-  await getS3Client().send(
-    new PutObjectCommand({
-      Bucket: config.bucket,
-      Key: key,
-      Body: buffer,
-      ContentType: contentType || "application/octet-stream",
-      Metadata: {
-        originalName: originalName || filename,
-        userId: String(userId),
-      },
-    }),
-  );
+  try {
+    await getS3Client().send(
+      new PutObjectCommand({
+        Bucket: config.bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType || "application/octet-stream",
+        Metadata: {
+          originalName: originalName || filename,
+          userId: String(userId),
+        },
+      }),
+    );
+  } catch (error) {
+    handleStorageError(error);
+  }
 
   return {
     bucket: config.bucket,
@@ -119,11 +167,7 @@ const getResumeObject = async (filename) => {
       }),
     );
   } catch (error) {
-    if (error?.name === "NoSuchKey" || error?.$metadata?.httpStatusCode === 404) {
-      throw notFound("Resume not found");
-    }
-
-    throw error;
+    handleStorageError(error);
   }
 };
 
@@ -143,11 +187,7 @@ const assertResumeObjectExists = async (filename) => {
       }),
     );
   } catch (error) {
-    if (error?.name === "NotFound" || error?.$metadata?.httpStatusCode === 404) {
-      throw notFound("Resume not found");
-    }
-
-    throw error;
+    handleStorageError(error);
   }
 };
 

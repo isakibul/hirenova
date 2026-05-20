@@ -28,10 +28,17 @@ const authorizationError = (msg = "Permission denied") => {
   return error;
 };
 
+const serviceUnavailable = (msg = "Service unavailable") => {
+  const error = new Error(msg);
+  error.status = 503;
+  return error;
+};
+
 module.exports = {
   serverError,
   badRequest,
   notFound,
   authenticationError,
   authorizationError,
+  serviceUnavailable,
 };

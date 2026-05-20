@@ -23,7 +23,25 @@ test("storage config defaults to local Docker MinIO outside production", () => {
     accessKeyId: "hirenova",
     secretAccessKey: "hirenova-minio-secret",
     forcePathStyle: true,
+    requestTimeoutMs: 5000,
   });
+});
+
+test("storage config accepts positive request timeout overrides", () => {
+  assert.equal(
+    objectStorage.getStorageConfig({
+      NODE_ENV: "development",
+      S3_REQUEST_TIMEOUT_MS: "2500",
+    }).requestTimeoutMs,
+    2500,
+  );
+  assert.equal(
+    objectStorage.getStorageConfig({
+      NODE_ENV: "development",
+      S3_REQUEST_TIMEOUT_MS: "nope",
+    }).requestTimeoutMs,
+    5000,
+  );
 });
 
 test("uploadResumeObject writes S3 object metadata", async () => {
@@ -79,5 +97,29 @@ test("missing resume objects return a domain not found error", async () => {
   await assert.rejects(
     () => objectStorage.getResumeObject("missing.pdf"),
     /Resume not found/,
+  );
+});
+
+test("storage connection failures return a clear service error", async () => {
+  objectStorage.setS3ClientForTests({
+    async send() {
+      const error = new Error("connect failed");
+      error.code = "ECONNREFUSED";
+      throw error;
+    },
+  });
+
+  await assert.rejects(
+    () =>
+      objectStorage.uploadResumeObject({
+        buffer: Buffer.from("resume"),
+        contentType: "application/pdf",
+        filename: "user-1-resume.pdf",
+        originalName: "Resume.pdf",
+        userId: "user-1",
+      }),
+    (error) =>
+      error.status === 503 &&
+      /Resume storage is unavailable/.test(error.message),
   );
 });

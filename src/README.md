@@ -84,6 +84,7 @@ S3_BUCKET=hirenova-resumes
 S3_ACCESS_KEY=hirenova
 S3_SECRET_KEY=hirenova-minio-secret
 S3_FORCE_PATH_STYLE=true
+S3_REQUEST_TIMEOUT_MS=5000
 ```
 
 Open the MinIO console at `http://localhost:9001`. For production, point the
