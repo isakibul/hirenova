@@ -74,7 +74,7 @@ export default function JobApplicationsPage({ params }) {
           </div>
           <Link
             href="/manage-jobs"
-            className="site-border site-field inline-flex h-11 w-fit items-center rounded-md border px-4 text-sm font-semibold"
+            className="site-button inline-flex h-11 w-fit items-center rounded-md px-4 text-sm font-semibold"
           >
             Back to Jobs
           </Link>
