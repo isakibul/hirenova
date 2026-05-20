@@ -23,7 +23,7 @@ export function requireUrlEnv(name, fallback) {
 }
 
 export function getBackendApiUrl() {
-  return requireUrlEnv("NEXT_PUBLIC_BACKEND_API_URL", "http://localhost:4000/api/v1");
+  return requireUrlEnv("BACKEND_API_URL", "http://localhost:4000/api/v1");
 }
 
 export function getBackendBaseUrl() {

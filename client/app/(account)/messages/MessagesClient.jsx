@@ -20,6 +20,12 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  markConversationReadById,
+  removeConversationById,
+  upsertConversation,
+} from "./messageUtils";
+
 export default function MessagesClient({ currentUserId, accessToken = "" }) {
   const { accessToken: authAccessToken, user } = useAuth();
   const effectiveAccessToken = accessToken || authAccessToken;
@@ -61,13 +67,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
         )
           ? requestedConversationId
           : getRecordId(nextConversations[0]);
-      setConversations(
-        nextConversations.map((conversation) =>
-          getRecordId(conversation) === nextSelectedId
-            ? { ...conversation, isUnread: false }
-            : conversation,
-        ),
-      );
+      setConversations(markConversationReadById(nextConversations, nextSelectedId));
       setSelectedId(nextSelectedId);
       if (nextSelectedId) {
         requestJson(`/messages/conversations/${nextSelectedId}`, {
@@ -91,25 +91,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
     }
 
     setConversations((current) => {
-      const updatedId = getRecordId(updatedConversation);
-      const hasConversation = current.some(
-        (conversation) => getRecordId(conversation) === updatedId,
-      );
-      const nextConversations = (
-        hasConversation
-          ? current.map((conversation) =>
-              getRecordId(conversation) === updatedId
-                ? updatedConversation
-                : conversation,
-            )
-          : [updatedConversation, ...current]
-      ).sort(
-        (first, second) =>
-          new Date(second.lastMessageAt ?? 0).getTime() -
-          new Date(first.lastMessageAt ?? 0).getTime(),
-      );
-
-      return nextConversations;
+      return upsertConversation(current, updatedConversation);
     });
 
     setSelectedId((currentSelectedId) =>
@@ -121,9 +103,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
 
   const removeConversation = useCallback((conversationId) => {
     setConversations((current) => {
-      const nextConversations = current.filter(
-        (conversation) => getRecordId(conversation) !== conversationId,
-      );
+      const nextConversations = removeConversationById(current, conversationId);
 
       if (selectedIdRef.current === conversationId) {
         const nextSelectedId = getRecordId(nextConversations[0]);
@@ -247,11 +227,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
   async function openConversation(conversationId) {
     setSelectedId(conversationId);
     setConversations((current) =>
-      current.map((conversation) =>
-        getRecordId(conversation) === conversationId
-          ? { ...conversation, isUnread: false }
-          : conversation,
-      ),
+      markConversationReadById(current, conversationId),
     );
     try {
       const body = await requestJson(
@@ -292,19 +268,7 @@ export default function MessagesClient({ currentUserId, accessToken = "" }) {
         },
         "Unable to send message.",
       );
-      setConversations((current) =>
-        current
-          .map((conversation) =>
-            getRecordId(conversation) === conversationId
-              ? body.data
-              : conversation,
-          )
-          .sort(
-            (first, second) =>
-              new Date(second.lastMessageAt ?? 0).getTime() -
-              new Date(first.lastMessageAt ?? 0).getTime(),
-          ),
-      );
+      setConversations((current) => upsertConversation(current, body.data));
       setSelectedId(conversationId);
       setDraft("");
     } catch (caughtError) {

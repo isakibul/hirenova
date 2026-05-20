@@ -1,84 +1,29 @@
 import FormattedText from "@components/FormattedText";
 import Icon from "@components/Icon";
+import { requestServerBackend } from "@lib/serverApi";
+import { formatDate } from "@lib/ui";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
 import JobActions from "./JobActions";
-function getBackendApiUrl() {
-    return (process.env.NEXT_PUBLIC_BACKEND_API_URL?.replace(/\/$/, "") ??
-        "http://localhost:4000/api/v1");
-}
+import {
+    formatExperience,
+    formatJobType,
+    formatSalary,
+    getJobStatus,
+} from "../jobDisplay";
+
 async function getJob(id) {
-    const response = await fetch(`${getBackendApiUrl()}/jobs/${id}`, {
-        cache: "no-store",
-    });
-    const body = await response.json().catch(() => ({}));
-    if (response.ok && body.data && !body.data.company && body.data.author) {
-        const companyResponse = await fetch(`${getBackendApiUrl()}/companies/${body.data.author}`, {
-            cache: "no-store",
-        });
-        const companyBody = await companyResponse.json().catch(() => ({}));
-        if (companyResponse.ok && companyBody.data) {
-            body.data.company = companyBody.data;
+    const result = await requestServerBackend(`/jobs/${id}`);
+
+    if (result.ok && result.body.data && !result.body.data.company && result.body.data.author) {
+        const companyResult = await requestServerBackend(`/companies/${result.body.data.author}`);
+        if (companyResult.ok && companyResult.body.data) {
+            result.body.data.company = companyResult.body.data;
         }
     }
-    return { body, ok: response.ok, status: response.status };
-}
-function formatDate(value) {
-    if (!value) {
-        return "Not available";
-    }
-    return new Intl.DateTimeFormat("en", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-    }).format(new Date(value));
-}
-function formatJobType(value) {
-    if (!value) {
-        return "Not specified";
-    }
-    return value
-        .split("-")
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(" ");
-}
-function formatSalary(value) {
-    if (typeof value !== "number") {
-        return "Not disclosed";
-    }
-    return new Intl.NumberFormat("en", {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: 0,
-    }).format(value);
-}
-function formatExperience(job) {
-    const min = typeof job.experienceMin === "number"
-        ? job.experienceMin
-        : job.experienceRequired;
-    const max = job.experienceMax;
-    if (typeof min === "number" && typeof max === "number") {
-        return min === max ? `${min} years` : `${min}-${max} years`;
-    }
-    if (typeof min === "number") {
-        return `${min}+ years`;
-    }
-    if (typeof max === "number") {
-        return `Up to ${max} years`;
-    }
-    return "Not specified";
-}
-function getJobStatus(job) {
-    if (job.approvalStatus === "pending") {
-        return "Under Review";
-    }
-    if (job.approvalStatus === "declined") {
-        return "Declined";
-    }
-    if (job.expiresAt && new Date(job.expiresAt) <= new Date()) {
-        return "Expired";
-    }
-    return job.status === "closed" ? "Closed" : "Open Role";
+
+    return result;
 }
 function getErrorMessage(response) {
     return response.error ?? response.message ?? "Unable to load this job.";

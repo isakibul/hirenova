@@ -109,7 +109,9 @@ E2E_API_URL=http://127.0.0.1:4100/api/v1 npm run test:e2e:external
   the current user from the backend HttpOnly auth cookie.
 - `app/_components`: shared UI and provider components.
 - `app/_lib`: shared helpers for API URLs, backend calls, environment values,
-  realtime connections, validation, and UI formatting.
+  realtime connections, server-side API calls, validation, and UI formatting.
+- `app/<route-group>/<feature>/*Utils.js`: feature-level pure utilities that
+  can be unit-tested separately from large interactive components.
 
 ## Deploy on Vercel
 

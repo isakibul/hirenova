@@ -1,3 +1,5 @@
+import { requestServerBackend } from "@lib/serverApi";
+
 import JobsBrowser from "./JobsBrowser";
 const jobTypes = [
   { value: "full-time", label: "Full Time" },
@@ -42,12 +44,6 @@ function getPositiveNumber(value, fallback) {
   }
   return parsed;
 }
-function getBackendApiUrl() {
-  return (
-    process.env.NEXT_PUBLIC_BACKEND_API_URL?.replace(/\/$/, "") ??
-    "http://localhost:4000/api/v1"
-  );
-}
 async function getJobs(params) {
   const query = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
@@ -55,11 +51,7 @@ async function getJobs(params) {
       query.set(key, String(value));
     }
   });
-  const response = await fetch(`${getBackendApiUrl()}/jobs?${query.toString()}`, {
-    cache: "no-store",
-  });
-  const body = await response.json().catch(() => ({}));
-  return { body, ok: response.ok, status: response.status };
+  return requestServerBackend(`/jobs?${query.toString()}`);
 }
 export default async function JobsPage({ searchParams }) {
   const params = (await searchParams) ?? {};

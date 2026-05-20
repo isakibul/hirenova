@@ -14,22 +14,18 @@ import {
   getRecordId,
   isOnline,
 } from "../_lib/ui";
+import {
+  getUnreadSignature,
+  markConversationRead,
+  markConversationReadById,
+  removeConversationById,
+  upsertConversation,
+} from "../(account)/messages/messageUtils";
 import ConfirmDialog from "./ConfirmDialog";
 import Icon from "./Icon";
 import LoadingCircle from "./LoadingCircle";
 import Modal from "./Modal";
 import { RowListSkeleton } from "./Skeleton";
-
-function getUnreadSignature(conversations = []) {
-  return conversations
-    .filter((conversation) => conversation.isUnread)
-    .map(
-      (conversation) =>
-        `${getRecordId(conversation)}:${conversation.lastMessageAt ?? ""}`,
-    )
-    .sort()
-    .join("|");
-}
 
 export default function MessagesMenu({
   enabled = false,
@@ -132,23 +128,7 @@ export default function MessagesMenu({
       }
 
       setConversations((current) => {
-        const updatedId = getRecordId(updatedConversation);
-        const hasConversation = current.some(
-          (conversation) => getRecordId(conversation) === updatedId,
-        );
-        const nextConversations = (
-          hasConversation
-            ? current.map((conversation) =>
-                getRecordId(conversation) === updatedId
-                  ? updatedConversation
-                  : conversation,
-              )
-            : [updatedConversation, ...current]
-        ).sort(
-          (first, second) =>
-            new Date(second.lastMessageAt ?? 0).getTime() -
-            new Date(first.lastMessageAt ?? 0).getTime(),
-        );
+        const nextConversations = upsertConversation(current, updatedConversation);
 
         rememberUnreadState(nextConversations);
         return nextConversations;
@@ -160,9 +140,7 @@ export default function MessagesMenu({
   const removeConversation = useCallback(
     (conversationId) => {
       setConversations((current) => {
-        const nextConversations = current.filter(
-          (conversation) => getRecordId(conversation) !== conversationId,
-        );
+        const nextConversations = removeConversationById(current, conversationId);
 
         if (selectedIdRef.current === conversationId) {
           const nextSelectedId = getRecordId(nextConversations[0]);
@@ -201,7 +179,7 @@ export default function MessagesMenu({
 
     const mappedConversations = nextConversations.map((conversation) =>
       markSelectedRead && getRecordId(conversation) === nextSelectedId
-        ? { ...conversation, isUnread: false }
+        ? markConversationRead(conversation)
         : conversation,
     );
     rememberUnreadState(mappedConversations, { allowSound: false });
