@@ -147,8 +147,8 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
         setPendingStatusChange(null);
     }
 
-    return (<div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
-      <section className="site-border site-card rounded-lg border">
+    return (<div className="mt-8 grid gap-4 lg:grid-cols-3">
+      <section className="site-border site-card rounded-lg border lg:col-span-2">
         <div className="site-panel border-b border-[var(--site-border)] p-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
@@ -235,7 +235,7 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
     })}</div>}
           </div>
       </section>
-      <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+      <aside className="space-y-4 lg:sticky lg:top-24 lg:col-span-1 lg:self-start">
         <section className="site-border site-card rounded-lg border p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
