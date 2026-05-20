@@ -69,6 +69,27 @@ Use `EMAIL_HOST=localhost`, `EMAIL_PORT=1025`, and `EMAIL_SECURE=false`.
 Open `http://localhost:8025` to inspect confirmation, reset, and newsletter
 campaign emails.
 
+## Resume Storage
+
+Resume uploads use S3-compatible object storage instead of writing files into
+the project directory. The local `docker-compose.yml` includes MinIO and creates
+the `hirenova-resumes` bucket automatically.
+
+Use these local defaults:
+
+```bash
+S3_ENDPOINT=http://127.0.0.1:9000
+S3_REGION=us-east-1
+S3_BUCKET=hirenova-resumes
+S3_ACCESS_KEY=hirenova
+S3_SECRET_KEY=hirenova-minio-secret
+S3_FORCE_PATH_STYLE=true
+```
+
+Open the MinIO console at `http://localhost:9001`. For production, point the
+same variables at AWS S3, Cloudflare R2, DigitalOcean Spaces, or another
+S3-compatible service.
+
 ## Backend Tests
 
 The backend test surface is self-contained and does not require the `client/`

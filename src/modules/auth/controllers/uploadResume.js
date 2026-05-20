@@ -1,21 +1,23 @@
-const { mkdir, writeFile } = require("fs/promises");
-const path = require("path");
 const { randomUUID } = require("crypto");
 
 const { getResumeExtension, validateResumeFile } = require("../../../integrations/resume");
-const { getResumeUrl, safeUserPart, uploadRoot } = require("./resumeAccess");
+const { uploadResumeObject } = require("../../../integrations/objectStorage");
+const { getResumeUrl, safeUserPart } = require("./resumeAccess");
 
 const uploadResume = async (req, res, next) => {
   try {
     validateResumeFile(req.file);
 
-    await mkdir(uploadRoot, { recursive: true });
-
     const extension = getResumeExtension(req.file.originalname);
     const filename = `${safeUserPart(req.user.id)}-${Date.now()}-${randomUUID()}${extension}`;
-    const destination = path.join(uploadRoot, filename);
 
-    await writeFile(destination, req.file.buffer);
+    await uploadResumeObject({
+      buffer: req.file.buffer,
+      contentType: req.file.mimetype,
+      filename,
+      originalName: req.file.originalname,
+      userId: req.user.id,
+    });
 
     const resumeUrl = getResumeUrl(req, filename);
 

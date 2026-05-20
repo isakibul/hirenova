@@ -1,5 +1,4 @@
-const { readFile } = require("fs/promises");
-
+const { getResumeObjectBuffer } = require("../../../integrations/objectStorage");
 const {
   extractResumeText,
   normalizeResumeText,
@@ -10,7 +9,6 @@ const { badRequest } = require("../../../utils/error");
 const {
   assertCanAccessResume,
   getResumeFilename,
-  getResumePath,
 } = require("./resumeAccess");
 
 const getResumeFromRequest = async (req) => {
@@ -38,7 +36,7 @@ const getResumeFromRequest = async (req) => {
   await assertCanAccessResume({ filename, user: req.user });
 
   return {
-    buffer: await readFile(getResumePath(filename)),
+    buffer: await getResumeObjectBuffer(filename),
     filename,
   };
 };

@@ -1,9 +1,5 @@
-const path = require("path");
-
 const { User } = require("../../../infrastructure/database/models");
-const { authorizationError, badRequest, notFound } = require("../../../utils/error");
-
-const uploadRoot = path.join(process.cwd(), "uploads", "resumes");
+const { authorizationError, badRequest } = require("../../../utils/error");
 
 const safeUserPart = (userId) => String(userId).replace(/[^a-zA-Z0-9_-]/g, "-");
 
@@ -28,22 +24,11 @@ const getResumeFilename = (resumeUrl = "") => {
     return "";
   }
 
-  return path.basename(normalizedPathname);
+  return normalizedPathname.split("/").pop();
 };
 
 const getResumeUrl = (req, filename) =>
   `${req.protocol}://${req.get("host")}/api/v1/auth/resumes/${encodeURIComponent(filename)}`;
-
-const getResumePath = (filename) => {
-  const safeFilename = path.basename(filename);
-  const filepath = path.resolve(uploadRoot, safeFilename);
-
-  if (!filepath.startsWith(uploadRoot)) {
-    throw badRequest("Invalid resume path.");
-  }
-
-  return filepath;
-};
 
 const validateOwnResumeUrl = (userId, resumeUrl = "") => {
   if (!resumeUrl) {
@@ -81,27 +66,14 @@ const assertCanAccessResume = async ({ filename, user }) => {
   throw authorizationError("Operation not allowed");
 };
 
-const assertResumeExists = async (filepath) => {
-  const { stat } = require("fs/promises");
-
-  try {
-    await stat(filepath);
-  } catch {
-    throw notFound("Resume not found");
-  }
-};
-
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 module.exports = {
   assertCanAccessResume,
-  assertResumeExists,
   getResumeFilename,
-  getResumePath,
   getResumeUrl,
   safeUserPart,
-  uploadRoot,
   validateOwnResumeUrl,
 };

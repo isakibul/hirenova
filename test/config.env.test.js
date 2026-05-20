@@ -39,6 +39,7 @@ test("validateRuntimeEnv requires production hardening values", () => {
     EMAIL_FROM: "HireNova <no-reply@example.com>",
     RATE_LIMIT_STORE: "memory",
     REDIS_URL: "redis://localhost:6379",
+    S3_BUCKET: "hirenova-resumes",
   });
 
   assert.ok(errors.includes("RATE_LIMIT_STORE must be redis in production."));
@@ -49,5 +50,8 @@ test("validateRuntimeEnv requires production hardening values", () => {
   );
   assert.ok(
     errors.includes("EMAIL_SECRET must be at least 32 characters long."),
+  );
+  assert.ok(
+    errors.includes("S3_ACCESS_KEY and S3_SECRET_KEY are required for resume storage."),
   );
 });

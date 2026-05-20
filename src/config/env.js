@@ -40,6 +40,7 @@ const validateRuntimeEnv = (env = process.env) => {
     "EMAIL_HOST",
     "EMAIL_PORT",
     "EMAIL_FROM",
+    "S3_BUCKET",
   ];
 
   required.forEach((name) => {
@@ -70,6 +71,10 @@ const validateRuntimeEnv = (env = process.env) => {
 
   if (parseCsv(env.CORS_ORIGINS || "").length === 0) {
     errors.push("CORS_ORIGINS must include at least one production frontend origin.");
+  }
+
+  if (!env.S3_ACCESS_KEY?.trim() || !env.S3_SECRET_KEY?.trim()) {
+    errors.push("S3_ACCESS_KEY and S3_SECRET_KEY are required for resume storage.");
   }
 
   return errors;
