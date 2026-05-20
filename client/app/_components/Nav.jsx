@@ -35,7 +35,7 @@ function getUserRole(role) {
   return undefined;
 }
 export default function Nav() {
-  const { isAuthenticated, logout, status, user } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const userRole = getUserRole(user?.role);
@@ -275,7 +275,7 @@ export default function Nav() {
                 href="/signup"
                 className="site-button rounded-md px-3 py-1.5 text-[13px] font-medium transition"
               >
-                {status === "loading" ? "..." : "Get Started"}
+                Get Started
               </Link>
             )}
           </div>

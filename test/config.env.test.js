@@ -17,6 +17,7 @@ test("parseCsv trims empty values", () => {
 test("getAllowedOrigins falls back only outside production", () => {
   assert.deepEqual(getAllowedOrigins({ NODE_ENV: "development" }), [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
   ]);
   assert.deepEqual(getAllowedOrigins({ NODE_ENV: "production" }), []);
 });

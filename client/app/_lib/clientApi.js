@@ -4,6 +4,7 @@ let memoryAccessToken = "";
 let memoryCsrfToken = "";
 const authStorageKey = "hirenova-auth";
 const unsafeMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const defaultTimeoutMs = 10_000;
 
 export function getBackendApiUrl() {
   return (
@@ -37,6 +38,46 @@ export function setMemoryCsrfToken(csrfToken = "") {
   memoryCsrfToken = csrfToken;
 }
 
+function getRequestTimeoutMs() {
+  const timeout = Number(process.env.NEXT_PUBLIC_API_TIMEOUT_MS);
+  return Number.isFinite(timeout) && timeout > 0 ? timeout : defaultTimeoutMs;
+}
+
+function createTimeoutController() {
+  if (typeof AbortController === "undefined") {
+    return { signal: undefined, clear: () => undefined };
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), getRequestTimeoutMs());
+
+  return {
+    signal: controller.signal,
+    clear: () => clearTimeout(timeoutId),
+  };
+}
+
+async function fetchWithTimeout(path, init = {}) {
+  const timeout = init.signal
+    ? { signal: init.signal, clear: () => undefined }
+    : createTimeoutController();
+
+  try {
+    return await fetch(path, {
+      ...init,
+      signal: timeout.signal,
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error("Request timed out. Please check the server connection.");
+    }
+
+    throw error;
+  } finally {
+    timeout.clear();
+  }
+}
+
 function isUnsafeMethod(method = "GET") {
   return unsafeMethods.has(String(method).toUpperCase());
 }
@@ -46,7 +87,7 @@ async function getCsrfToken() {
     return memoryCsrfToken;
   }
 
-  const response = await fetch(getBackendPath("/auth/csrf"), {
+  const response = await fetchWithTimeout(getBackendPath("/auth/csrf"), {
     cache: "no-store",
     credentials: "include",
   });
@@ -93,7 +134,7 @@ export async function backendFetch(path, init = {}) {
     headers.set("Content-Type", "application/json");
   }
 
-  return fetch(getBackendPath(path), {
+  return fetchWithTimeout(getBackendPath(path), {
     ...fetchInit,
     credentials: fetchInit.credentials ?? "include",
     headers,

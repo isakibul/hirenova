@@ -1,4 +1,5 @@
 const LOCAL_CLIENT_URL = "http://localhost:3000";
+const LOCAL_LOOPBACK_CLIENT_URL = "http://127.0.0.1:3000";
 
 const parseCsv = (value = "") =>
   value
@@ -13,7 +14,9 @@ const getAllowedOrigins = (env = process.env) => {
     return origins;
   }
 
-  return env.NODE_ENV === "production" ? [] : [LOCAL_CLIENT_URL];
+  return env.NODE_ENV === "production"
+    ? []
+    : [LOCAL_CLIENT_URL, LOCAL_LOOPBACK_CLIENT_URL];
 };
 
 const isPlaceholderSecret = (value = "") =>
@@ -74,6 +77,7 @@ const validateRuntimeEnv = (env = process.env) => {
 
 module.exports = {
   LOCAL_CLIENT_URL,
+  LOCAL_LOOPBACK_CLIENT_URL,
   getAllowedOrigins,
   parseCsv,
   validateRuntimeEnv,
