@@ -4,8 +4,7 @@ import ConfirmDialog from "@components/ConfirmDialog";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
 import { requestJson } from "@lib/clientApi";
-import { formatDate, getCandidateProfileHref } from "@lib/ui";
-import Link from "next/link";
+import { formatDate, formatDateTime } from "@lib/ui";
 import { useState } from "react";
 import {
     formatJobStatus,
@@ -38,6 +37,16 @@ function getStatusCount(applications, status) {
     return applications.filter((application) => (application.status ?? "submitted") === status).length;
 }
 
+function getCoverLetterPreview(value) {
+    const words = String(value ?? "").trim().split(/\s+/).filter(Boolean);
+
+    if (words.length === 0) {
+        return "No cover letter added.";
+    }
+
+    return words.length > 7 ? `${words.slice(0, 7).join(" ")}...` : words.join(" ");
+}
+
 function DetailItem({ label, value }) {
     return (<div>
       <p className="site-muted text-[11px] font-semibold uppercase tracking-wide">{label}</p>
@@ -54,7 +63,13 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
     const [error, setError] = useState("");
     const [updatingId, setUpdatingId] = useState("");
     const [pendingStatusChange, setPendingStatusChange] = useState(null);
+    const [selectedApplicationId, setSelectedApplicationId] = useState("");
     const visibleApplications = isRankingEnabled ? rankedApplications : applications;
+    const selectedApplication = selectedApplicationId
+        ? visibleApplications.find((application) => getApplicationId(application) === selectedApplicationId)
+            ?? applications.find((application) => getApplicationId(application) === selectedApplicationId)
+            ?? null
+        : null;
     const reviewCount = getStatusCount(applications, "reviewing") + getStatusCount(applications, "shortlisted");
     const latestApplication = applications[0];
 
@@ -133,9 +148,31 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
     }
 
     return (<div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
-      <div className="site-border site-card rounded-lg border">
-        <div className="border-b border-[var(--site-border)] px-4 py-3">
-          <div>
+      <div className="space-y-4">
+        <section className="site-border site-card rounded-lg border p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-semibold">AI Ranking</h2>
+              <p className="site-muted mt-1 text-xs">
+                {isRankingLoading
+                    ? "Ranking applicants by fit signals..."
+                    : isRankingEnabled
+                        ? `${rankingSummary?.totalItems ?? rankedApplications.length} ranked by profile, skills, experience, and cover letter.`
+                        : "Sort candidates by profile, skills, experience, and cover letter."}
+              </p>
+            </div>
+            <label className="site-field inline-flex h-9 w-fit items-center gap-2 rounded-md border px-3 text-xs font-semibold">
+              <input type="checkbox" checked={isRankingEnabled} onChange={updateRankingMode} disabled={isLoading || isRankingLoading || applications.length === 0} className="h-4 w-4"/>
+              <span className="inline-flex items-center gap-1">
+                <Icon name="spark"/>
+                AI Ranking
+              </span>
+            </label>
+          </div>
+        </section>
+
+        <section className="site-border site-card rounded-lg border">
+          <div className="border-b border-[var(--site-border)] px-4 py-3">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="font-semibold">
                 {isLoading
@@ -151,14 +188,13 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
               {isLoading
                   ? "Loading applicants..."
                   : isRankingLoading
-                  ? "Ranking applicants by fit signals..."
-                  : isRankingEnabled
-                      ? `${rankingSummary?.totalItems ?? rankedApplications.length} ranked by profile, skills, experience, and cover letter.`
-                      : "Review applicants in the default application order."}
+                      ? "Ranking applicants by fit signals..."
+                      : selectedApplication
+                          ? `Viewing ${getApplicantName(selectedApplication)}.`
+                          : "Select an applicant to review the full application."}
             </p>
           </div>
-        </div>
-        <div className="p-4">
+          <div className="p-4">
       {error ? (<div className="site-danger rounded-lg border px-4 py-3 text-sm">{error}</div>) : null}
       {isLoading || isRankingLoading ? (<div className="site-border site-panel rounded-lg border p-6">
           <p className="font-semibold">{isRankingLoading ? "Ranking applicants..." : "Loading applicants..."}</p>
@@ -166,19 +202,17 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
           <p className="font-semibold">No applicants yet</p>
         </div>) : <div className="space-y-3">{visibleApplications.map((application) => {
         const applicant = application.applicant ?? {};
-        const applicantHref = getCandidateProfileHref(applicant);
         const id = getApplicationId(application);
         const ranking = application.aiRanking;
-        return (<div key={id} className="site-border rounded-lg border bg-[var(--site-bg)] p-4">
+        const isSelected = selectedApplicationId === id;
+        return (<div key={id} className={`site-border rounded-lg border bg-[var(--site-bg)] p-4 ${isSelected ? "ring-2 ring-[var(--site-accent)]" : ""}`}>
             <div className="grid gap-4 md:grid-cols-[1fr_190px] md:items-start">
-              <div>
+              <button type="button" onClick={() => setSelectedApplicationId(id)} className="min-w-0 text-left">
                 <div className="flex flex-wrap items-center gap-2">
                   {ranking ? (<span className="site-badge rounded-md px-2 py-1 text-xs font-semibold">
                       #{ranking.rank} · {ranking.score}/100 · {ranking.label}
                     </span>) : null}
-                  {applicantHref ? (<Link href={applicantHref} className="site-link text-lg font-semibold">
-                      {applicant.username ?? applicant.email ?? "Applicant"}
-                    </Link>) : (<p className="text-lg font-semibold">{applicant.username ?? applicant.email ?? "Applicant"}</p>)}
+                  <span className="text-lg font-semibold">{applicant.username ?? applicant.email ?? "Applicant"}</span>
                 </div>
                 <p className="site-muted mt-1 text-sm">{applicant.email ?? "No email"}</p>
                 {ranking ? (<div className="mt-4 rounded-md border border-[var(--site-border)] bg-[var(--site-panel)] p-3 text-sm">
@@ -193,68 +227,75 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
                         </span>))}
                     </div>
                   </div>) : null}
-                {application.coverLetter ? (<p className="site-muted mt-4 whitespace-pre-line text-sm leading-6">{application.coverLetter}</p>) : null}
-              </div>
+                <p className="site-muted mt-4 text-sm leading-6">{getCoverLetterPreview(application.coverLetter)}</p>
+              </button>
               <div className="w-32 justify-self-end">
                 <SelectField value={application.status ?? "submitted"} onChange={(nextStatus) => requestStatusChange(application, nextStatus)} options={statusOptions} disabled={updatingId === id} className="site-field min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none"/>
               </div>
             </div>
           </div>);
     })}</div>}
-        </div>
+          </div>
+        </section>
       </div>
       <aside className="space-y-4">
         <section className="site-border site-card rounded-lg border p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="font-semibold">Application Details</h2>
-              <p className="site-muted mt-1 text-xs">Job and pipeline snapshot.</p>
+              <p className="site-muted mt-1 text-xs">
+                {selectedApplication ? "Selected applicant review." : "Choose an applicant from the list."}
+              </p>
             </div>
             <span className="site-badge rounded px-2 py-1 text-xs font-semibold">
-              {applications.length} total
+              {selectedApplication ? getStatusLabel(selectedApplication.status ?? "submitted") : `${applications.length} total`}
             </span>
           </div>
-          <div className="mt-4 space-y-4">
-            <DetailItem label="Job" value={job?.title}/>
-            <DetailItem label="Company" value={job?.company?.name}/>
-            <div className="grid grid-cols-2 gap-4">
-              <DetailItem label="Location" value={job?.location}/>
-              <DetailItem label="Type" value={formatJobType(job?.jobType)}/>
-              <DetailItem label="Salary" value={formatSalary(job?.salary)}/>
-              <DetailItem label="Status" value={job ? formatJobStatus(job) : "Loading"}/>
-            </div>
-            <DetailItem label="Deadline" value={formatDate(job?.expiresAt, "No deadline")}/>
-          </div>
-        </section>
-        <section className="site-border site-card rounded-lg border p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-semibold">AI Ranking</h2>
-              <p className="site-muted mt-1 text-xs">Sort candidates by fit signals.</p>
-            </div>
-            <label className="site-field inline-flex h-9 w-fit items-center gap-2 rounded-md border px-3 text-xs font-semibold">
-              <input type="checkbox" checked={isRankingEnabled} onChange={updateRankingMode} disabled={isLoading || isRankingLoading || applications.length === 0} className="h-4 w-4"/>
-              <span className="inline-flex items-center gap-1">
-                <Icon name="spark"/>
-                AI Ranking
-              </span>
-            </label>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div className="site-panel rounded-md p-3">
-              <p className="site-muted text-xs">In review</p>
-              <p className="mt-1 text-lg font-semibold">{reviewCount}</p>
-            </div>
-            <div className="site-panel rounded-md p-3">
-              <p className="site-muted text-xs">Hired</p>
-              <p className="mt-1 text-lg font-semibold">{getStatusCount(applications, "hired")}</p>
-            </div>
-          </div>
-          <p className="site-muted mt-4 text-xs">
-            {latestApplication
-                ? `Latest application ${formatDate(latestApplication.createdAt, "recently")}.`
-                : "No applications have arrived yet."}
-          </p>
+          {selectedApplication ? (<div className="mt-4 space-y-4">
+              <DetailItem label="Applicant" value={getApplicantName(selectedApplication)}/>
+              <DetailItem label="Email" value={selectedApplication.applicant?.email}/>
+              <div className="grid grid-cols-2 gap-4">
+                <DetailItem label="Applied" value={formatDateTime(selectedApplication.createdAt, "Not available")}/>
+                <DetailItem label="Status" value={getStatusLabel(selectedApplication.status ?? "submitted")}/>
+              </div>
+              {selectedApplication.aiRanking ? (<div className="rounded-md border border-[var(--site-border)] bg-[var(--site-panel)] p-3">
+                  <p className="text-sm font-semibold">
+                    #{selectedApplication.aiRanking.rank} · {selectedApplication.aiRanking.score}/100 · {selectedApplication.aiRanking.label}
+                  </p>
+                  <p className="site-muted mt-2 text-sm leading-6">{selectedApplication.aiRanking.reason}</p>
+                </div>) : null}
+              <div>
+                <p className="site-muted text-[11px] font-semibold uppercase tracking-wide">Cover Letter</p>
+                <p className="site-muted mt-2 whitespace-pre-line text-sm leading-6">
+                  {selectedApplication.coverLetter || "No cover letter added."}
+                </p>
+              </div>
+            </div>) : (<div className="mt-4 space-y-4">
+              <DetailItem label="Job" value={job?.title}/>
+              <DetailItem label="Company" value={job?.company?.name}/>
+              <div className="grid grid-cols-2 gap-4">
+                <DetailItem label="Location" value={job?.location}/>
+                <DetailItem label="Type" value={formatJobType(job?.jobType)}/>
+                <DetailItem label="Salary" value={formatSalary(job?.salary)}/>
+                <DetailItem label="Status" value={job ? formatJobStatus(job) : "Loading"}/>
+              </div>
+              <DetailItem label="Deadline" value={formatDate(job?.expiresAt, "No deadline")}/>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="site-panel rounded-md p-3">
+                  <p className="site-muted text-xs">In review</p>
+                  <p className="mt-1 text-lg font-semibold">{reviewCount}</p>
+                </div>
+                <div className="site-panel rounded-md p-3">
+                  <p className="site-muted text-xs">Hired</p>
+                  <p className="mt-1 text-lg font-semibold">{getStatusCount(applications, "hired")}</p>
+                </div>
+              </div>
+              <p className="site-muted text-xs">
+                {latestApplication
+                    ? `Latest application ${formatDate(latestApplication.createdAt, "recently")}.`
+                    : "No applications have arrived yet."}
+              </p>
+            </div>)}
         </section>
       </aside>
       {pendingStatusChange ? (<ConfirmDialog title="Update application status?" icon="check" confirmLabel="Update Status" pendingLabel="Updating..." isPending={updatingId === getApplicationId(pendingStatusChange.application)} onCancel={() => setPendingStatusChange(null)} onConfirm={confirmStatusChange}>

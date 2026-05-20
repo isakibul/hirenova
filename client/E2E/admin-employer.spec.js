@@ -58,8 +58,15 @@ test("employer can turn on AI ranking for job applications", async ({
   await page.goto(`/manage-jobs/${seed.jobs.approved.id}/applications`);
   await expect(page.getByRole("heading", { name: "Applicants", exact: true })).toBeVisible();
   await expect(page.getByText(seed.users.jobseeker.email)).toBeVisible();
+  const applicationsUrl = page.url();
+  await page.getByRole("button", { name: new RegExp(seed.users.jobseeker.email) }).click();
+  await expect(page).toHaveURL(applicationsUrl);
+  await expect(page.getByText("Selected applicant review.")).toBeVisible();
+  await expect(
+    page.getByRole("complementary").getByText("Seeded application for E2E coverage."),
+  ).toBeVisible();
   await expect(page.getByRole("checkbox", { name: "AI Ranking" })).toBeEnabled();
   await page.getByRole("checkbox", { name: "AI Ranking" }).check();
-  await expect(page.getByText(/#1 · \d+\/100/)).toBeVisible();
+  await expect(page.getByRole("button", { name: /#1 · \d+\/100/ })).toBeVisible();
   await expect(page.getByText(/Ranking reason|AI reason/)).toBeVisible();
 });
