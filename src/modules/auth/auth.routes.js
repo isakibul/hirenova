@@ -7,7 +7,7 @@ const {
   passwordLimiter,
   writeLimiter,
 } = require("../../middleware/rateLimits");
-const { maxResumeSize } = require("../../lib/resume");
+const { maxResumeSize } = require("../../integrations/resume");
 
 const resumeUpload = multer({
   storage: multer.memoryStorage(),

@@ -1,10 +1,10 @@
 const assert = require("node:assert/strict");
 const { afterEach, test } = require("node:test");
 
-const removeUser = require("../src/api/v1/admin/controllers/removeUser");
-const updateUser = require("../src/api/v1/admin/controllers/updateUser");
-const reviewRoleChangeRequest = require("../src/api/v1/admin/controllers/reviewRoleChangeRequest");
-const userService = require("../src/lib/user");
+const removeUser = require("../src/modules/admin/controllers/removeUser");
+const updateUser = require("../src/modules/admin/controllers/updateUser");
+const reviewRoleChangeRequest = require("../src/modules/admin/controllers/reviewRoleChangeRequest");
+const userService = require("../src/modules/users/users.service");
 
 const originalFindUserById = userService.findUserById;
 const originalRemoveUser = userService.removeUser;

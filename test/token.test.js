@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 const { after, before, test } = require("node:test");
 
-const tokenService = require("../src/lib/token");
+const tokenService = require("../src/shared/security/token");
 const tokenBlacklist = require("../src/utils/tokenBlacklist");
 const { client } = require("../src/config/redisClient");
 

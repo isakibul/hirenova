@@ -15,8 +15,8 @@ const {
 } = require("../src/utils/getPagination");
 const { generateQueryString } = require("../src/utils/qs");
 const sanitizeText = require("../src/utils/sanitizeText");
-const hashValue = require("../src/lib/observability/hash");
-const { resolveAction } = require("../src/lib/observability/audit");
+const hashValue = require("../src/infrastructure/observability/hash");
+const { resolveAction } = require("../src/infrastructure/observability/audit");
 
 test("error helpers attach expected HTTP statuses", () => {
   assert.equal(serverError().status, 500);

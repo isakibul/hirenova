@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const apiContract = require("../../lib/apiContract");
+const apiContract = require("../../shared/apiContract");
 
 const applicationSchema = Joi.object({
   coverLetter: Joi.string().max(3000).allow("").optional(),

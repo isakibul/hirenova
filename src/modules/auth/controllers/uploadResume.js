@@ -2,7 +2,7 @@ const { mkdir, writeFile } = require("fs/promises");
 const path = require("path");
 const { randomUUID } = require("crypto");
 
-const { getResumeExtension, validateResumeFile } = require("../../../lib/resume");
+const { getResumeExtension, validateResumeFile } = require("../../../integrations/resume");
 const { getResumeUrl, safeUserPart, uploadRoot } = require("./resumeAccess");
 
 const uploadResume = async (req, res, next) => {

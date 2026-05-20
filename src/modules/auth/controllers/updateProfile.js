@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { updateProfile: updateUserProfile } = require("../../../lib/user");
+const { updateProfile: updateUserProfile } = require("../../users/users.service");
 const { validateOwnResumeUrl } = require("./resumeAccess");
 
 const profileSchema = Joi.object({

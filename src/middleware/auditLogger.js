@@ -1,4 +1,4 @@
-const { writeAuditLog } = require("../lib/observability/audit");
+const { writeAuditLog } = require("../infrastructure/observability/audit");
 
 const auditLogger = (req, res, next) => {
   const start = Date.now();

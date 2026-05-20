@@ -1,5 +1,5 @@
-const { sendResetEmail } = require("../../../lib/mailer");
-const userService = require("../../../lib/user");
+const { sendResetEmail } = require("../../../integrations/mailer");
+const userService = require("../../users/users.service");
 const { notFound, authorizationError } = require("../../../utils/error");
 const { getClientLink } = require("../../../utils/clientUrl");
 const crypto = require("crypto");

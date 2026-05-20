@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const userService = require("../../../lib/user");
+const userService = require("../../users/users.service");
 
 const roleRequestSchema = Joi.object({
   note: Joi.string().max(300).allow("").optional(),

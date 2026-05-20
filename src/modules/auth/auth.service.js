@@ -3,10 +3,10 @@ const {
   createUser,
   userExistsByEmail,
   userExistsByUsername,
-} = require("../../lib/user");
-const newsletterService = require("../../lib/newsletter");
+} = require("../users/users.service");
+const newsletterService = require("../newsletters/newsletters.service");
 const { generateHash, hashMatched } = require("../../utils/hashing");
-const { generateToken } = require("../../lib/token/");
+const { generateToken } = require("../../shared/security/token");
 
 const subscribeAuthEmail = async (email, source) => {
   try {

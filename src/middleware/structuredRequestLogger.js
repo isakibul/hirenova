@@ -1,4 +1,4 @@
-const logger = require("../lib/observability/logger");
+const logger = require("../infrastructure/observability/logger");
 
 const structuredRequestLogger = (req, res, next) => {
   const start = Date.now();

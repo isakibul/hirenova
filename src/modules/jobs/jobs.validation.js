@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const apiContract = require("../../lib/apiContract");
+const apiContract = require("../../shared/apiContract");
 const sanitizeText = require("../../utils/sanitizeText");
 
 const sanitizedString = (max) =>

@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { User } = require("../../../model");
+const { User } = require("../../../infrastructure/database/models");
 const { badRequest } = require("../../../utils/error");
 
 const resetPassword = async (req, res, next) => {

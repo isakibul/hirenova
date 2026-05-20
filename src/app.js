@@ -12,7 +12,7 @@ const requestContext = require("./middleware/requestContext");
 const requestMetrics = require("./middleware/requestMetrics");
 const structuredRequestLogger = require("./middleware/structuredRequestLogger");
 const csrfProtection = require("./middleware/csrfProtection");
-const { reportError } = require("./lib/observability/reporter");
+const { reportError } = require("./infrastructure/observability/reporter");
 const { getAllowedOrigins } = require("./config/env");
 
 const app = express();

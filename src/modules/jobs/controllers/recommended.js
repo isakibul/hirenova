@@ -1,5 +1,5 @@
 const defaults = require("../../../config/defaults");
-const recommendationService = require("../../../lib/jobRecommendation");
+const recommendationService = require("../recommendations.service");
 const {
   getPagination,
   getHATEOASforAllItems,

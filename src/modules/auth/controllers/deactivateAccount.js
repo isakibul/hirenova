@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const { findUserById } = require("../../../lib/user");
+const { findUserById } = require("../../users/users.service");
 const { badRequest, notFound } = require("../../../utils/error");
 
 const deactivateAccount = async (req, res, next) => {

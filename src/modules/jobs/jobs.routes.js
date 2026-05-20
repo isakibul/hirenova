@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const jobControllers = require("./controllers");
 const applicationControllers = require("../applications/controllers");
-const { controllers: savedJobControllers } = require("../../api/v1/savedJob");
+const savedJobControllers = require("../saved-jobs/controllers");
 const authenticate = require("../../middleware/authenticate");
 const authorize = require("../../middleware/authorize");
 const checkUserStatus = require("../../middleware/checkUserStatus");

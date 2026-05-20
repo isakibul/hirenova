@@ -1,4 +1,4 @@
-const userService = require("../lib/user");
+const userService = require("../modules/users/users.service");
 const { authenticationError } = require("../utils/error");
 
 const createCheckUserStatus =

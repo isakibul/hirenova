@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-const apiContract = require("../lib/apiContract");
+const apiContract = require("../shared/apiContract");
 
 const auditLogRetentionDays = Number(process.env.AUDIT_LOG_RETENTION_DAYS || 90);
 

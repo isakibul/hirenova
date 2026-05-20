@@ -1,5 +1,5 @@
-const { verifyEmailToken, generateToken } = require("../../../lib/token");
-const { findUserByEmail } = require("../../../lib/user/index");
+const { verifyEmailToken, generateToken } = require("../../../shared/security/token");
+const { findUserByEmail } = require("../../users/users.service");
 const { notFound } = require("../../../utils/error");
 const { setAuthCookie } = require("../../../utils/authCookie");
 

@@ -1,5 +1,5 @@
-const tokenService = require("../../../lib/token");
-const userService = require("../../../lib/user");
+const tokenService = require("../../../shared/security/token");
+const userService = require("../../users/users.service");
 const { getAuthCookie, setAuthCookie } = require("../../../utils/authCookie");
 const { isTokenBlacklisted } = require("../../../utils/tokenBlacklist");
 

@@ -1,7 +1,7 @@
 const { Server } = require("socket.io");
 
-const tokenService = require("../lib/token");
-const userService = require("../lib/user");
+const tokenService = require("../shared/security/token");
+const userService = require("../modules/users/users.service");
 const { getAuthCookie } = require("../utils/authCookie");
 const { isTokenBlacklisted } = require("../utils/tokenBlacklist");
 const { getAllowedOrigins } = require("../config/env");

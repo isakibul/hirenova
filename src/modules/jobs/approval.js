@@ -1,5 +1,5 @@
-const { User } = require("../../model");
-const notificationService = require("../../lib/notification");
+const { User } = require("../../infrastructure/database/models");
+const notificationService = require("../notifications/notifications.service");
 
 const isAdminRole = (role) => role === "admin" || role === "superadmin";
 

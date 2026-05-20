@@ -1,4 +1,4 @@
-const { findUserById } = require("../../../lib/user");
+const { findUserById } = require("../../users/users.service");
 const { notFound } = require("../../../utils/error");
 
 function sanitizeUser(user) {

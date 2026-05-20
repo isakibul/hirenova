@@ -1,7 +1,7 @@
 const { isValidObjectId } = require("mongoose");
-const { Application, Job } = require("../../model");
+const { Application, Job } = require("../../infrastructure/database/models");
 const { notFound } = require("../../utils/error");
-const notificationService = require("../../lib/notification");
+const notificationService = require("../notifications/notifications.service");
 const {
   addApprovalHistory,
   getApprovalFilter,

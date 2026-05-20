@@ -2,16 +2,16 @@ const router = require("express").Router();
 
 const authRoutes = require("../../modules/auth/auth.routes");
 const jobRoutes = require("../../modules/jobs/jobs.routes");
-const adminRoutes = require("./admin.routes");
+const adminRoutes = require("../../modules/admin/admin.routes");
 const applicationRoutes = require("../../modules/applications/applications.routes");
-const savedJobRoutes = require("./savedJobs.routes");
-const dashboardRoutes = require("./dashboard.routes");
-const notificationRoutes = require("./notifications.routes");
-const candidateRoutes = require("./candidates.routes");
-const companyRoutes = require("./companies.routes");
-const messageRoutes = require("./messages.routes");
-const newsletterRoutes = require("./newsletter.routes");
-const assistantRoutes = require("./assistant.routes");
+const savedJobRoutes = require("../../modules/saved-jobs/saved-jobs.routes");
+const dashboardRoutes = require("../../modules/dashboard/dashboard.routes");
+const notificationRoutes = require("../../modules/notifications/notifications.routes");
+const candidateRoutes = require("../../modules/candidates/candidates.routes");
+const companyRoutes = require("../../modules/companies/companies.routes");
+const messageRoutes = require("../../modules/messages/messages.routes");
+const newsletterRoutes = require("../../modules/newsletters/newsletters.routes");
+const assistantRoutes = require("../../modules/assistant/assistant.routes");
 const e2eRoutes = require("./e2e.routes");
 
 router.use("/auth", authRoutes);

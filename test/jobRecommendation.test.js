@@ -7,7 +7,7 @@ const {
   getRecommendedJobs,
   normalizeExplanationPerspective,
   scoreJobForUser,
-} = require("../src/lib/jobRecommendation");
+} = require("../src/modules/jobs/recommendations.service");
 
 test("job recommendation scoring rewards skill, experience, and location fit", () => {
   const user = {

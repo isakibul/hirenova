@@ -1,5 +1,5 @@
 const { badRequest } = require("../../../utils/error");
-const { findUserById } = require("../../../lib/user");
+const { findUserById } = require("../../users/users.service");
 const bcrypt = require("bcryptjs");
 
 const changePassword = async (req, res, next) => {

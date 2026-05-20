@@ -1,6 +1,6 @@
-const { generateEmailToken } = require("../../../lib/token");
-const { sendConfirmationEmail } = require("../../../lib/mailer");
-const userService = require("../../../lib/user");
+const { generateEmailToken } = require("../../../shared/security/token");
+const { sendConfirmationEmail } = require("../../../integrations/mailer");
+const userService = require("../../users/users.service");
 const { badRequest, notFound } = require("../../../utils/error");
 const { getClientLink } = require("../../../utils/clientUrl");
 

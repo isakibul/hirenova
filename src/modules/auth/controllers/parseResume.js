@@ -5,7 +5,7 @@ const {
   normalizeResumeText,
   parseResumeWithOpenRouter,
   validateResumeFile,
-} = require("../../../lib/resume");
+} = require("../../../integrations/resume");
 const { badRequest } = require("../../../utils/error");
 const {
   assertCanAccessResume,

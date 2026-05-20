@@ -1,6 +1,6 @@
 const path = require("path");
 
-const { User } = require("../../../model");
+const { User } = require("../../../infrastructure/database/models");
 const { authorizationError, badRequest, notFound } = require("../../../utils/error");
 
 const uploadRoot = path.join(process.cwd(), "uploads", "resumes");

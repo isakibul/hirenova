@@ -1,5 +1,5 @@
 const { addTokenToBlacklist } = require("../../../utils/tokenBlacklist");
-const { decodeToken } = require("../../../lib/token");
+const { decodeToken } = require("../../../shared/security/token");
 const { clearAuthCookie, getAuthCookie } = require("../../../utils/authCookie");
 
 const getBearerToken = (req) => {

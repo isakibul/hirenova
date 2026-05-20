@@ -1,7 +1,7 @@
 const authService = require("../auth.service");
-const { generateEmailToken } = require("../../../lib/token");
+const { generateEmailToken } = require("../../../shared/security/token");
 const { registerSchema } = require("../auth.validation");
-const { sendConfirmationEmail } = require("../../../lib/mailer");
+const { sendConfirmationEmail } = require("../../../integrations/mailer");
 const { getClientLink } = require("../../../utils/clientUrl");
 
 const register = async (req, res, next) => {
