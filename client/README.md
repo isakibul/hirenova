@@ -60,6 +60,12 @@ npm run test:e2e:local
 npm run test:e2e:external
 ```
 
+`npm run check` runs the unit suite with a client coverage gate, then lint and
+the production build. The coverage gate currently covers shared browser helpers
+and extracted feature utilities at 80% lines, 70% branches, and 80% functions.
+Large interactive pages should move reusable behavior into tested utilities or
+smaller components as they evolve.
+
 ## End-to-End Tests
 
 The browser E2E suite uses Playwright Chromium, the real Next.js frontend, the

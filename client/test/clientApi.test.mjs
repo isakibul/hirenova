@@ -35,9 +35,20 @@ test("getStoredAccessToken reads valid browser auth state", () => {
   assert.equal(clientApi.getStoredAccessToken(), "token-123");
 });
 
-test("getStoredAccessToken defaults to empty memory state", () => {
+test("getStoredAccessToken reads browser storage and tolerates invalid state", () => {
   clientApi.setMemoryAccessToken("");
+  const storage = new Map([["hirenova-auth", JSON.stringify({ accessToken: "stored-token" })]]);
+  globalThis.window = {
+    localStorage: {
+      getItem(key) {
+        return storage.get(key);
+      },
+    },
+  };
 
+  assert.equal(clientApi.getStoredAccessToken(), "stored-token");
+
+  storage.set("hirenova-auth", "{bad-json");
   assert.equal(clientApi.getStoredAccessToken(), "");
 });
 
@@ -85,4 +96,46 @@ test("requestJson throws API messages for non-2xx responses", async (t) => {
     () => clientApi.requestJson("https://example.com/fail", {}),
     /First issue\. Second issue\./,
   );
+});
+
+test("requestBackendJson returns backend bodies and requestJson uses backendFetch for relative paths", async (t) => {
+  process.env.NEXT_PUBLIC_BACKEND_API_URL = "https://api.example.com/api/v1";
+  const fetchMock = t.mock.method(globalThis, "fetch", async (url) =>
+    Response.json({ ok: true, url }),
+  );
+
+  const backendBody = await clientApi.requestBackendJson("/profile", {});
+  const relativeBody = await clientApi.requestJson("/jobs", {});
+
+  assert.equal(fetchMock.mock.callCount(), 2);
+  assert.deepEqual(backendBody, {
+    ok: true,
+    url: "https://api.example.com/api/v1/profile",
+  });
+  assert.deepEqual(relativeBody, {
+    ok: true,
+    url: "https://api.example.com/api/v1/jobs",
+  });
+});
+
+test("backendFetch can skip csrf for unsafe requests", async (t) => {
+  process.env.NEXT_PUBLIC_BACKEND_API_URL = "https://api.example.com/api/v1";
+  const fetchMock = t.mock.method(globalThis, "fetch", async (url, init) =>
+    Response.json({
+      url,
+      csrfToken: init.headers.get("X-CSRF-Token"),
+      contentType: init.headers.get("Content-Type"),
+    }),
+  );
+
+  const response = await clientApi.backendFetch("/logout", {
+    method: "POST",
+    csrf: false,
+    body: new FormData(),
+  });
+  const body = await response.json();
+
+  assert.equal(fetchMock.mock.callCount(), 1);
+  assert.equal(body.csrfToken, null);
+  assert.equal(body.contentType, null);
 });
