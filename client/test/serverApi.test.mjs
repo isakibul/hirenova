@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
+import axios from "axios";
 
 const serverApi = await import("../app/_lib/serverApi.js");
 const env = await import("../app/_lib/env.js");
@@ -28,14 +29,17 @@ test("server api helpers prefer server-only backend urls", () => {
 
 test("requestServerBackend returns parsed body metadata", async (t) => {
   process.env.BACKEND_API_URL = "https://api.internal.example/api/v1";
-  t.mock.method(globalThis, "fetch", async (url, init) =>
-    Response.json({
+  t.mock.method(axios, "request", async (config) => ({
+    data: {
       data: [{ id: "job-1" }],
       message: "Loaded",
-      url,
-      cache: init.cache,
-    }),
-  );
+      url: config.url,
+      method: config.method,
+    },
+    headers: {},
+    status: 200,
+    statusText: "OK",
+  }));
 
   const result = await serverApi.requestServerBackend("/jobs");
 
@@ -44,7 +48,7 @@ test("requestServerBackend returns parsed body metadata", async (t) => {
   assert.deepEqual(result.data, [{ id: "job-1" }]);
   assert.equal(result.message, "Loaded");
   assert.equal(result.body.url, "https://api.internal.example/api/v1/jobs");
-  assert.equal(result.body.cache, "no-store");
+  assert.equal(result.body.method, "GET");
 });
 
 test("environment URL helpers validate production requirements", () => {

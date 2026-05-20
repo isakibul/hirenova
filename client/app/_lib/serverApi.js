@@ -1,3 +1,4 @@
+import axios from "axios";
 import { getApiMessage } from "./ui.js";
 
 export function getServerBackendApiUrl() {
@@ -20,17 +21,21 @@ export function getServerBackendPath(path) {
 }
 
 export async function requestServerBackend(path, init = {}) {
-  const response = await fetch(getServerBackendPath(path), {
-    cache: "no-store",
+  const response = await axios.request({
+    method: init.method ?? "GET",
+    timeout: Number(process.env.BACKEND_API_TIMEOUT_MS || 10_000),
+    validateStatus: () => true,
     ...init,
+    data: init.body ?? init.data,
+    url: getServerBackendPath(path),
   });
-  const body = await response.json().catch(() => ({}));
+  const body = response.data ?? {};
 
   return {
     body,
     data: body.data,
     message: getApiMessage(body),
-    ok: response.ok,
+    ok: response.status >= 200 && response.status < 300,
     status: response.status,
   };
 }

@@ -1,14 +1,16 @@
+import axios from "axios";
 import { getBackendBaseUrl } from "@lib/env";
 
 async function getHealth() {
     try {
-        const response = await fetch(`${getBackendBaseUrl()}/health/ready`, {
-            cache: "no-store",
+        const response = await axios.get(`${getBackendBaseUrl()}/health/ready`, {
+            timeout: Number(process.env.BACKEND_API_TIMEOUT_MS || 10000),
+            validateStatus: () => true,
         });
-        const body = await response.json().catch(() => ({}));
+        const body = response.data ?? {};
 
         return {
-            ok: response.ok,
+            ok: response.status >= 200 && response.status < 300,
             statusCode: response.status,
             body,
         };

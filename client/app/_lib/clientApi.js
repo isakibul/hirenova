@@ -1,3 +1,4 @@
+import axios from "axios";
 import { getApiMessage } from "./ui.js";
 
 let memoryAccessToken = "";
@@ -50,43 +51,62 @@ function getRequestTimeoutMs() {
   return Number.isFinite(timeout) && timeout > 0 ? timeout : defaultTimeoutMs;
 }
 
-function createTimeoutController() {
-  if (typeof AbortController === "undefined") {
-    return { signal: undefined, clear: () => undefined };
+function isUnsafeMethod(method = "GET") {
+  return unsafeMethods.has(String(method).toUpperCase());
+}
+
+function toHeaderObject(headers = {}) {
+  if (headers instanceof Headers) {
+    return Object.fromEntries(headers.entries());
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), getRequestTimeoutMs());
+  if (Array.isArray(headers)) {
+    return Object.fromEntries(headers);
+  }
 
+  return { ...headers };
+}
+
+function hasHeader(headers, name) {
+  const normalizedName = name.toLowerCase();
+
+  return Object.keys(headers).some((key) => key.toLowerCase() === normalizedName);
+}
+
+function setHeader(headers, name, value) {
+  if (!hasHeader(headers, name)) {
+    headers[name] = value;
+  }
+}
+
+function createResponseLike(response) {
   return {
-    signal: controller.signal,
-    clear: () => clearTimeout(timeoutId),
+    data: response.data,
+    headers: response.headers,
+    ok: response.status >= 200 && response.status < 300,
+    status: response.status,
+    statusText: response.statusText,
+    json: async () => response.data,
   };
 }
 
-async function fetchWithTimeout(path, init = {}) {
-  const timeout = init.signal
-    ? { signal: init.signal, clear: () => undefined }
-    : createTimeoutController();
-
+async function requestWithAxios(path, config = {}) {
   try {
-    return await fetch(path, {
-      ...init,
-      signal: timeout.signal,
+    const response = await axios.request({
+      timeout: getRequestTimeoutMs(),
+      validateStatus: () => true,
+      ...config,
+      url: path,
     });
+
+    return createResponseLike(response);
   } catch (error) {
-    if (error?.name === "AbortError") {
+    if (error?.code === "ECONNABORTED" || error?.name === "CanceledError") {
       throw new Error("Request timed out. Please check the server connection.");
     }
 
     throw error;
-  } finally {
-    timeout.clear();
   }
-}
-
-function isUnsafeMethod(method = "GET") {
-  return unsafeMethods.has(String(method).toUpperCase());
 }
 
 async function getCsrfToken() {
@@ -94,11 +114,10 @@ async function getCsrfToken() {
     return memoryCsrfToken;
   }
 
-  const response = await fetchWithTimeout(getBackendPath("/auth/csrf"), {
-    cache: "no-store",
-    credentials: "include",
+  const response = await requestWithAxios(getBackendPath("/auth/csrf"), {
+    withCredentials: true,
   });
-  const body = await response.json().catch(() => ({}));
+  const body = response.data ?? {};
 
   if (!response.ok) {
     throw new Error(getApiMessage(body, "Unable to prepare secure request."));
@@ -122,29 +141,32 @@ export function getBackendPath(path) {
 export async function backendFetch(path, init = {}) {
   const { accessToken: explicitAccessToken, csrf = true, ...fetchInit } = init;
   const accessToken = explicitAccessToken ?? getStoredAccessToken();
-  const headers = new Headers(fetchInit.headers);
+  const headers = toHeaderObject(fetchInit.headers);
   const method = fetchInit.method ?? "GET";
+  const body = fetchInit.body ?? fetchInit.data;
 
-  if (accessToken && !headers.has("Authorization")) {
-    headers.set("Authorization", `Bearer ${accessToken}`);
+  if (accessToken) {
+    setHeader(headers, "Authorization", `Bearer ${accessToken}`);
   }
 
-  if (csrf !== false && isUnsafeMethod(method) && !headers.has("X-CSRF-Token")) {
-    headers.set("X-CSRF-Token", await getCsrfToken());
+  if (csrf !== false && isUnsafeMethod(method)) {
+    setHeader(headers, "X-CSRF-Token", await getCsrfToken());
   }
 
   if (
-    fetchInit.body &&
-    !(fetchInit.body instanceof FormData) &&
-    !headers.has("Content-Type")
+    body &&
+    !(body instanceof FormData) &&
+    !hasHeader(headers, "Content-Type")
   ) {
-    headers.set("Content-Type", "application/json");
+    headers["Content-Type"] = "application/json";
   }
 
-  return fetchWithTimeout(getBackendPath(path), {
-    ...fetchInit,
-    credentials: fetchInit.credentials ?? "include",
+  return requestWithAxios(getBackendPath(path), {
+    data: body,
     headers,
+    method,
+    signal: fetchInit.signal,
+    withCredentials: fetchInit.credentials !== "omit",
   });
 }
 
@@ -164,10 +186,31 @@ export async function requestBackendJson(
 }
 
 export async function requestJson(path, init, fallback = "Something went wrong.") {
-  const response =
-    path.startsWith("http://") || path.startsWith("https://")
-      ? await fetch(path, init)
-      : await backendFetch(path, init);
+  let response;
+
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    const headers = toHeaderObject(init?.headers);
+    const body = init?.body ?? init?.data;
+
+    if (
+      body &&
+      !(body instanceof FormData) &&
+      !hasHeader(headers, "Content-Type")
+    ) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    response = await requestWithAxios(path, {
+      data: body,
+      headers,
+      method: init?.method ?? "GET",
+      signal: init?.signal,
+      withCredentials: init?.credentials === "include",
+    });
+  } else {
+    response = await backendFetch(path, init);
+  }
+
   const body = await response.json().catch(() => ({}));
 
   if (!response.ok) {

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
+import axios from "axios";
 
 const clientApi = await import("../app/_lib/clientApi.js");
 
@@ -73,19 +74,29 @@ test("getStoredAccessToken reads browser storage and tolerates invalid state", (
 
 test("backendFetch adds auth and JSON headers for backend requests", async (t) => {
   process.env.NEXT_PUBLIC_BACKEND_API_URL = "https://api.example.com/api/v1";
-  const fetchMock = t.mock.method(globalThis, "fetch", async (url, init) => {
-    if (url === "https://api.example.com/api/v1/auth/csrf") {
-      return Response.json({ data: { csrfToken: "csrf-123" } });
+  const requestMock = t.mock.method(axios, "request", async (config) => {
+    if (config.url === "https://api.example.com/api/v1/auth/csrf") {
+      return {
+        data: { data: { csrfToken: "csrf-123" } },
+        headers: {},
+        status: 200,
+        statusText: "OK",
+      };
     }
 
-    return Response.json({
-      url,
-      authorization: init.headers.get("Authorization"),
-      contentType: init.headers.get("Content-Type"),
-      credentials: init.credentials,
-      csrfToken: init.headers.get("X-CSRF-Token"),
-      method: init.method,
-    });
+    return {
+      data: {
+        url: config.url,
+        authorization: config.headers.Authorization,
+        contentType: config.headers["Content-Type"],
+        withCredentials: config.withCredentials,
+        csrfToken: config.headers["X-CSRF-Token"],
+        method: config.method,
+      },
+      headers: {},
+      status: 200,
+      statusText: "OK",
+    };
   });
 
   const response = await clientApi.backendFetch("/jobs", {
@@ -95,21 +106,24 @@ test("backendFetch adds auth and JSON headers for backend requests", async (t) =
   });
   const body = await response.json();
 
-  assert.equal(fetchMock.mock.callCount(), 2);
+  assert.equal(requestMock.mock.callCount(), 2);
   assert.deepEqual(body, {
     url: "https://api.example.com/api/v1/jobs",
     authorization: "Bearer token-123",
     contentType: "application/json",
-    credentials: "include",
+    withCredentials: true,
     csrfToken: "csrf-123",
     method: "POST",
   });
 });
 
 test("requestJson throws API messages for non-2xx responses", async (t) => {
-  t.mock.method(globalThis, "fetch", async () =>
-    Response.json({ errors: ["First issue.", "Second issue."] }, { status: 400 }),
-  );
+  t.mock.method(axios, "request", async () => ({
+    data: { errors: ["First issue.", "Second issue."] },
+    headers: {},
+    status: 400,
+    statusText: "Bad Request",
+  }));
 
   await assert.rejects(
     () => clientApi.requestJson("https://example.com/fail", {}),
@@ -119,14 +133,17 @@ test("requestJson throws API messages for non-2xx responses", async (t) => {
 
 test("requestBackendJson returns backend bodies and requestJson uses backendFetch for relative paths", async (t) => {
   process.env.NEXT_PUBLIC_BACKEND_API_URL = "https://api.example.com/api/v1";
-  const fetchMock = t.mock.method(globalThis, "fetch", async (url) =>
-    Response.json({ ok: true, url }),
-  );
+  const requestMock = t.mock.method(axios, "request", async (config) => ({
+    data: { ok: true, url: config.url },
+    headers: {},
+    status: 200,
+    statusText: "OK",
+  }));
 
   const backendBody = await clientApi.requestBackendJson("/profile", {});
   const relativeBody = await clientApi.requestJson("/jobs", {});
 
-  assert.equal(fetchMock.mock.callCount(), 2);
+  assert.equal(requestMock.mock.callCount(), 2);
   assert.deepEqual(backendBody, {
     ok: true,
     url: "https://api.example.com/api/v1/profile",
@@ -139,13 +156,16 @@ test("requestBackendJson returns backend bodies and requestJson uses backendFetc
 
 test("backendFetch can skip csrf for unsafe requests", async (t) => {
   process.env.NEXT_PUBLIC_BACKEND_API_URL = "https://api.example.com/api/v1";
-  const fetchMock = t.mock.method(globalThis, "fetch", async (url, init) =>
-    Response.json({
-      url,
-      csrfToken: init.headers.get("X-CSRF-Token"),
-      contentType: init.headers.get("Content-Type"),
-    }),
-  );
+  const requestMock = t.mock.method(axios, "request", async (config) => ({
+    data: {
+      url: config.url,
+      csrfToken: config.headers["X-CSRF-Token"],
+      contentType: config.headers["Content-Type"],
+    },
+    headers: {},
+    status: 200,
+    statusText: "OK",
+  }));
 
   const response = await clientApi.backendFetch("/logout", {
     method: "POST",
@@ -154,7 +174,7 @@ test("backendFetch can skip csrf for unsafe requests", async (t) => {
   });
   const body = await response.json();
 
-  assert.equal(fetchMock.mock.callCount(), 1);
-  assert.equal(body.csrfToken, null);
-  assert.equal(body.contentType, null);
+  assert.equal(requestMock.mock.callCount(), 1);
+  assert.equal(body.csrfToken, undefined);
+  assert.equal(body.contentType, undefined);
 });
