@@ -12,6 +12,12 @@ const backendOrigin = (() => {
 const realtimeUrl = process.env.NEXT_PUBLIC_REALTIME_URL || backendOrigin;
 const realtimeOrigin = realtimeUrl.replace(/^http/i, "ws");
 const shouldUpgradeInsecureRequests = process.env.NODE_ENV === "production";
+const scriptSrc = [
+  "script-src 'self' 'unsafe-inline'",
+  process.env.NODE_ENV !== "production" ? "'unsafe-eval'" : "",
+]
+  .filter(Boolean)
+  .join(" ");
 
 const securityHeaders = [
   {
@@ -25,7 +31,7 @@ const securityHeaders = [
       "img-src 'self' data: blob:",
       "font-src 'self'",
       `connect-src 'self' ${backendOrigin} ${realtimeUrl} ${realtimeOrigin}`,
-      "script-src 'self' 'unsafe-inline'",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       shouldUpgradeInsecureRequests ? "upgrade-insecure-requests" : "",
     ]
