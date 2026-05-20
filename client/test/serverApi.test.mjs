@@ -9,6 +9,7 @@ const originalNodeEnv = process.env.NODE_ENV;
 afterEach(() => {
   delete process.env.BACKEND_API_URL;
   delete process.env.NEXT_PUBLIC_BACKEND_API_URL;
+  delete process.env.NEXT_PUBLIC_REALTIME_URL;
   process.env.NODE_ENV = originalNodeEnv;
 });
 
@@ -56,4 +57,16 @@ test("environment URL helpers validate production requirements", () => {
   delete process.env.BACKEND_API_URL;
 
   assert.throws(() => env.getBackendApiUrl(), /BACKEND_API_URL/);
+});
+
+test("realtime URL helper prefers explicit URL and derives backend origin", () => {
+  process.env.NEXT_PUBLIC_REALTIME_URL = "https://realtime.example.com/";
+  assert.equal(env.getBrowserRealtimeUrl(), "https://realtime.example.com");
+
+  delete process.env.NEXT_PUBLIC_REALTIME_URL;
+  process.env.NEXT_PUBLIC_BACKEND_API_URL = "https://api.example.com/api/v1";
+  assert.equal(env.getBrowserRealtimeUrl(), "https://api.example.com");
+
+  process.env.NEXT_PUBLIC_BACKEND_API_URL = "not a url";
+  assert.equal(env.getBrowserRealtimeUrl(), "http://localhost:4000");
 });

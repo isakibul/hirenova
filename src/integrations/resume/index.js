@@ -4,6 +4,7 @@ const mammoth = require("mammoth");
 const { PDFParse } = require("pdf-parse");
 const WordExtractor = require("word-extractor");
 
+const openRouter = require("../openrouter");
 const { badRequest } = require("../../utils/error");
 
 const maxResumeSize = 5 * 1024 * 1024;
@@ -213,30 +214,13 @@ const parseResumeWithOpenRouter = async (resumeText) => {
     throw badRequest("OpenRouter is not configured.");
   }
 
-  const openRouterApiUrl =
-    process.env.OPENROUTER_API_URL ||
-    "https://openrouter.ai/api/v1/chat/completions";
-
-  const response = await fetch(openRouterApiUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer":
-        process.env.OPENROUTER_SITE_URL ||
-        process.env.CLIENT_URL ||
-        "http://localhost:3000",
-      "X-Title": process.env.OPENROUTER_APP_NAME || "HireNova",
-    },
-    body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
-      messages: buildPrompt(resumeText),
-      temperature: 0,
-      response_format: { type: "json_object" },
-    }),
+  const response = await openRouter.createChatCompletion({
+    model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
+    messages: buildPrompt(resumeText),
+    temperature: 0,
+    response_format: { type: "json_object" },
   });
-
-  const body = await response.json();
+  const body = response.body;
 
   if (!response.ok) {
     throw badRequest(body?.error?.message || "Unable to parse resume with AI.");

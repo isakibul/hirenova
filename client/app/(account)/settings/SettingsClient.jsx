@@ -8,6 +8,8 @@ import PasswordField from "@components/forms/PasswordField";
 import SelectField from "@components/forms/SelectField";
 import { useTheme } from "@components/theme/ThemeProvider";
 import { requestJson } from "@lib/clientApi";
+import { getJsonStorageItem, removeStorageItem, setJsonStorageItem } from "@lib/storage";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 const storageKey = "hirenova-settings";
@@ -151,6 +153,7 @@ function downloadBlob(blob, filename) {
 }
 
 export default function SettingsClient({ user: userProp }) {
+    const router = useRouter();
     const { logout, user: authUser } = useAuth();
     const user = userProp ?? authUser ?? {};
     const { theme, setTheme } = useTheme();
@@ -165,15 +168,8 @@ export default function SettingsClient({ user: userProp }) {
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
-            try {
-                const stored = window.localStorage.getItem(storageKey);
-                if (stored) {
-                    setSettings((current) => ({ ...current, ...JSON.parse(stored), theme }));
-                }
-            }
-            catch {
-                setSettings((current) => ({ ...current, theme }));
-            }
+            const stored = getJsonStorageItem(storageKey, {});
+            setSettings((current) => ({ ...current, ...stored, theme }));
         }, 0);
 
         return () => window.clearTimeout(timeoutId);
@@ -197,14 +193,14 @@ export default function SettingsClient({ user: userProp }) {
     }
 
     function saveSettings() {
-        window.localStorage.setItem(storageKey, JSON.stringify(settings));
+        setJsonStorageItem(storageKey, settings);
         setNotice("Settings saved on this device.");
         setError("");
     }
 
     function resetSettings() {
         setSettings({ ...defaultSettings, theme });
-        window.localStorage.removeItem(storageKey);
+        removeStorageItem(storageKey);
         setNotice("Settings reset.");
         setError("");
     }
@@ -277,7 +273,7 @@ export default function SettingsClient({ user: userProp }) {
                 body: JSON.stringify({ password: deactivatePassword }),
             }, "Unable to deactivate account.");
             await logout();
-            window.location.href = "/login";
+            router.replace("/login");
         }
         catch (caughtError) {
             setError(caughtError instanceof Error ? caughtError.message : "Unable to deactivate account.");

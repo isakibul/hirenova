@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getJsonStorageItem } from "./storage.js";
 import { getApiMessage } from "./ui.js";
 
 let memoryAccessToken = "";
@@ -30,12 +31,7 @@ export function getStoredAccessToken() {
     return "";
   }
 
-  try {
-    return JSON.parse(window.localStorage.getItem(authStorageKey) ?? "{}")
-      .accessToken ?? "";
-  } catch {
-    return "";
-  }
+  return getJsonStorageItem(authStorageKey, {}).accessToken ?? "";
 }
 
 export function setMemoryAccessToken(accessToken = "") {

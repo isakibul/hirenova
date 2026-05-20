@@ -1,6 +1,7 @@
 "use client";
 import { useAuth } from "@components/auth/AuthProvider";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
 import MessagesMenu from "./MessagesMenu";
@@ -35,6 +36,7 @@ function getUserRole(role) {
   return undefined;
 }
 export default function Nav() {
+  const router = useRouter();
   const { isAuthenticated, logout, user } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileMenuRef = useRef(null);
@@ -256,7 +258,7 @@ export default function Nav() {
                         type="button"
                         onClick={async () => {
                           await logout();
-                          window.location.assign("/");
+                          router.replace("/");
                         }}
                         className="group mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium transition hover:bg-(--site-panel) hover:text-(--site-accent)"
                         role="menuitem"

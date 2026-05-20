@@ -36,3 +36,27 @@ export function getBackendBaseUrl() {
 
   return apiUrl.toString().replace(/\/$/, "");
 }
+
+export function getBrowserRealtimeUrl() {
+  const explicitUrl = process.env.NEXT_PUBLIC_REALTIME_URL?.trim();
+
+  if (explicitUrl) {
+    return explicitUrl.replace(/\/$/, "");
+  }
+
+  const backendApiUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL?.trim();
+
+  if (backendApiUrl) {
+    try {
+      const url = new URL(backendApiUrl);
+      url.pathname = url.pathname.replace(/\/api\/v1\/?$/, "") || "/";
+      url.search = "";
+      url.hash = "";
+      return url.toString().replace(/\/$/, "");
+    } catch {
+      return "http://localhost:4000";
+    }
+  }
+
+  return "http://localhost:4000";
+}

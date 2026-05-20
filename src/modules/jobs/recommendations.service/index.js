@@ -2,6 +2,7 @@ const crypto = require("crypto");
 
 const { client: redisClient } = require("../../../config/redisClient");
 const { User } = require("../../../infrastructure/database/models");
+const openRouter = require("../../../integrations/openrouter");
 const { badRequest } = require("../../../utils/error");
 const jobService = require("../jobs.service");
 
@@ -441,40 +442,20 @@ const requestAiExplanation = async ({ user, job, match }) => {
     return cached;
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(
-    () => controller.abort(),
-    Number(process.env.OPENROUTER_TIMEOUT_MS || 7000),
-  );
-
   try {
-    const response = await fetch(
-      process.env.OPENROUTER_API_URL ||
-        "https://openrouter.ai/api/v1/chat/completions",
+    const response = await openRouter.createChatCompletion(
       {
-        method: "POST",
-        signal: controller.signal,
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer":
-            process.env.OPENROUTER_SITE_URL ||
-            process.env.CLIENT_URL ||
-            "http://localhost:3000",
-          "X-Title": process.env.OPENROUTER_APP_NAME || "HireNova",
-        },
-        body: JSON.stringify({
-          model:
-            process.env.OPENROUTER_RECOMMENDATION_MODEL ||
-            process.env.OPENROUTER_MODEL ||
-            "openai/gpt-4o-mini",
-          messages: buildAiMessages({ user, job, match }),
-          temperature: 0.2,
-          max_tokens: 90,
-        }),
+        model:
+          process.env.OPENROUTER_RECOMMENDATION_MODEL ||
+          process.env.OPENROUTER_MODEL ||
+          "openai/gpt-4o-mini",
+        messages: buildAiMessages({ user, job, match }),
+        temperature: 0.2,
+        max_tokens: 90,
       },
+      { timeoutMs: process.env.OPENROUTER_TIMEOUT_MS || 7000 },
     );
-    const body = await response.json().catch(() => ({}));
+    const body = response.body ?? {};
 
     if (!response.ok) {
       return "";
@@ -493,8 +474,6 @@ const requestAiExplanation = async ({ user, job, match }) => {
     return explanation;
   } catch {
     return "";
-  } finally {
-    clearTimeout(timeout);
   }
 };
 

@@ -10,6 +10,7 @@ const {
 const dashboardService = require("../dashboard/dashboard.service");
 const { summarizeAuditActivity } = require("../../infrastructure/observability/audit");
 const { summarizeEmailEvents } = require("../../infrastructure/observability/emailEvents");
+const openRouter = require("../../integrations/openrouter");
 const { badRequest } = require("../../utils/error");
 
 const maxChatMessages = 8;
@@ -315,39 +316,22 @@ const askAssistantWithOpenRouter = async ({ messages, context, user }) => {
     throw badRequest("Message is required.");
   }
 
-  const openRouterApiUrl =
-    process.env.OPENROUTER_API_URL ||
-    "https://openrouter.ai/api/v1/chat/completions";
-
   const liveContext = await getSafeLiveContext(user);
-  const response = await fetch(openRouterApiUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer":
-        process.env.OPENROUTER_SITE_URL ||
-        process.env.CLIENT_URL ||
-        "http://localhost:3000",
-      "X-Title": process.env.OPENROUTER_APP_NAME || "HireNova",
-    },
-    body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
-      messages: buildMessages({
-        messages: normalizedMessages,
-        context: {
-          ...context,
-          role: user?.role || context?.role,
-          isAuthenticated: Boolean(user?.id) || Boolean(context?.isAuthenticated),
-          live: liveContext,
-        },
-      }),
-      temperature: 0.2,
-      max_tokens: 350,
+  const response = await openRouter.createChatCompletion({
+    model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
+    messages: buildMessages({
+      messages: normalizedMessages,
+      context: {
+        ...context,
+        role: user?.role || context?.role,
+        isAuthenticated: Boolean(user?.id) || Boolean(context?.isAuthenticated),
+        live: liveContext,
+      },
     }),
+    temperature: 0.2,
+    max_tokens: 350,
   });
-
-  const body = await response.json();
+  const body = response.body;
 
   if (!response.ok) {
     throw badRequest(body?.error?.message || "Unable to reach HireNova Assistant.");

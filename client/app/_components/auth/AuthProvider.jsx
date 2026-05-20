@@ -3,17 +3,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { requestBackendJson, setMemoryAccessToken } from "@lib/clientApi";
-
+import { removeStorageItem } from "@lib/storage";
 const AuthContext = createContext(null);
 const authStorageKey = "hirenova-auth";
-
-function clearStoredAuth() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.removeItem(authStorageKey);
-}
 
 export function useAuth() {
   const value = useContext(AuthContext);
@@ -33,7 +25,7 @@ export default function AuthProvider({ children }) {
     setAuth(nextAuth);
     setStatus(nextAuth.user ? "authenticated" : "unauthenticated");
     setMemoryAccessToken("");
-    clearStoredAuth();
+    removeStorageItem(authStorageKey);
   }, []);
 
   const fetchSession = useCallback(

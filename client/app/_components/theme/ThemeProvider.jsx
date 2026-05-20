@@ -1,5 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useMemo, useState, } from "react";
+import { getStorageItem, setStorageItem } from "@lib/storage";
 const STORAGE_KEY = "hirenova-theme";
 const ThemeContext = createContext(null);
 function getPreferredTheme() {
@@ -7,14 +8,9 @@ function getPreferredTheme() {
     if (documentTheme === "light" || documentTheme === "dark") {
         return documentTheme;
     }
-    try {
-        const storedTheme = window.localStorage.getItem(STORAGE_KEY);
-        if (storedTheme === "light" || storedTheme === "dark") {
-            return storedTheme;
-        }
-    }
-    catch {
-        return "light";
+    const storedTheme = getStorageItem(STORAGE_KEY);
+    if (storedTheme === "light" || storedTheme === "dark") {
+        return storedTheme;
     }
     return window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
@@ -36,13 +32,8 @@ export default function ThemeProvider({ children }) {
         if (!theme) {
             return;
         }
-        try {
-            applyTheme(theme);
-            window.localStorage.setItem(STORAGE_KEY, theme);
-        }
-        catch {
-            applyTheme(theme);
-        }
+        applyTheme(theme);
+        setStorageItem(STORAGE_KEY, theme);
     }, [theme]);
     const currentTheme = theme ?? "light";
     const value = useMemo(() => ({

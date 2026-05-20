@@ -7,6 +7,7 @@ import { formatExperience, formatJobType, formatSalary } from "@lib/jobDisplay";
 import { formatDate, getApiMessage } from "@lib/ui";
 import { toSearchParams } from "@lib/url";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 function getErrorMessage(response) {
@@ -63,6 +64,9 @@ export default function JobsResults({
   isRefreshing = false,
   onPageChange,
 }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, status } = useAuth();
   const stableQuery = useMemo(() => JSON.stringify(query), [query]);
   const [smartMatchPreference, setSmartMatchPreference] = useState(null);
@@ -97,13 +101,11 @@ export default function JobsResults({
   const activeLastResult = Math.min(activePage * activeLimit, activeTotalItems);
   const updateSmartMatch = (event) => {
     if (event.currentTarget.checked && status === "unauthenticated") {
-      const returnPath =
-        typeof window === "undefined"
-          ? "/jobs?smart_match=1"
-          : `${window.location.pathname}${window.location.search}`;
+      const queryString = searchParams.toString();
+      const returnPath = `${pathname}${queryString ? `?${queryString}` : ""}`;
       const separator = returnPath.includes("?") ? "&" : "?";
 
-      window.location.assign(
+      router.push(
         `/login?next=${encodeURIComponent(`${returnPath}${separator}smart_match=1`)}`,
       );
       return;

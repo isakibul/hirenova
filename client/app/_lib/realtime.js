@@ -1,34 +1,11 @@
 "use client";
 
 import { io } from "socket.io-client";
+import { getBrowserRealtimeUrl } from "./env";
 
 let realtimeSocket;
 let subscriberCount = 0;
 let disconnectTimer;
-
-function getRealtimeUrl() {
-  const explicitUrl = process.env.NEXT_PUBLIC_REALTIME_URL?.trim();
-
-  if (explicitUrl) {
-    return explicitUrl.replace(/\/$/, "");
-  }
-
-  const backendApiUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL?.trim();
-
-  if (backendApiUrl) {
-    try {
-      const url = new URL(backendApiUrl);
-      url.pathname = url.pathname.replace(/\/api\/v1\/?$/, "") || "/";
-      url.search = "";
-      url.hash = "";
-      return url.toString().replace(/\/$/, "");
-    } catch {
-      return "http://localhost:4000";
-    }
-  }
-
-  return "http://localhost:4000";
-}
 
 export function acquireRealtimeSocket(accessToken = "") {
   if (disconnectTimer) {
@@ -37,7 +14,7 @@ export function acquireRealtimeSocket(accessToken = "") {
   }
 
   if (!realtimeSocket) {
-    realtimeSocket = io(getRealtimeUrl(), {
+    realtimeSocket = io(getBrowserRealtimeUrl(), {
       auth: accessToken ? { token: accessToken } : undefined,
       autoConnect: true,
       withCredentials: true,

@@ -1,4 +1,5 @@
 const logger = require("./logger");
+const { postJson } = require("../../integrations/http");
 
 const reportError = async (error, context = {}) => {
   const payload = {
@@ -15,10 +16,8 @@ const reportError = async (error, context = {}) => {
   }
 
   try {
-    await fetch(process.env.ERROR_WEBHOOK_URL, {
-      method: "POST",
+    await postJson(process.env.ERROR_WEBHOOK_URL, payload, {
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
     });
   } catch (reportingError) {
     logger.error("Error reporter failed", {
