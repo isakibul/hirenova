@@ -1,5 +1,7 @@
 const backendApiUrl =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:4000/api/v1";
+  process.env.BACKEND_API_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_API_URL ||
+  "http://localhost:4000/api/v1";
 const backendOrigin = (() => {
   try {
     return new URL(backendApiUrl).origin;
@@ -50,6 +52,14 @@ const securityHeaders = [
 
 const nextConfig = {
   outputFileTracingRoot: __dirname,
+  async rewrites() {
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination: `${backendApiUrl.replace(/\/$/, "")}/:path*`,
+      },
+    ];
+  },
   async headers() {
     return [
       {

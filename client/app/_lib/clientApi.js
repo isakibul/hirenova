@@ -9,7 +9,7 @@ const defaultTimeoutMs = 10_000;
 export function getBackendApiUrl() {
   return (
     process.env.NEXT_PUBLIC_BACKEND_API_URL?.replace(/\/$/, "") ??
-    "http://localhost:4000/api/v1"
+    "/api/v1"
   );
 }
 

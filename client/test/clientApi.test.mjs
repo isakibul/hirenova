@@ -22,6 +22,10 @@ test("getBackendPath prefixes relative backend routes", () => {
   );
 });
 
+test("getBackendPath defaults to the same-origin api proxy", () => {
+  assert.equal(clientApi.getBackendPath("/auth/session"), "/api/v1/auth/session");
+});
+
 test("getBackendPath leaves absolute URLs untouched", () => {
   assert.equal(
     clientApi.getBackendPath("https://example.com/health"),

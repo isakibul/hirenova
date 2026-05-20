@@ -21,8 +21,10 @@ cp .env.example .env.local
 Required variables:
 
 - `BACKEND_API_URL`: backend API base URL, for example `http://localhost:4000/api/v1`.
-- `NEXT_PUBLIC_BACKEND_API_URL`: browser-visible backend API base URL, for
-  example `http://localhost:4000/api/v1`.
+- `BACKEND_API_URL`: server-side backend API base URL used by the Next.js
+  same-origin rewrite, for example `http://localhost:4000/api/v1`.
+- `NEXT_PUBLIC_BACKEND_API_URL`: optional browser-visible backend API base URL.
+  Leave it unset for the recommended same-origin `/api/v1` proxy path.
 
 The backend also needs `CLIENT_URL` set to the same frontend origin. Email
 confirmation links are sent to `/confirm-email?token=...` on that URL.
