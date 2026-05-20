@@ -104,6 +104,7 @@ export default function JobApplicationsPage({ params }) {
           job={job}
           initialApplications={applications}
           isLoading={isLoading}
+          onApplicationsChange={setApplications}
         />
       </div>
     </section>

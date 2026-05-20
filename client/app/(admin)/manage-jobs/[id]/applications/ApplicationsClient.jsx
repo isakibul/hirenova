@@ -54,7 +54,7 @@ function DetailItem({ label, value }) {
     </div>);
 }
 
-export default function ApplicationsClient({ initialApplications, isLoading = false, job, jobId }) {
+export default function ApplicationsClient({ initialApplications, isLoading = false, job, jobId, onApplicationsChange }) {
     const [applications, setApplications] = useState(initialApplications);
     const [rankedApplications, setRankedApplications] = useState([]);
     const [isRankingEnabled, setIsRankingEnabled] = useState(false);
@@ -62,7 +62,9 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
     const [rankingSummary, setRankingSummary] = useState(null);
     const [error, setError] = useState("");
     const [updatingId, setUpdatingId] = useState("");
+    const [deletingId, setDeletingId] = useState("");
     const [pendingStatusChange, setPendingStatusChange] = useState(null);
+    const [pendingDelete, setPendingDelete] = useState(null);
     const [selectedApplicationId, setSelectedApplicationId] = useState("");
     const visibleApplications = isRankingEnabled ? rankedApplications : applications;
     const selectedApplication = selectedApplicationId
@@ -114,9 +116,13 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
                 method: "PATCH",
                 body: JSON.stringify({ status }),
             }, "Unable to update status.");
-            setApplications((current) => current.map((item) => getApplicationId(item) === id
-                ? { ...item, status: body.data?.status ?? status }
-                : item));
+            setApplications((current) => {
+                const nextApplications = current.map((item) => getApplicationId(item) === id
+                    ? { ...item, status: body.data?.status ?? status }
+                    : item);
+                onApplicationsChange?.(nextApplications);
+                return nextApplications;
+            });
             setRankedApplications((current) => current.map((item) => getApplicationId(item) === id
                 ? { ...item, status: body.data?.status ?? status }
                 : item));
@@ -137,6 +143,10 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
         setPendingStatusChange({ application, status });
     }
 
+    function requestDelete(application) {
+        setPendingDelete(application);
+    }
+
     async function confirmStatusChange() {
         if (!pendingStatusChange) {
             return;
@@ -145,6 +155,35 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
         const { application, status } = pendingStatusChange;
         await updateStatus(application, status);
         setPendingStatusChange(null);
+    }
+
+    async function confirmDelete() {
+        if (!pendingDelete) {
+            return;
+        }
+
+        const id = getApplicationId(pendingDelete);
+        setDeletingId(id);
+        setError("");
+        try {
+            await requestJson(`/applications/${id}`, { method: "DELETE" }, "Unable to delete application.");
+            setApplications((current) => {
+                const nextApplications = current.filter((item) => getApplicationId(item) !== id);
+                onApplicationsChange?.(nextApplications);
+                return nextApplications;
+            });
+            setRankedApplications((current) => current.filter((item) => getApplicationId(item) !== id));
+            if (selectedApplicationId === id) {
+                setSelectedApplicationId("");
+            }
+            setPendingDelete(null);
+        }
+        catch (caughtError) {
+            setError(caughtError instanceof Error ? caughtError.message : "Unable to delete application.");
+        }
+        finally {
+            setDeletingId("");
+        }
     }
 
     return (<div className="mt-8 grid gap-4 lg:grid-cols-3">
@@ -226,6 +265,9 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
                 <div className="w-36">
                   <SelectField value={application.status ?? "submitted"} onChange={(nextStatus) => requestStatusChange(application, nextStatus)} options={statusOptions} disabled={updatingId === id} className="site-field min-h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none"/>
                 </div>
+                <button type="button" onClick={() => requestDelete(application)} disabled={deletingId === id} className="rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-3 py-2 text-xs font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
+                  {deletingId === id ? "Deleting" : "Delete"}
+                </button>
               </div>
           </div>);
     })}</div>}
@@ -264,6 +306,9 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
                   {selectedApplication.coverLetter || "No cover letter added."}
                 </p>
               </div>
+              <button type="button" onClick={() => requestDelete(selectedApplication)} disabled={deletingId === getApplicationId(selectedApplication)} className="w-full rounded-md border border-[var(--site-danger-border)] bg-[var(--site-danger-bg)] px-4 py-2 text-sm font-semibold text-[var(--site-danger-text)] disabled:opacity-60">
+                {deletingId === getApplicationId(selectedApplication) ? "Deleting Application" : "Delete Application"}
+              </button>
             </div>) : (<div className="mt-4 space-y-4">
               <DetailItem label="Job" value={job?.title}/>
               <DetailItem label="Company" value={job?.company?.name}/>
@@ -302,6 +347,9 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
             {getStatusLabel(pendingStatusChange.status)}
           </span>
           ?
+        </ConfirmDialog>) : null}
+      {pendingDelete ? (<ConfirmDialog title="Delete application?" icon="trash" confirmLabel="Delete Application" pendingLabel="Deleting..." tone="danger" isPending={deletingId === getApplicationId(pendingDelete)} onCancel={() => setPendingDelete(null)} onConfirm={confirmDelete}>
+          Delete the application from {getApplicantName(pendingDelete)}? This cannot be undone.
         </ConfirmDialog>) : null}
     </div>);
 }

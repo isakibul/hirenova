@@ -70,3 +70,16 @@ test("employer can turn on AI ranking for job applications", async ({
   await expect(page.getByRole("button", { name: /#1 · \d+\/100/ })).toBeVisible();
   await expect(page.getByText(/Ranking reason|AI reason/)).toBeVisible();
 });
+
+test("employer can delete a job application", async ({ page, request }) => {
+  const seed = getSeedData();
+
+  await loginAs(page, request, "employer");
+  await page.goto(`/manage-jobs/${seed.jobs.approved.id}/applications`);
+  await expect(page.getByText(seed.users.jobseeker.email)).toBeVisible();
+  await page.getByRole("button", { name: "Delete" }).first().click();
+  await expect(page.getByRole("heading", { name: "Delete application?" })).toBeVisible();
+  await page.getByRole("button", { name: "Delete Application" }).click();
+  await expect(page.getByText(seed.users.jobseeker.email)).toHaveCount(0);
+  await expect(page.getByText("No applicants yet")).toBeVisible();
+});

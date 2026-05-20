@@ -151,10 +151,29 @@ const updateStatus = async ({ applicationId, status, user }) => {
   return getApplication(application.id);
 };
 
+const deleteApplication = async ({ applicationId, user }) => {
+  const application = await Application.findById(applicationId).populate("job");
+
+  if (!application) {
+    throw notFound("Application not found");
+  }
+
+  const author = application.job?.author?.toString();
+
+  if (!isAdminRole(user.role) && author !== user.id) {
+    throw authorizationError("Operation not allowed");
+  }
+
+  await application.deleteOne();
+
+  return { id: application.id };
+};
+
 const count = (filter = {}) => Application.countDocuments(filter);
 
 module.exports = {
   applyToJob,
+  deleteApplication,
   findMine,
   findForJob,
   updateStatus,

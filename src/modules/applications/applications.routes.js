@@ -19,4 +19,12 @@ router.patch(
   applicationControllers.updateStatus
 );
 
+router.delete(
+  "/:id",
+  writeLimiter,
+  authenticate,
+  authorize(["admin", "superadmin", "employer"]),
+  applicationControllers.deleteItem
+);
+
 module.exports = router;

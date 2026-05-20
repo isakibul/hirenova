@@ -17,6 +17,7 @@ const actionMap = [
   { method: "PATCH", pattern: /^\/api\/v1\/jobs\/[^/]+\/approval$/, action: "job.approval_update" },
   { method: "POST", pattern: /^\/api\/v1\/jobs\/[^/]+\/apply$/, action: "application.submit" },
   { method: "PATCH", pattern: /^\/api\/v1\/applications\/[^/]+\/status$/, action: "application.status_update" },
+  { method: "DELETE", pattern: /^\/api\/v1\/applications\/[^/]+$/, action: "application.delete" },
   { method: "POST", pattern: /^\/api\/v1\/admin\/users$/, action: "admin.user_create" },
   { method: "PATCH", pattern: /^\/api\/v1\/admin\/users\/[^/]+$/, action: "admin.user_update" },
   { method: "DELETE", pattern: /^\/api\/v1\/admin\/users\/[^/]+$/, action: "admin.user_delete" },

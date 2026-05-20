@@ -73,6 +73,10 @@ const createDoc = (data) => ({
     );
     return this;
   },
+  async deleteOne() {
+    this.deleted = true;
+    return this;
+  },
 });
 
 test("application service rejects invalid apply attempts before writing", async (t) => {
@@ -157,6 +161,51 @@ test("application service lists and updates authorized applications", async (t) 
   assert.equal(application.saved, true);
   assert.equal(notified.type, "application_status");
   assert.equal(notified.recipient.toString(), "candidate-1");
+});
+
+test("application service deletes applications for authorized owners", async (t) => {
+  const application = createDoc({
+    id: "app-delete",
+    applicant: objectId("candidate-1"),
+    job: {
+      id: "job-1",
+      title: "Backend Engineer",
+      author: objectId("employer-1"),
+    },
+  });
+
+  t.mock.method(Application, "findById", () => createQuery(application));
+
+  const deleted = await applicationService.deleteApplication({
+    applicationId: "app-delete",
+    user: { id: "employer-1", role: "employer" },
+  });
+
+  assert.equal(deleted.id, "app-delete");
+  assert.equal(application.deleted, true);
+});
+
+test("application service blocks delete for non-owners", async (t) => {
+  const application = createDoc({
+    id: "app-delete",
+    applicant: objectId("candidate-1"),
+    job: {
+      id: "job-1",
+      title: "Backend Engineer",
+      author: objectId("employer-1"),
+    },
+  });
+
+  t.mock.method(Application, "findById", () => createQuery(application));
+
+  await assert.rejects(
+    () =>
+      applicationService.deleteApplication({
+        applicationId: "app-delete",
+        user: { id: "other-employer", role: "employer" },
+      }),
+    /Operation not allowed/,
+  );
 });
 
 test("application ranking scores candidate fit for a job", () => {
