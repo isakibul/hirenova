@@ -235,7 +235,7 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
     })}</div>}
           </div>
       </section>
-      <aside className="space-y-4">
+      <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
         <section className="site-border site-card rounded-lg border p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
