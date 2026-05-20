@@ -15,6 +15,7 @@ const {
 const { generateHash } = require("../../utils/hashing");
 
 const password = "Password123!";
+const seededAt = new Date("2026-05-20T00:00:00.000Z");
 
 const users = {
   jobseeker: {
@@ -94,7 +95,8 @@ router.post("/seed", async (req, res, next) => {
       salary: 125000,
       status: "open",
       approvalStatus: "approved",
-      reviewedAt: new Date(),
+      createdAt: seededAt,
+      reviewedAt: seededAt,
       reviewedBy: admin._id,
       author: employer._id,
       approvalHistory: [
@@ -103,6 +105,7 @@ router.post("/seed", async (req, res, next) => {
           note: "Seeded approved role.",
           actor: admin._id,
           actorRole: "admin",
+          createdAt: seededAt,
         },
       ],
     });
@@ -119,6 +122,7 @@ router.post("/seed", async (req, res, next) => {
       salary: 80000,
       status: "open",
       approvalStatus: "pending",
+      createdAt: seededAt,
       author: employer._id,
       approvalHistory: [
         {
@@ -126,6 +130,7 @@ router.post("/seed", async (req, res, next) => {
           note: "Seeded pending role.",
           actor: employer._id,
           actorRole: "employer",
+          createdAt: seededAt,
         },
       ],
     });
@@ -152,7 +157,7 @@ router.post("/seed", async (req, res, next) => {
         },
       ],
       lastMessage: "Hi, your profile looks like a strong match for the E2E role.",
-      lastMessageAt: new Date(),
+      lastMessageAt: seededAt,
       unreadBy: [jobseeker._id],
     });
 

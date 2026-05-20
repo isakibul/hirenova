@@ -61,10 +61,12 @@ test("presence helpers identify online and recent activity windows", () => {
   assert.equal(ui.formatPresence("2026-05-15T11:30:00.000Z"), "Last seen 30 min ago");
   assert.equal(ui.formatPresence("2026-05-15T09:00:00.000Z"), "Last seen 3 hr ago");
   assert.match(ui.formatPresence("2026-05-14T09:00:00.000Z"), /Last seen/);
+  assert.equal(ui.formatPresence("2026-05-15T12:01:00.000Z"), "Last seen not available");
   assert.equal(ui.formatPresence("bad-date"), "Last seen not available");
   assert.equal(ui.isOnline(""), false);
   assert.equal(ui.isOnline("2026-05-15T11:59:00.000Z"), true);
   assert.equal(ui.isOnline("2026-05-15T11:30:00.000Z"), false);
+  assert.equal(ui.isOnline("2026-05-15T12:01:00.000Z"), false);
 });
 
 test("conversation helpers find the other participant", () => {

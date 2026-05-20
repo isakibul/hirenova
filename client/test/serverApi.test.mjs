@@ -8,6 +8,7 @@ const originalNodeEnv = process.env.NODE_ENV;
 
 afterEach(() => {
   delete process.env.BACKEND_API_URL;
+  delete process.env.BACKEND_API_TIMEOUT_MS;
   delete process.env.NEXT_PUBLIC_BACKEND_API_URL;
   delete process.env.NEXT_PUBLIC_REALTIME_URL;
   process.env.NODE_ENV = originalNodeEnv;
@@ -21,11 +22,33 @@ test("server api helpers prefer server-only backend urls", () => {
     serverApi.getServerBackendPath("/jobs?search=react"),
     "https://api.internal.example/api/v1/jobs?search=react",
   );
-  assert.equal(
-    serverApi.getServerBackendPath("https://other.example/health"),
-    "https://other.example/health",
+  assert.throws(
+    () => serverApi.getServerBackendPath("https://other.example/health"),
+    /internal API paths/,
   );
   assert.equal(env.getBackendBaseUrl(), "https://api.internal.example");
+});
+
+test("server api helpers reject protocol-relative urls", () => {
+  assert.throws(
+    () => serverApi.getServerBackendPath("//other.example/health"),
+    /internal API paths/,
+  );
+});
+
+test("requestServerBackend falls back when timeout env is invalid", async (t) => {
+  process.env.BACKEND_API_URL = "https://api.internal.example/api/v1";
+  process.env.BACKEND_API_TIMEOUT_MS = "nope";
+  t.mock.method(axios, "request", async (config) => ({
+    data: { data: [], timeout: config.timeout },
+    headers: {},
+    status: 200,
+    statusText: "OK",
+  }));
+
+  const result = await serverApi.requestServerBackend("/jobs");
+
+  assert.equal(result.body.timeout, 10_000);
 });
 
 test("requestServerBackend returns parsed body metadata", async (t) => {

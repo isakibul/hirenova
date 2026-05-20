@@ -100,7 +100,7 @@ export function formatPresence(value) {
   const lastSeen = new Date(value);
   const diffMs = Date.now() - lastSeen.getTime();
 
-  if (Number.isNaN(lastSeen.getTime())) {
+  if (Number.isNaN(lastSeen.getTime()) || diffMs < 0) {
     return "Last seen not available";
   }
 
@@ -127,6 +127,7 @@ export function isOnline(value) {
   }
 
   const lastSeen = new Date(value);
+  const diffMs = Date.now() - lastSeen.getTime();
 
-  return !Number.isNaN(lastSeen.getTime()) && Date.now() - lastSeen.getTime() < 2 * 60 * 1000;
+  return !Number.isNaN(lastSeen.getTime()) && diffMs >= 0 && diffMs < 2 * 60 * 1000;
 }

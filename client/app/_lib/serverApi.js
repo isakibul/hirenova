@@ -1,6 +1,13 @@
 import axios from "axios";
 import { getApiMessage } from "./ui.js";
 
+const defaultServerTimeoutMs = 10_000;
+
+function getServerRequestTimeoutMs() {
+  const timeout = Number(process.env.BACKEND_API_TIMEOUT_MS);
+  return Number.isFinite(timeout) && timeout > 0 ? timeout : defaultServerTimeoutMs;
+}
+
 export function getServerBackendApiUrl() {
   return (
     process.env.BACKEND_API_URL?.replace(/\/$/, "") ||
@@ -10,8 +17,8 @@ export function getServerBackendApiUrl() {
 }
 
 export function getServerBackendPath(path) {
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    return path;
+  if (/^https?:\/\//i.test(path) || path.startsWith("//")) {
+    throw new Error("Server backend requests must use internal API paths.");
   }
 
   const [pathname, search = ""] = path.split("?");
@@ -23,7 +30,7 @@ export function getServerBackendPath(path) {
 export async function requestServerBackend(path, init = {}) {
   const response = await axios.request({
     method: init.method ?? "GET",
-    timeout: Number(process.env.BACKEND_API_TIMEOUT_MS || 10_000),
+    timeout: getServerRequestTimeoutMs(),
     validateStatus: () => true,
     ...init,
     data: init.body ?? init.data,
