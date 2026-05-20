@@ -16,6 +16,9 @@ const {
 const {
   profileSchema,
 } = require("../src/modules/auth/controllers/updateProfile");
+const {
+  preferencesSchema,
+} = require("../src/modules/auth/controllers/settings");
 
 test("job validation accepts a complete public job payload", () => {
   const { error, value } = jobSchema.validate({
@@ -123,6 +126,25 @@ test("profile validation accepts company about text", () => {
     value.companyAbout,
     "We build practical hiring tools for focused teams.",
   );
+});
+
+test("settings validation accepts production preferences and rejects invalid modes", () => {
+  const valid = preferencesSchema.validate({
+    theme: "dark",
+    defaultLocation: "Remote",
+    preferredJobType: "remote",
+    salaryVisibility: "compact",
+    profileVisibility: "limited",
+    newJobs: true,
+    applicationUpdates: false,
+  });
+  const invalid = preferencesSchema.validate({
+    theme: "blue",
+    salaryVisibility: "always",
+  });
+
+  assert.equal(valid.error, undefined);
+  assert.match(invalid.error.message, /must be one of/);
 });
 
 test("application validation allows empty cover letters but rejects oversize text", () => {

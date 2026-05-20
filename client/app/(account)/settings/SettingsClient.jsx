@@ -11,45 +11,16 @@ import { requestJson } from "@lib/clientApi";
 import { getJsonStorageItem, removeStorageItem, setJsonStorageItem } from "@lib/storage";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-
-const storageKey = "hirenova-settings";
-
-const defaultSettings = {
-    theme: "light",
-    defaultLocation: "",
-    preferredJobType: "any",
-    salaryVisibility: "show",
-    profileVisibility: "visible",
-    newJobs: true,
-    applicationUpdates: true,
-    employerMessages: true,
-    securityEmails: true,
-    weeklyDigest: false,
-};
-
-const jobTypeOptions = [
-    { value: "any", label: "Any job type" },
-    { value: "full-time", label: "Full Time" },
-    { value: "part-time", label: "Part Time" },
-    { value: "remote", label: "Remote" },
-    { value: "contract", label: "Contract" },
-];
-
-const salaryOptions = [
-    { value: "show", label: "Show salary ranges" },
-    { value: "compact", label: "Compact salary labels" },
-    { value: "hide", label: "Hide salary prompts" },
-];
-
-const visibilityOptions = [
-    { value: "visible", label: "Visible to employers" },
-    { value: "limited", label: "Limited visibility" },
-    { value: "hidden", label: "Hidden from employer search" },
-];
-const themeOptions = [
-    { value: "light", label: "Light" },
-    { value: "dark", label: "Night" },
-];
+import {
+    buildAccountDataLines,
+    createPdf,
+    defaultSettings,
+    jobTypeOptions,
+    salaryOptions,
+    settingsStorageKey,
+    themeOptions,
+    visibilityOptions,
+} from "./settingsPreferences";
 
 function Toggle({ checked, onChange, label, description }) {
     return (<button type="button" onClick={() => onChange(!checked)} className="site-border flex w-full items-center justify-between gap-4 rounded-lg border p-4 text-left">
@@ -72,75 +43,6 @@ function Section({ title, children }) {
     </section>);
 }
 
-function escapePdfText(value) {
-    return String(value)
-        .replace(/\\/g, "\\\\")
-        .replace(/\(/g, "\\(")
-        .replace(/\)/g, "\\)")
-        .replace(/[\r\n]+/g, " ");
-}
-
-function wrapLine(line, maxLength = 82) {
-    const words = String(line).split(" ");
-    const lines = [];
-    let current = "";
-
-    words.forEach((word) => {
-        const next = current ? `${current} ${word}` : word;
-        if (next.length > maxLength && current) {
-            lines.push(current);
-            current = word;
-            return;
-        }
-        current = next;
-    });
-
-    if (current) {
-        lines.push(current);
-    }
-
-    return lines;
-}
-
-function createPdf(lines) {
-    const contentLines = [
-        "BT",
-        "/F1 11 Tf",
-        "50 780 Td",
-        "14 TL",
-        ...lines.flatMap((line, index) => [
-            index === 0 ? "" : "T*",
-            `(${escapePdfText(line)}) Tj`,
-        ]).filter(Boolean),
-        "ET",
-    ];
-    const content = contentLines.join("\n");
-    const objects = [
-        "<< /Type /Catalog /Pages 2 0 R >>",
-        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-        `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
-    ];
-    let pdf = "%PDF-1.4\n";
-    const offsets = [0];
-
-    objects.forEach((object, index) => {
-        offsets.push(pdf.length);
-        pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
-    });
-
-    const xrefOffset = pdf.length;
-    pdf += `xref\n0 ${objects.length + 1}\n`;
-    pdf += "0000000000 65535 f \n";
-    offsets.slice(1).forEach((offset) => {
-        pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
-    });
-    pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-    return new Blob([pdf], { type: "application/pdf" });
-}
-
 function downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -160,6 +62,8 @@ export default function SettingsClient({ user: userProp }) {
     const [settings, setSettings] = useState({ ...defaultSettings, theme });
     const [notice, setNotice] = useState("");
     const [error, setError] = useState("");
+    const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+    const [isSavingSettings, setIsSavingSettings] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isDeactivateOpen, setIsDeactivateOpen] = useState(false);
     const [deactivatePassword, setDeactivatePassword] = useState("");
@@ -167,13 +71,43 @@ export default function SettingsClient({ user: userProp }) {
     const [isDeactivating, setIsDeactivating] = useState(false);
 
     useEffect(() => {
+        let ignore = false;
         const timeoutId = window.setTimeout(() => {
-            const stored = getJsonStorageItem(storageKey, {});
+            const stored = getJsonStorageItem(settingsStorageKey, {});
             setSettings((current) => ({ ...current, ...stored, theme }));
         }, 0);
 
-        return () => window.clearTimeout(timeoutId);
-    }, [theme]);
+        async function loadSettings() {
+            setIsLoadingSettings(true);
+            try {
+                const body = await requestJson("/auth/settings", {}, "Unable to load settings.");
+                if (ignore) {
+                    return;
+                }
+                const nextSettings = { ...defaultSettings, ...body.data, theme: body.data?.theme ?? theme };
+                setSettings(nextSettings);
+                setTheme(nextSettings.theme);
+                setJsonStorageItem(settingsStorageKey, nextSettings);
+            }
+            catch {
+                if (!ignore) {
+                    setNotice("Using settings saved on this device.");
+                }
+            }
+            finally {
+                if (!ignore) {
+                    setIsLoadingSettings(false);
+                }
+            }
+        }
+
+        void loadSettings();
+
+        return () => {
+            ignore = true;
+            window.clearTimeout(timeoutId);
+        };
+    }, [setTheme, theme]);
 
     const roleLabel = useMemo(() => user.role === "employer"
         ? "Employer workspace"
@@ -192,17 +126,56 @@ export default function SettingsClient({ user: userProp }) {
         }
     }
 
-    function saveSettings() {
-        setJsonStorageItem(storageKey, settings);
-        setNotice("Settings saved on this device.");
+    async function saveSettings() {
+        setIsSavingSettings(true);
+        setNotice("");
         setError("");
+        try {
+            const body = await requestJson("/auth/settings", {
+                method: "PATCH",
+                body: JSON.stringify(settings),
+            }, "Unable to save settings.");
+            const nextSettings = { ...defaultSettings, ...body.data };
+            setSettings(nextSettings);
+            setTheme(nextSettings.theme);
+            setJsonStorageItem(settingsStorageKey, nextSettings);
+            setNotice("Settings saved.");
+        }
+        catch (caughtError) {
+            setJsonStorageItem(settingsStorageKey, settings);
+            setError(caughtError instanceof Error
+                ? caughtError.message
+                : "Unable to save settings.");
+        }
+        finally {
+            setIsSavingSettings(false);
+        }
     }
 
-    function resetSettings() {
-        setSettings({ ...defaultSettings, theme });
-        removeStorageItem(storageKey);
-        setNotice("Settings reset.");
+    async function resetSettings() {
+        setIsSavingSettings(true);
+        setNotice("");
         setError("");
+        try {
+            const body = await requestJson("/auth/settings", {
+                method: "DELETE",
+            }, "Unable to reset settings.");
+            const nextSettings = { ...defaultSettings, ...body.data };
+            setSettings(nextSettings);
+            setTheme(nextSettings.theme);
+            setJsonStorageItem(settingsStorageKey, nextSettings);
+            setNotice("Settings reset.");
+        }
+        catch (caughtError) {
+            setSettings({ ...defaultSettings, theme });
+            removeStorageItem(settingsStorageKey);
+            setError(caughtError instanceof Error
+                ? caughtError.message
+                : "Unable to reset settings.");
+        }
+        finally {
+            setIsSavingSettings(false);
+        }
     }
 
     async function downloadAccountData() {
@@ -212,30 +185,7 @@ export default function SettingsClient({ user: userProp }) {
         try {
             const body = await requestJson("/auth/profile", {}, "Unable to load account data.");
             const profile = body.data;
-            const lines = [
-                "HireNova Account Data",
-                `Generated: ${new Date().toLocaleString()}`,
-                "",
-                "Account",
-                `Name: ${profile.username ?? user.name ?? "Not set"}`,
-                `Email: ${profile.email ?? user.email ?? "Not set"}`,
-                `Role: ${profile.role ?? user.role ?? "Not set"}`,
-                `Status: ${profile.status ?? "Not set"}`,
-                `Joined: ${profile.createdAt ? new Date(profile.createdAt).toLocaleString() : "Not set"}`,
-                "",
-                "Profile",
-                `Skills: ${profile.skills?.join(", ") || "Not set"}`,
-                `Resume URL: ${profile.resumeUrl || "Not set"}`,
-                `Experience: ${typeof profile.experience === "number" ? `${profile.experience} years` : "Not set"}`,
-                `Preferred location: ${profile.preferredLocation || "Not set"}`,
-                `Company name: ${profile.companyName || "Not set"}`,
-                `Company website: ${profile.companyWebsite || "Not set"}`,
-                `Company size: ${profile.companySize || "Not set"}`,
-                `About company: ${profile.companyAbout || "Not set"}`,
-                "",
-                "Local Preferences",
-                ...Object.entries(settings).map(([key, value]) => `${key}: ${String(value)}`),
-            ].flatMap((line) => wrapLine(line));
+            const lines = buildAccountDataLines({ profile, settings, user });
             const pdf = createPdf(lines.slice(0, 52));
             downloadBlob(pdf, `hirenova-account-data-${new Date().toISOString().slice(0, 10)}.pdf`);
             setNotice("Account data PDF downloaded.");
@@ -295,6 +245,9 @@ export default function SettingsClient({ user: userProp }) {
 
         <StatusNotice tone="success">{notice}</StatusNotice>
         <StatusNotice>{error}</StatusNotice>
+        <StatusNotice tone="info">
+          {isLoadingSettings ? "Loading saved settings..." : ""}
+        </StatusNotice>
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-6">
@@ -330,9 +283,9 @@ export default function SettingsClient({ user: userProp }) {
               <Toggle checked={settings.securityEmails} onChange={(value) => updateSetting("securityEmails", value)} label="Security emails" description="Keep important login and account protection emails enabled."/>
               <Toggle checked={settings.weeklyDigest} onChange={(value) => updateSetting("weeklyDigest", value)} label="Weekly digest" description="A weekly summary of jobs, saves, and applications."/>
             </Section>
-            <button type="button" onClick={saveSettings} className="site-button inline-flex w-full items-center justify-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold">
+            <button type="button" onClick={saveSettings} disabled={isSavingSettings} className="site-button inline-flex w-full items-center justify-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold disabled:opacity-70">
               <Icon name="check"/>
-              Save Settings
+              {isSavingSettings ? "Saving..." : "Save Settings"}
             </button>
           </div>
 
@@ -357,8 +310,8 @@ export default function SettingsClient({ user: userProp }) {
               <p className="site-muted text-sm leading-6">
                 Current browser session for {user.email ?? "this account"}.
               </p>
-              <button type="button" onClick={resetSettings} className="site-border site-field w-full rounded-md border px-4 py-2 text-sm font-semibold">
-                Reset local preferences
+              <button type="button" onClick={resetSettings} disabled={isSavingSettings} className="site-border site-field w-full rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-70">
+                Reset preferences
               </button>
             </Section>
           </aside>

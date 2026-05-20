@@ -100,6 +100,53 @@ const userSchema = new Schema(
     lastSeenAt: {
       type: Date,
     },
+    preferences: {
+      theme: {
+        type: String,
+        enum: ["light", "dark"],
+        default: "light",
+      },
+      defaultLocation: {
+        type: String,
+        maxLength: 100,
+        default: "",
+      },
+      preferredJobType: {
+        type: String,
+        enum: ["any", ...apiContract.jobs.types],
+        default: "any",
+      },
+      salaryVisibility: {
+        type: String,
+        enum: ["show", "compact", "hide"],
+        default: "show",
+      },
+      profileVisibility: {
+        type: String,
+        enum: ["visible", "limited", "hidden"],
+        default: "visible",
+      },
+      newJobs: {
+        type: Boolean,
+        default: true,
+      },
+      applicationUpdates: {
+        type: Boolean,
+        default: true,
+      },
+      employerMessages: {
+        type: Boolean,
+        default: true,
+      },
+      securityEmails: {
+        type: Boolean,
+        default: true,
+      },
+      weeklyDigest: {
+        type: Boolean,
+        default: false,
+      },
+    },
   },
   {
     timestamps: true,

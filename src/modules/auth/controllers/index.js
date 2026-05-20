@@ -15,6 +15,7 @@ const parseResume = require("./parseResume");
 const requestEmployerRole = require("./requestEmployerRole");
 const csrf = require("./csrf");
 const downloadResume = require("./downloadResume");
+const settings = require("./settings");
 
 module.exports = {
   login,
@@ -34,4 +35,7 @@ module.exports = {
   requestEmployerRole,
   csrf,
   downloadResume,
+  getSettings: settings.getSettings,
+  resetSettings: settings.resetSettings,
+  updateSettings: settings.updateSettings,
 };

@@ -9,7 +9,11 @@ export default function StatusNotice({ children, className = "mt-5", tone = "err
     <div
       className={classNames(
         "rounded-lg border px-4 py-3 text-sm",
-        tone === "success" ? "site-success" : "site-danger",
+        tone === "success"
+          ? "site-success"
+          : tone === "info"
+            ? "site-panel site-border"
+            : "site-danger",
         className,
       )}
     >

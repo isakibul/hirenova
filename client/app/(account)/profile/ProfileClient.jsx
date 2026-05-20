@@ -1,6 +1,5 @@
 "use client";
 import FieldError from "@components/forms/FieldError";
-import PasswordField from "@components/forms/PasswordField";
 import Icon from "@components/Icon";
 import LoadingCircle from "@components/LoadingCircle";
 import { FormSkeleton } from "@components/Skeleton";
@@ -22,6 +21,7 @@ import {
     validatePasswordForm,
     validateProfileForm,
 } from "./profileUtils";
+import ProfilePasswordPanel from "./ProfilePasswordPanel";
 export default function ProfileClient() {
     const [profile, setProfile] = useState(null);
     const [profileForm, setProfileForm] = useState({
@@ -231,6 +231,12 @@ export default function ProfileClient() {
     }
     function markProfileFieldTouched(field) {
         setProfileTouched((current) => ({ ...current, [field]: true }));
+    }
+    function updatePasswordField(field, value) {
+        setPasswordForm((current) => ({ ...current, [field]: value }));
+    }
+    function markPasswordFieldTouched(field) {
+        setPasswordTouched((current) => ({ ...current, [field]: true }));
     }
     function handleResumeChange(event) {
         setResumeFile(event.target.files?.[0] ?? null);
@@ -580,48 +586,14 @@ export default function ProfileClient() {
               </form>)}
           </div>
 
-          <aside className="site-border site-card self-start rounded-lg border lg:col-span-1 lg:sticky lg:top-24">
-            <div className="border-b border-[var(--site-border)] px-4 py-3">
-              <h2 className="font-semibold">Change Password</h2>
-              <p className="site-muted mt-1 text-xs">
-                Use your current password before setting a new one.
-              </p>
-            </div>
-
-            <form onSubmit={handlePasswordSubmit} noValidate className="space-y-4 p-4">
-              <label className="block">
-                <span className="text-sm font-medium">Current Password</span>
-                <PasswordField value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((current) => ({
-            ...current,
-            currentPassword: event.target.value,
-        }))} onBlur={() => setPasswordTouched((current) => ({ ...current, currentPassword: true }))} aria-invalid={Boolean(visiblePasswordErrors.currentPassword)} aria-describedby={visiblePasswordErrors.currentPassword ? "profile-current-password-error" : undefined} containerClassName="mt-1" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" autoComplete="current-password" required/>
-                <FieldError id="profile-current-password-error" message={visiblePasswordErrors.currentPassword}/>
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium">New Password</span>
-                <PasswordField value={passwordForm.newPassword} onChange={(event) => setPasswordForm((current) => ({
-            ...current,
-            newPassword: event.target.value,
-        }))} onBlur={() => setPasswordTouched((current) => ({ ...current, newPassword: true }))} aria-invalid={Boolean(visiblePasswordErrors.newPassword)} aria-describedby={visiblePasswordErrors.newPassword ? "profile-new-password-error" : undefined} containerClassName="mt-1" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={8} maxLength={50} autoComplete="new-password" required/>
-                <FieldError id="profile-new-password-error" message={visiblePasswordErrors.newPassword}/>
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium">Confirm Password</span>
-                <PasswordField value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm((current) => ({
-            ...current,
-            confirmPassword: event.target.value,
-        }))} onBlur={() => setPasswordTouched((current) => ({ ...current, confirmPassword: true }))} aria-invalid={Boolean(visiblePasswordErrors.confirmPassword)} aria-describedby={visiblePasswordErrors.confirmPassword ? "profile-confirm-password-error" : undefined} containerClassName="mt-1" className="site-field w-full rounded-md border px-3 py-2 text-sm focus:outline-none" minLength={8} maxLength={50} autoComplete="new-password" required/>
-                <FieldError id="profile-confirm-password-error" message={visiblePasswordErrors.confirmPassword}/>
-              </label>
-
-              <button type="submit" disabled={isSavingPassword} className="site-button inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-70">
-                {isSavingPassword ? (<LoadingCircle className="h-3.5 w-3.5" label="Updating password" />) : (<Icon name="check"/>)}
-                {isSavingPassword ? "Updating" : "Update Password"}
-              </button>
-            </form>
-          </aside>
+          <ProfilePasswordPanel
+            isSavingPassword={isSavingPassword}
+            onPasswordChange={updatePasswordField}
+            onPasswordSubmit={handlePasswordSubmit}
+            onPasswordTouched={markPasswordFieldTouched}
+            passwordForm={passwordForm}
+            visiblePasswordErrors={visiblePasswordErrors}
+          />
         </div>
       </div>
     </section>);

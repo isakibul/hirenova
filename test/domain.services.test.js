@@ -95,6 +95,36 @@ test("application service rejects invalid apply attempts before writing", async 
   );
 });
 
+test("user preferences are persisted on the user document", async (t) => {
+  const user = createDoc({
+    id: "user-1",
+    preferences: {
+      theme: "light",
+      weeklyDigest: false,
+    },
+  });
+
+  t.mock.method(User, "findById", () => createQuery(user));
+
+  const updated = await userService.updatePreferences("user-1", {
+    theme: "dark",
+    weeklyDigest: true,
+  });
+
+  assert.equal(updated.theme, "dark");
+  assert.equal(updated.weeklyDigest, true);
+  assert.equal(user.saved, true);
+});
+
+test("user preferences fail clearly for missing users", async (t) => {
+  t.mock.method(User, "findById", () => createQuery(null));
+
+  await assert.rejects(
+    () => userService.updatePreferences("missing", { theme: "dark" }),
+    /User not found/,
+  );
+});
+
 test("application service lists and updates authorized applications", async (t) => {
   const application = createDoc({
     id: "app-1",

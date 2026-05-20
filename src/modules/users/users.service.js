@@ -460,6 +460,32 @@ const touchLastSeen = async (id) => {
   await User.findByIdAndUpdate(id, { lastSeenAt: new Date() });
 };
 
+const getPreferences = async (id) => {
+  const user = await User.findById(id).select("preferences");
+
+  if (!user) {
+    throw notFound("User not found");
+  }
+
+  return user.preferences ?? {};
+};
+
+const updatePreferences = async (id, preferences) => {
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw notFound("User not found");
+  }
+
+  user.preferences = {
+    ...(user.preferences?.toObject?.() ?? user.preferences ?? {}),
+    ...preferences,
+  };
+
+  await user.save();
+  return user.preferences ?? {};
+};
+
 const removeUser = async (id) => {
   const user = await User.findByIdAndDelete(id);
   if (!user) {
@@ -488,5 +514,7 @@ module.exports = {
   countRoleChangeRequests,
   reviewRoleChangeRequest,
   touchLastSeen,
+  getPreferences,
+  updatePreferences,
   removeUser,
 };

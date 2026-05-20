@@ -58,6 +58,9 @@ test("app exposes the health check route", () => {
 test("core v1 routes are wired", () => {
   assert.equal(routeExists("/signup", "post"), true);
   assert.equal(routeExists("/session", "get"), true);
+  assert.equal(routeExists("/settings", "get"), true);
+  assert.equal(routeExists("/settings", "patch"), true);
+  assert.equal(routeExists("/settings", "delete"), true);
   assert.equal(routeExists("/role-request/employer", "post"), true);
   assert.equal(routeExists("/", "get"), true);
   assert.equal(routeExists("/smart-match/recommendations", "get"), true);
