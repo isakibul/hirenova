@@ -7,7 +7,7 @@ const isAdminRole = (role) => role === "admin" || role === "superadmin";
 const populateApplication = (query) =>
   query
     .populate("job", "title location jobType salary author createdAt updatedAt")
-    .populate("applicant", "username email role status createdAt");
+    .populate("applicant", "username email role status resumeUrl createdAt");
 
 const getApplication = async (id) => {
   const application = await populateApplication(Application.findById(id));

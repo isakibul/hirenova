@@ -65,6 +65,11 @@ test("employer can turn on AI ranking for job applications", async ({
   await expect(
     page.getByRole("complementary").getByText("Seeded application for E2E coverage."),
   ).toBeVisible();
+  await expect(page.getByRole("link", { name: "View Profile" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "View Resume" })).toHaveAttribute(
+    "href",
+    "https://example.test/e2e-resume.pdf",
+  );
   await expect(page.getByRole("checkbox", { name: "AI Ranking" })).toBeEnabled();
   await page.getByRole("checkbox", { name: "AI Ranking" }).check();
   await expect(page.getByRole("button", { name: /#1 · \d+\/100/ })).toBeVisible();

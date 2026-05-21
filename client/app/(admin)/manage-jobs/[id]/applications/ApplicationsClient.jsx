@@ -4,7 +4,8 @@ import ConfirmDialog from "@components/ConfirmDialog";
 import SelectField from "@components/forms/SelectField";
 import Icon from "@components/Icon";
 import { requestJson } from "@lib/clientApi";
-import { formatDate, formatDateTime } from "@lib/ui";
+import { formatDate, formatDateTime, getCandidateProfileHref } from "@lib/ui";
+import Link from "next/link";
 import { useState } from "react";
 import {
     formatJobStatus,
@@ -72,6 +73,8 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
             ?? applications.find((application) => getApplicationId(application) === selectedApplicationId)
             ?? null
         : null;
+    const selectedApplicant = selectedApplication?.applicant ?? null;
+    const selectedApplicantProfileHref = getCandidateProfileHref(selectedApplicant);
     const reviewCount = getStatusCount(applications, "reviewing") + getStatusCount(applications, "shortlisted");
     const latestApplication = applications[0];
 
@@ -300,6 +303,14 @@ export default function ApplicationsClient({ initialApplications, isLoading = fa
                   </p>
                   <p className="site-muted mt-2 text-sm leading-6">{selectedApplication.aiRanking.reason}</p>
                 </div>) : null}
+              <div className="grid gap-2 sm:grid-cols-2">
+                {selectedApplicantProfileHref ? (<Link href={selectedApplicantProfileHref} className="site-button inline-flex justify-center rounded-md px-4 py-2 text-sm font-semibold">
+                    View Profile
+                  </Link>) : null}
+                {selectedApplicant?.resumeUrl ? (<a href={selectedApplicant.resumeUrl} target="_blank" rel="noopener noreferrer" className="site-border site-field inline-flex justify-center rounded-md border px-4 py-2 text-sm font-semibold">
+                    View Resume
+                  </a>) : null}
+              </div>
               <div>
                 <p className="site-muted text-[11px] font-semibold uppercase tracking-wide">Cover Letter</p>
                 <p className="site-muted mt-2 whitespace-pre-line text-sm leading-6">

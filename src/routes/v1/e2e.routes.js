@@ -25,6 +25,7 @@ const users = {
     skills: ["React", "Node.js", "Testing"],
     experience: 3,
     preferredLocation: "Remote",
+    resumeUrl: "https://example.test/e2e-resume.pdf",
   },
   employer: {
     username: "e2eemployer",
