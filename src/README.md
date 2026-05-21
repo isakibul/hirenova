@@ -1,81 +1,91 @@
-# Backend Structure
+# HireNova Backend
 
-The backend uses a feature-module structure for product domains. A module
-owns its routes, controllers, validation, and service entry points together:
+Express/MongoDB API for HireNova, a role-based hiring platform with job posts,
+applications, applicant ranking, resume storage, notifications, messaging, and
+admin operations.
 
-```txt
-modules/
-  auth/
-    auth.routes.js
-    auth.service.js
-    auth.validation.js
-    controllers/
-  jobs/
-    jobs.routes.js
-    jobs.service.js
-    jobs.validation.js
-    controllers/
-  applications/
-    applications.routes.js
-    applications.service.js
-    applications.validation.js
-    controllers/
-  newsletters/
-    newsletters.routes.js
-    newsletters.service.js
-    controllers/
+## Responsibilities
+
+- User auth with HttpOnly cookie sessions, CSRF-aware clients, and role checks.
+- Jobseeker, employer, admin, and superadmin workflows.
+- Job CRUD, approval, lifecycle updates, saved jobs, and applications.
+- Application status updates, delete flow, and AI-assisted applicant ranking.
+- Resume upload, download, and parsing through S3-compatible object storage.
+- Notifications, realtime messaging support, newsletters, and dashboards.
+- Audit logging, health checks, rate limiting, and production-readiness helpers.
+
+## Tech Stack
+
+- Node.js 20+
+- Express 5
+- MongoDB with Mongoose
+- Redis for scalable runtime services
+- Socket.IO integration
+- Nodemailer and MailHog for local email
+- MinIO/S3-compatible object storage for resumes
+- OpenRouter-compatible AI integration
+- Node test runner with coverage gates
+
+## Setup
+
+Install dependencies from the repository root:
+
+```bash
+npm install
 ```
 
-Shared infrastructure and cross-domain code stays outside modules:
+Create the backend environment file:
 
-- `routes/v1`: API version composition only. Mount module routes here, but keep
-  feature route definitions inside `modules/<feature>`.
-- `modules/<feature>/controllers`: request/response adapters. Controllers
-  validate inputs, call module services, and return API responses.
-- `modules/<feature>/<feature>.service.js`: feature business rules and
-  workflow logic. Persistence access should come through infrastructure
-  database entry points rather than importing schemas directly.
-- `modules/<feature>/<feature>.validation.js`: Joi schemas for request
-  contracts. Use enum values from `src/shared/apiContract.js`.
-- `model`: Mongoose schemas and indexes. Model enums should also use
-  `src/shared/apiContract.js`.
-- `middleware`: cross-cutting Express behavior such as auth, rate limits,
-  logging, metrics, and request context.
-- `utils`: small framework-agnostic helpers.
-- `shared`: project-wide contracts and security helpers.
-- `integrations`: adapters for external systems such as email delivery and
-  resume parsing.
-- `infrastructure`: operational concerns such as observability and database
-  access entry points.
-- `shared/apiContract.js`: enum/status contract consumed by backend validators
-  and models.
+```bash
+cp .env.example .env
+```
 
-When adding a feature, prefer this flow:
+Start local infrastructure:
 
-1. Add or update `src/shared/apiContract.js` if the API introduces a new
-   enum/status.
-2. Create or update `modules/<feature>/<feature>.routes.js`.
-3. Keep controllers focused on HTTP details.
-4. Put reusable business behavior in `modules/<feature>/<feature>.service.js`.
-5. Put request schemas in `modules/<feature>/<feature>.validation.js`.
-6. Mount the module route from `routes/v1/index.js`.
-7. Keep schema definitions in `model` and consume persistence through
-   `infrastructure/database`.
+```bash
+docker compose up -d mongodb redis mailhog minio minio-init
+```
 
-## Local Email
+Run the API:
 
-The root `docker-compose.yml` includes MailHog for development email delivery.
-Use `EMAIL_HOST=localhost`, `EMAIL_PORT=1025`, and `EMAIL_SECURE=false`.
-Open `http://localhost:8025` to inspect confirmation, reset, and newsletter
-campaign emails.
+```bash
+npm run dev
+```
 
-## Resume Storage
+The API runs on `http://localhost:4000` by default. Versioned API routes are
+mounted under `/api/v1`.
 
-Resume uploads use S3-compatible object storage instead of writing files into
-the project directory. The local `docker-compose.yml` includes MinIO and creates
-the `hirenova-resumes` bucket automatically.
+## Required Environment
 
-Use these local defaults:
+Core local variables are documented in the root `.env.example`.
+
+Important groups:
+
+- `PORT`, `DATABASE_CONNECTION_URL`, `DB_NAME`
+- `REDIS_URL` or `REDIS_HOST` / `REDIS_PORT`
+- `CLIENT_URL`, `CORS_ORIGINS`
+- `ACCESS_TOKEN_SECRET`, `EMAIL_SECRET`, `CSRF_SECRET`
+- `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_FROM`
+- `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`
+- `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`
+
+For production, replace every secret-like value with a strong secret and point
+MongoDB, Redis, email, and object storage to managed services.
+
+## Local Infrastructure
+
+The root `docker-compose.yml` provides:
+
+| Service | Purpose | URL |
+| --- | --- | --- |
+| MongoDB | Database | `mongodb://localhost:27017` |
+| Mongo Express | Mongo UI | `http://localhost:8081` |
+| Redis | Cache/realtime support | `localhost:6379` |
+| Redis Commander | Redis UI | `http://localhost:8082` |
+| MailHog | Email capture | `http://localhost:8025` |
+| MinIO | Resume object storage | `http://localhost:9001` |
+
+Use these MinIO defaults locally:
 
 ```bash
 S3_ENDPOINT=http://127.0.0.1:9000
@@ -87,26 +97,101 @@ S3_FORCE_PATH_STYLE=true
 S3_REQUEST_TIMEOUT_MS=5000
 ```
 
-Open the MinIO console at `http://localhost:9001`. For production, point the
-same variables at AWS S3, Cloudflare R2, DigitalOcean Spaces, or another
-S3-compatible service.
+## Architecture
 
-## Backend Tests
+The backend uses feature modules. Each module owns routes, controllers,
+validation, and service logic for a product domain.
 
-The backend test surface is self-contained and does not require the `client/`
-folder:
-
-```bash
-npm run check
+```txt
+src/
+  app.js
+  index.js
+  routes/v1/
+  modules/
+    auth/
+    jobs/
+    applications/
+    users/
+    messages/
+    notifications/
+    newsletters/
+    dashboard/
+    assistant/
+  model/
+  middleware/
+  integrations/
+  infrastructure/
+  shared/
+  utils/
 ```
 
-`npm run check` runs the backend suite with the production coverage gate:
-75% lines, 70% branches, and 70% functions across the backend code that is
-meaningful to unit-test directly. HTTP controller glue, route composition,
-external integrations, observability adapters, and static email template
-builders are excluded from the threshold and should be covered by focused
-route, integration, or smoke tests where appropriate.
+Guidelines:
 
-Browser E2E seeding is exposed only when the API runs with `NODE_ENV=test`.
-Production and development route wiring does not mount the `/api/v1/e2e`
-helpers.
+- `routes/v1` composes versioned routes only.
+- `modules/<feature>/<feature>.routes.js` defines feature routes.
+- Controllers adapt HTTP requests/responses and call services.
+- Services contain business rules and persistence workflows.
+- Validation files contain Joi request contracts.
+- `shared/apiContract.js` centralizes shared enum/status values.
+- `integrations` contains external adapters such as HTTP, email, AI, and storage.
+- `infrastructure` contains database entry points and observability concerns.
+
+## Key API Areas
+
+- `POST /api/v1/auth/signup`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/session`
+- `GET /api/v1/jobs`
+- `POST /api/v1/jobs`
+- `PATCH /api/v1/jobs/:id/status`
+- `PATCH /api/v1/jobs/:id/approval`
+- `POST /api/v1/jobs/:id/apply`
+- `GET /api/v1/jobs/:id/applications`
+- `GET /api/v1/jobs/:id/applications/ranking`
+- `PATCH /api/v1/applications/:id/status`
+- `DELETE /api/v1/applications/:id`
+- `GET /api/v1/notifications`
+- `GET /api/v1/messages/conversations`
+- `POST /api/v1/newsletter`
+
+## Testing
+
+Run backend tests:
+
+```bash
+npm test
+```
+
+Run backend coverage gate:
+
+```bash
+npm run check:backend
+```
+
+The coverage gate currently enforces:
+
+- 75% lines
+- 70% branches
+- 70% functions
+
+Controller glue, route composition, external integrations, observability
+adapters, and static email builders are excluded from the unit coverage gate and
+should be covered through focused integration/E2E tests where useful.
+
+## E2E Seed Route
+
+Browser E2E tests use a deterministic seed API mounted only when
+`NODE_ENV=test`.
+
+The `/api/v1/e2e/seed` route is intentionally unavailable in development and
+production.
+
+## Adding Backend Features
+
+1. Add or update shared contracts in `src/shared/apiContract.js` when needed.
+2. Add validation in `modules/<feature>/<feature>.validation.js`.
+3. Add service behavior in `modules/<feature>/<feature>.service.js`.
+4. Add controller files under `modules/<feature>/controllers`.
+5. Wire the route in `modules/<feature>/<feature>.routes.js`.
+6. Mount the module from `routes/v1/index.js` if it is a new module.
+7. Add service tests and, for user-facing flows, Playwright E2E coverage.

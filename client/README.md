@@ -1,118 +1,200 @@
 # HireNova Client
 
-Next.js App Router frontend for HireNova. The app uses JavaScript/JSX,
-HttpOnly cookie-backed auth from the Express API, direct backend API helpers,
-and Tailwind CSS.
+Next.js App Router frontend for HireNova. The client provides public job
+browsing, auth flows, jobseeker account tools, employer job/application
+management, admin operations, realtime menus, settings, and AI-assisted hiring
+workflows.
+
+## Tech Stack
+
+- Next.js 16 App Router
+- React 19
+- JavaScript/JSX
+- Tailwind CSS 4
+- Axios-backed API helpers
+- Socket.IO client
+- Playwright E2E tests
+- Node test runner for extracted utilities
 
 ## Setup
 
-Install dependencies from this directory:
+Install client dependencies:
 
 ```bash
+cd client
 npm install
 ```
 
-Create a local environment file:
+Create the client env file:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Required variables:
-
-- `BACKEND_API_URL`: backend API base URL, for example `http://localhost:4000/api/v1`.
-- `BACKEND_API_URL`: server-side backend API base URL used by the Next.js
-  same-origin rewrite, for example `http://localhost:4000/api/v1`.
-- `NEXT_PUBLIC_BACKEND_API_URL`: optional browser-visible backend API base URL.
-  Leave it unset for the recommended same-origin `/api/v1` proxy path.
-- `NEXT_PUBLIC_DIRECT_BACKEND_API`: optional escape hatch. Leave unset or
-  `false` so browser auth uses the same-origin proxy and cookies work reliably.
-
-The backend also needs `CLIENT_URL` set to the same frontend origin. Email
-confirmation links are sent to `/confirm-email?token=...` on that URL.
-
-For local email testing, start the root Docker services and open MailHog:
+Recommended local values:
 
 ```bash
-docker compose up -d mailhog
+NEXT_PUBLIC_REALTIME_URL=http://localhost:4000
+BACKEND_API_URL=http://localhost:4000/api/v1
 ```
 
-MailHog receives SMTP on `localhost:1025` and exposes the email inbox at
-[http://localhost:8025](http://localhost:8025). Newsletter campaigns sent from
-the admin newsletter page will appear there.
+Leave these unset unless you intentionally need direct browser-to-backend
+requests:
+
+```bash
+NEXT_PUBLIC_BACKEND_API_URL=
+NEXT_PUBLIC_DIRECT_BACKEND_API=false
+```
+
+The recommended path is the same-origin `/api/v1` proxy. It keeps browser auth
+cookie behavior reliable.
 
 ## Development
+
+Start the backend first from the repository root:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Start the client:
 
-`npm run dev` uses the webpack dev bundler because this app lives inside a
-nested backend repository and Turbopack currently resolves CSS dependencies from
-the parent root in that layout. `npm run dev:turbo` is available if you want to
-try the default Next.js dev bundler.
+```bash
+cd client
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+The default dev script uses webpack:
+
+```bash
+npm run dev
+```
+
+Turbopack is available if needed:
+
+```bash
+npm run dev:turbo
+```
 
 ## Scripts
 
 ```bash
 npm run lint
 npm run build
+npm run test
+npm run test:coverage
 npm run check
+npm run test:e2e
 npm run test:e2e:local
 npm run test:e2e:external
 ```
 
-`npm run check` runs the unit suite with a client coverage gate, then lint and
-the production build. The coverage gate currently covers shared browser helpers
-and extracted feature utilities at 80% lines, 70% branches, and 80% functions.
-Large interactive pages should move reusable behavior into tested utilities or
-smaller components as they evolve.
+`npm run check` runs:
 
-## End-to-End Tests
+1. client utility tests with coverage
+2. ESLint
+3. production build
 
-The browser E2E suite uses Playwright Chromium, the real Next.js frontend, the
-real Express API, and a dedicated Mongo database named `hirenova_e2e`.
+## Structure
 
-Start the local infrastructure first:
-
-```bash
-docker compose up -d mongodb redis mailhog
+```txt
+client/app/
+  (marketing)/
+  (auth)/
+  (jobs)/
+  (account)/
+  (admin)/
+  _components/
+  _lib/
+  _fonts/
+client/E2E/
+client/test/
 ```
 
-Then run the monorepo-local E2E command:
+Route groups:
+
+- `(marketing)`: landing, feature, company, and public pages.
+- `(auth)`: signup, login, forgot password, and reset password.
+- `(jobs)`: job search, filters, detail page, apply/save actions.
+- `(account)`: profile, applications, saved jobs, messages, settings.
+- `(admin)`: admin/employer dashboards, candidates, users, jobs, newsletters,
+  system monitor, application review.
+
+Shared areas:
+
+- `_components`: reusable UI, layout, auth, theme, modals, menus, forms.
+- `_lib`: API clients, URL helpers, storage helpers, validation, realtime, UI
+  formatting.
+- `test`: utility and extracted logic tests.
+- `E2E`: Playwright browser coverage.
+
+## API Layer
+
+The client uses centralized helpers:
+
+- `app/_lib/clientApi.js`: browser requests through Axios.
+- `app/_lib/serverApi.js`: server-side backend requests.
+- `app/_lib/url.js`: API URL and same-origin proxy behavior.
+- `app/_lib/realtime.js`: Socket.IO connection setup.
+
+Prefer these helpers over raw `fetch` or ad hoc URL construction.
+
+## Auth and Theme
+
+Auth is backed by HttpOnly cookies from the Express API. The `AuthProvider`
+hydrates the current user from `/auth/session`.
+
+Theme state lives in `ThemeProvider` and persists to local storage. Account
+settings can also save the preferred theme to the backend.
+
+## E2E Tests
+
+The E2E suite uses:
+
+- real Next.js app
+- real Express backend
+- MongoDB test database
+- deterministic seed endpoint mounted only under `NODE_ENV=test`
+
+Start local infrastructure:
+
+```bash
+docker compose up -d mongodb redis mailhog minio minio-init
+```
+
+Run E2E from `client/`:
 
 ```bash
 npm run test:e2e:local
 ```
 
-The suite seeds deterministic jobseeker, employer, admin, job, application,
-notification, and conversation records through the backend test API before each
-run. When the client is cut out into its own repository, start the backend
-separately with `NODE_ENV=test`, matching `E2E_SEED_SECRET`, a test database,
-Redis, and valid test email settings such as
-`EMAIL_FROM=noreply@hirenova.test`. Then point Playwright at that backend:
+For external backend mode:
 
 ```bash
 E2E_API_URL=http://127.0.0.1:4100/api/v1 npm run test:e2e:external
 ```
 
-## Structure
+## Accessibility and Visual Checks
 
-- `app/(marketing)`: public marketing and informational pages.
-- `app/(auth)`: login and signup pages.
-- `app/(jobs)`: job browsing and detail pages.
-- `app/(account)`: authenticated user pages.
-- `app/(admin)`: admin management pages.
-- `app/_components/auth/AuthProvider.jsx`: browser auth provider that hydrates
-  the current user from the backend HttpOnly auth cookie.
-- `app/_components`: shared UI and provider components.
-- `app/_lib`: shared helpers for API URLs, backend calls, environment values,
-  realtime connections, server-side API calls, validation, and UI formatting.
-- `app/<route-group>/<feature>/*Utils.js`: feature-level pure utilities that
-  can be unit-tested separately from large interactive components.
+The suite includes accessibility and visual regression coverage. Keep visible
+text, controls, and status messages accessible by role/name where possible so
+Playwright and assistive technologies can interact with the app reliably.
 
-## Deploy on Vercel
+## Deployment Notes
 
-Set the same environment variables in the project settings before deploying.
+Set these in the hosting provider:
+
+- `BACKEND_API_URL`
+- `NEXT_PUBLIC_REALTIME_URL`
+- optionally `NEXT_PUBLIC_BACKEND_API_URL`
+- optionally `NEXT_PUBLIC_DIRECT_BACKEND_API`
+
+The backend must set:
+
+- `CLIENT_URL` to the deployed frontend origin
+- `CORS_ORIGINS` to the same frontend origin
+
+If deploying to Vercel, keep the same-origin API rewrite approach unless there
+is a specific reason to expose direct browser backend calls.
