@@ -14,6 +14,8 @@ test("settings persist through the backend and survive reloads", async ({
   await page.goto("/settings");
 
   await expect(page.getByText("Loading saved settings...")).toBeHidden();
+  await page.getByRole("button", { name: "Night" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.getByPlaceholder("Remote, Dhaka, New York").fill("Sylhet");
   await page.getByText("Weekly digest").click();
   await page.getByRole("button", { name: "Save Settings" }).click();

@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useEffect, useMemo, useState, } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, } from "react";
 import { getStorageItem, setStorageItem } from "@lib/storage";
 const STORAGE_KEY = "hirenova-theme";
 const ThemeContext = createContext(null);
@@ -36,14 +36,16 @@ export default function ThemeProvider({ children }) {
         setStorageItem(STORAGE_KEY, theme);
     }, [theme]);
     const currentTheme = theme ?? "light";
+    const setThemeValue = useCallback((nextTheme) => setTheme(nextTheme), []);
+    const toggleTheme = useCallback(() => setTheme((previousTheme) => {
+        const activeTheme = previousTheme ?? getPreferredTheme();
+        return activeTheme === "dark" ? "light" : "dark";
+    }), []);
     const value = useMemo(() => ({
         theme: currentTheme,
-        setTheme: (nextTheme) => setTheme(nextTheme),
-        toggleTheme: () => setTheme((previousTheme) => {
-            const activeTheme = previousTheme ?? getPreferredTheme();
-            return activeTheme === "dark" ? "light" : "dark";
-        }),
-    }), [currentTheme]);
+        setTheme: setThemeValue,
+        toggleTheme,
+    }), [currentTheme, setThemeValue, toggleTheme]);
     return (<ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>);
 }
 export function useTheme() {

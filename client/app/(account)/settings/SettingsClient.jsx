@@ -10,7 +10,7 @@ import { useTheme } from "@components/theme/ThemeProvider";
 import { requestJson } from "@lib/clientApi";
 import { getJsonStorageItem, removeStorageItem, setJsonStorageItem } from "@lib/storage";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     buildAccountDataLines,
     createPdf,
@@ -59,6 +59,7 @@ export default function SettingsClient({ user: userProp }) {
     const { logout, user: authUser } = useAuth();
     const user = userProp ?? authUser ?? {};
     const { theme, setTheme } = useTheme();
+    const initialThemeRef = useRef(theme);
     const [settings, setSettings] = useState({ ...defaultSettings, theme });
     const [notice, setNotice] = useState("");
     const [error, setError] = useState("");
@@ -74,7 +75,7 @@ export default function SettingsClient({ user: userProp }) {
         let ignore = false;
         const timeoutId = window.setTimeout(() => {
             const stored = getJsonStorageItem(settingsStorageKey, {});
-            setSettings((current) => ({ ...current, ...stored, theme }));
+            setSettings((current) => ({ ...current, ...stored, theme: initialThemeRef.current }));
         }, 0);
 
         async function loadSettings() {
@@ -84,7 +85,7 @@ export default function SettingsClient({ user: userProp }) {
                 if (ignore) {
                     return;
                 }
-                const nextSettings = { ...defaultSettings, ...body.data, theme: body.data?.theme ?? theme };
+                const nextSettings = { ...defaultSettings, ...body.data, theme: body.data?.theme ?? initialThemeRef.current };
                 setSettings(nextSettings);
                 setTheme(nextSettings.theme);
                 setJsonStorageItem(settingsStorageKey, nextSettings);
@@ -107,7 +108,7 @@ export default function SettingsClient({ user: userProp }) {
             ignore = true;
             window.clearTimeout(timeoutId);
         };
-    }, [setTheme, theme]);
+    }, [setTheme]);
 
     const roleLabel = useMemo(() => user.role === "employer"
         ? "Employer workspace"
