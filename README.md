@@ -1,6 +1,6 @@
 # HireNova
 
-HireNova is a production-style full-stack hiring platform with role-based
+HireNova is an AI powered, production-style full-stack hiring platform with role-based
 workflows for jobseekers, employers, admins, and superadmins. It includes job
 posting, applications, AI-assisted job matching, AI applicant ranking, resume
 object storage, notifications, messaging, newsletters, account settings, and
