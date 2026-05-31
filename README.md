@@ -57,6 +57,7 @@ Read more:
 
 - Backend docs: [`src/README.md`](src/README.md)
 - Client docs: [`client/README.md`](client/README.md)
+- Architecture: [`docs/architecture.md`](docs/architecture.md)
 - Production notes: [`docs/production-readiness.md`](docs/production-readiness.md)
 
 ## Local Setup
