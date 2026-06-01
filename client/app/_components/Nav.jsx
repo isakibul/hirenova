@@ -1,8 +1,8 @@
 "use client";
 import { useAuth } from "@components/auth/AuthProvider";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
 import MessagesMenu from "./MessagesMenu";
 import NotificationsMenu from "./NotificationsMenu";
@@ -37,8 +37,9 @@ function getUserRole(role) {
 }
 export default function Nav() {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, logout, user } = useAuth();
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [profileOpenKey, setProfileOpenKey] = useState("");
   const profileMenuRef = useRef(null);
   const userRole = getUserRole(user?.role);
   const roleMenuItems =
@@ -118,6 +119,12 @@ export default function Nav() {
     userName && userName !== userEmail
       ? userName
       : (userEmail ?? "Profile");
+  const profileMenuKey = isAuthenticated
+    ? `${pathname}:${user?.id ?? userEmail ?? "user"}`
+    : "";
+  const isProfileOpen = profileOpenKey === profileMenuKey;
+  const closeProfileMenu = useCallback(() => setProfileOpenKey(""), []);
+
   useEffect(() => {
     if (!isProfileOpen) {
       return;
@@ -127,12 +134,12 @@ export default function Nav() {
         profileMenuRef.current &&
         !profileMenuRef.current.contains(event.target)
       ) {
-        setIsProfileOpen(false);
+        closeProfileMenu();
       }
     }
     function handleKeyDown(event) {
       if (event.key === "Escape") {
-        setIsProfileOpen(false);
+        closeProfileMenu();
       }
     }
     document.addEventListener("pointerdown", handlePointerDown);
@@ -141,7 +148,7 @@ export default function Nav() {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isProfileOpen]);
+  }, [closeProfileMenu, isProfileOpen]);
   return (
     <header className="site-border site-nav sticky top-0 z-20 border-b py-3">
       <div className="site-section">
@@ -186,7 +193,11 @@ export default function Nav() {
               <div className="relative" ref={profileMenuRef}>
                 <button
                   type="button"
-                  onClick={() => setIsProfileOpen((current) => !current)}
+                  onClick={() =>
+                    setProfileOpenKey((current) =>
+                      current === profileMenuKey ? "" : profileMenuKey
+                    )
+                  }
                   className="site-border site-panel inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-(--site-accent) hover:text-(--site-accent)"
                   aria-label="Open profile menu"
                   aria-expanded={isProfileOpen}
@@ -223,7 +234,7 @@ export default function Nav() {
                         <Link
                           key={item.href}
                           href={item.href}
-                          onClick={() => setIsProfileOpen(false)}
+                          onClick={closeProfileMenu}
                           className="group mx-2 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition hover:bg-(--site-panel) hover:text-(--site-accent)"
                           role="menuitem"
                         >
@@ -240,7 +251,7 @@ export default function Nav() {
                         <Link
                           key={item.href}
                           href={item.href}
-                          onClick={() => setIsProfileOpen(false)}
+                          onClick={closeProfileMenu}
                           className="group mx-2 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition hover:bg-(--site-panel) hover:text-(--site-accent)"
                           role="menuitem"
                         >
@@ -257,6 +268,7 @@ export default function Nav() {
                       <button
                         type="button"
                         onClick={async () => {
+                          closeProfileMenu();
                           await logout();
                           router.replace("/");
                         }}
