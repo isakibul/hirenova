@@ -115,6 +115,62 @@ body {
   font-weight: 700;
 }
 
+.jobs-hero {
+  background:
+    radial-gradient(circle at 88% 20%, rgb(255 255 255 / 0.2), transparent 16rem),
+    linear-gradient(115deg, #0c5e45, #0f6b4f 58%, #168060);
+  box-shadow: var(--site-soft-shadow);
+  color: #ffffff;
+}
+
+.jobs-hero::after {
+  position: absolute;
+  inset: auto -4rem -7rem auto;
+  width: 16rem;
+  height: 16rem;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 9999px;
+  content: "";
+}
+
+.jobs-eyebrow {
+  color: #b8f0cf;
+}
+
+.jobs-hero-note {
+  background: rgb(255 255 255 / 0.12);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  color: #f7fff9;
+}
+
+.jobs-hero-dot {
+  background: #92edb7;
+  box-shadow: 0 0 0 3px rgb(146 237 183 / 0.16);
+}
+
+.jobs-search-bar {
+  background: var(--site-card);
+  box-shadow: var(--site-shadow);
+}
+
+.jobs-filter {
+  box-shadow: var(--site-soft-shadow);
+}
+
+.jobs-results {
+  box-shadow: var(--site-soft-shadow);
+}
+
+.job-listing {
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.job-listing:hover {
+  border-color: var(--site-accent);
+  box-shadow: var(--site-soft-shadow);
+  transform: translateY(-2px);
+}
+
 .site-soft {
   color: var(--site-soft);
 }

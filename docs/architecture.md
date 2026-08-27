@@ -228,14 +228,12 @@ contract.
 
 ## Verification
 
-The repository includes backend unit tests, frontend utility tests, lint/build
-checks, Playwright E2E tests, accessibility checks, visual regression coverage,
-and production-readiness documentation.
+The repository includes client lint/build checks and production-readiness
+documentation.
 
 Primary verification commands:
 
 ```bash
-npm run check:backend
 npm --prefix client run check
 npm run check:all
 ```

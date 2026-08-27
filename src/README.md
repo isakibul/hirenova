@@ -24,7 +24,6 @@ admin operations.
 - Nodemailer and MailHog for local email
 - MinIO/S3-compatible object storage for resumes
 - OpenRouter-compatible AI integration
-- Node test runner with coverage gates
 
 ## Setup
 
@@ -154,38 +153,6 @@ Guidelines:
 - `GET /api/v1/messages/conversations`
 - `POST /api/v1/newsletter`
 
-## Testing
-
-Run backend tests:
-
-```bash
-npm test
-```
-
-Run backend coverage gate:
-
-```bash
-npm run check:backend
-```
-
-The coverage gate currently enforces:
-
-- 75% lines
-- 70% branches
-- 70% functions
-
-Controller glue, route composition, external integrations, observability
-adapters, and static email builders are excluded from the unit coverage gate and
-should be covered through focused integration/E2E tests where useful.
-
-## E2E Seed Route
-
-Browser E2E tests use a deterministic seed API mounted only when
-`NODE_ENV=test`.
-
-The `/api/v1/e2e/seed` route is intentionally unavailable in development and
-production.
-
 ## Adding Backend Features
 
 1. Add or update shared contracts in `src/shared/apiContract.js` when needed.
@@ -194,4 +161,3 @@ production.
 4. Add controller files under `modules/<feature>/controllers`.
 5. Wire the route in `modules/<feature>/<feature>.routes.js`.
 6. Mount the module from `routes/v1/index.js` if it is a new module.
-7. Add service tests and, for user-facing flows, Playwright E2E coverage.

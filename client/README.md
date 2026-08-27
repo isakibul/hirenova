@@ -13,8 +13,6 @@ workflows.
 - Tailwind CSS 4
 - Axios-backed API helpers
 - Socket.IO client
-- Playwright E2E tests
-- Node test runner for extracted utilities
 
 ## Setup
 
@@ -83,19 +81,13 @@ npm run dev:turbo
 ```bash
 npm run lint
 npm run build
-npm run test
-npm run test:coverage
 npm run check
-npm run test:e2e
-npm run test:e2e:local
-npm run test:e2e:external
 ```
 
 `npm run check` runs:
 
-1. client utility tests with coverage
-2. ESLint
-3. production build
+1. ESLint
+2. production build
 
 ## Structure
 
@@ -109,8 +101,6 @@ client/app/
   _components/
   _lib/
   _fonts/
-client/E2E/
-client/test/
 ```
 
 Route groups:
@@ -127,8 +117,6 @@ Shared areas:
 - `_components`: reusable UI, layout, auth, theme, modals, menus, forms.
 - `_lib`: API clients, URL helpers, storage helpers, validation, realtime, UI
   formatting.
-- `test`: utility and extracted logic tests.
-- `E2E`: Playwright browser coverage.
 
 ## API Layer
 
@@ -148,39 +136,6 @@ hydrates the current user from `/auth/session`.
 
 Theme state lives in `ThemeProvider` and persists to local storage. Account
 settings can also save the preferred theme to the backend.
-
-## E2E Tests
-
-The E2E suite uses:
-
-- real Next.js app
-- real Express backend
-- MongoDB test database
-- deterministic seed endpoint mounted only under `NODE_ENV=test`
-
-Start local infrastructure:
-
-```bash
-docker compose up -d mongodb redis mailhog minio minio-init
-```
-
-Run E2E from `client/`:
-
-```bash
-npm run test:e2e:local
-```
-
-For external backend mode:
-
-```bash
-E2E_API_URL=http://127.0.0.1:4100/api/v1 npm run test:e2e:external
-```
-
-## Accessibility and Visual Checks
-
-The suite includes accessibility and visual regression coverage. Keep visible
-text, controls, and status messages accessible by role/name where possible so
-Playwright and assistive technologies can interact with the app reliably.
 
 ## Deployment Notes
 

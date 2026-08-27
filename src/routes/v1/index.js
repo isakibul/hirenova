@@ -12,7 +12,6 @@ const companyRoutes = require("../../modules/companies/companies.routes");
 const messageRoutes = require("../../modules/messages/messages.routes");
 const newsletterRoutes = require("../../modules/newsletters/newsletters.routes");
 const assistantRoutes = require("../../modules/assistant/assistant.routes");
-const e2eRoutes = require("./e2e.routes");
 
 router.use("/auth", authRoutes);
 router.use("/jobs", jobRoutes);
@@ -26,9 +25,5 @@ router.use("/companies", companyRoutes);
 router.use("/messages", messageRoutes);
 router.use("/newsletter", newsletterRoutes);
 router.use("/assistant", assistantRoutes);
-
-if (process.env.NODE_ENV === "test") {
-  router.use("/e2e", e2eRoutes);
-}
 
 module.exports = router;

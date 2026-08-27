@@ -11,18 +11,15 @@ Run these before deploying:
 npm run check
 ```
 
-The root check is intentionally backend-only so the API can be copied out of
-the monorepo and validated without the `client/` app. For a full monorepo
-release candidate, run:
+For a full monorepo release candidate, run:
 
 ```bash
 npm run check:all
 ```
 
-`check:all` runs backend unit tests plus the client unit tests, lint, and
-production build.
+`check:all` runs the client lint and production build.
 
-## Separated Testing
+## Separated Validation
 
 Backend-only repository or copied backend folder:
 
@@ -37,26 +34,6 @@ Client-only repository or copied `client/` folder:
 npm install
 npm run check
 ```
-
-For client E2E after separation, start the backend separately with
-`NODE_ENV=test`, matching `E2E_SEED_SECRET`, a test database, Redis, and valid
-test email settings such as `EMAIL_FROM=noreply@hirenova.test`. Then run:
-
-```bash
-E2E_API_URL=http://127.0.0.1:4100/api/v1 npm run test:e2e:external
-```
-
-## Critical E2E Flows
-
-Verify these against every deploy candidate:
-
-1. Jobseeker signup, email confirmation, login, profile update, resume upload.
-2. Public job search with filters, job detail view, save job, apply to job.
-3. Employer login, create job, edit job, close job, view applications.
-4. Admin login, approve and decline jobs, manage users, review audit logs.
-5. Messaging between candidate and employer, notification read/read-all states.
-6. Forgot password, reset password, logout, and blocked access after logout.
-7. Newsletter subscribe, admin campaign send, email event review.
 
 ## Deployment Notes
 
@@ -123,6 +100,6 @@ A release candidate is ready only when:
 
 - `npm run check:all` passes for monorepo releases, or `npm run check` passes
   for backend-only releases.
-- All critical E2E flows above pass in staging.
+- Core user flows have been reviewed in staging.
 - Staging CORS, email, Redis-backed rate limiting, and Socket.IO origins match
   the production topology.

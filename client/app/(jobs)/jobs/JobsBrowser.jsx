@@ -204,8 +204,8 @@ export default function JobsBrowser({
   }
 
   return (
-    <form ref={formRef} action="/jobs" className="mt-6" onSubmit={handleSubmit}>
-      <div className="site-border site-card site-panel grid gap-3 rounded-lg border p-4 lg:grid-cols-[1fr_1fr_170px_130px_130px]">
+    <form ref={formRef} action="/jobs" className="relative z-10 -mt-4 sm:-mt-5" onSubmit={handleSubmit}>
+      <div className="jobs-search-bar site-border grid gap-3 rounded-xl border p-3 sm:p-4 lg:grid-cols-[1fr_1fr_170px_130px_130px]">
         <label className="relative">
           <span className="site-muted pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
             <Icon name="search" />
@@ -254,7 +254,11 @@ export default function JobsBrowser({
       </div>
 
       <div className="mt-4 grid items-start gap-4 lg:grid-cols-[260px_1fr]">
-        <aside className="site-border site-card space-y-5 rounded-lg border p-4">
+        <aside className="jobs-filter site-border site-card space-y-5 rounded-xl border p-4 lg:sticky lg:top-24">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold">Refine your search</p>
+            <span className="site-muted text-xs">Filters</span>
+          </div>
           <div>
             <p className="text-sm font-semibold">Job Type</p>
             <div className="mt-3 space-y-2">

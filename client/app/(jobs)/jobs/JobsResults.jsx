@@ -177,7 +177,7 @@ export default function JobsResults({
   }, [initialJobs, initialPagination, limit, page, query, shouldUseSmartMatch, stableQuery]);
 
   return (
-    <div className="site-border site-card min-w-0 rounded-lg border p-4">
+    <div className="jobs-results site-border site-card min-w-0 rounded-xl border p-4 sm:p-5">
       <div className="flex flex-col gap-2 border-b border-(--site-border)/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -274,7 +274,7 @@ export default function JobsResults({
           return (
             <article
               key={job.id}
-              className="site-border site-panel rounded-lg border p-4"
+              className="job-listing site-border site-panel rounded-xl border p-4"
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="flex min-w-0 gap-3">

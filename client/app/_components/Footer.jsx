@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { requestJson } from "@lib/clientApi";
 import Icon from "./Icon";
+import BrandLogo from "./BrandLogo";
 import LoadingCircle from "./LoadingCircle";
 
 const contactItems = [
@@ -66,9 +66,7 @@ export default function Footer() {
       <div className="site-container">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:items-start">
           <section className="max-w-md">
-            <Link href="/" className="brand-logo text-xl tracking-tight">
-              Hire<span className="site-accent">Nova</span>
-            </Link>
+            <BrandLogo className="text-xl" />
             <p className="site-muted mt-3 text-sm leading-6">
               A focused hiring workspace for discovering jobs, managing
               applicants, tracking applications, and keeping conversations
@@ -141,20 +139,6 @@ export default function Footer() {
 
         <div className="site-muted mt-8 flex flex-col gap-3 border-t border-(--site-border) pt-5 text-xs sm:flex-row sm:items-center sm:justify-between">
           <p>© {currentYear} HireNova. All rights reserved.</p>
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
-            <Link href="/about" className="transition hover:text-(--site-accent)">
-              About
-            </Link>
-            <Link
-              href="/features"
-              className="transition hover:text-(--site-accent)"
-            >
-              Features
-            </Link>
-            <Link href="/jobs" className="transition hover:text-(--site-accent)">
-              Jobs
-            </Link>
-          </div>
         </div>
       </div>
     </footer>

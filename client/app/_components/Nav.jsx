@@ -3,6 +3,7 @@ import { useAuth } from "@components/auth/AuthProvider";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import BrandLogo from "./BrandLogo";
 import Icon from "./Icon";
 import MessagesMenu from "./MessagesMenu";
 import NotificationsMenu from "./NotificationsMenu";
@@ -154,33 +155,8 @@ export default function Nav() {
       <div className="site-section">
         <div className="site-container flex items-center justify-between">
           <div className="flex items-center gap-14">
-            <Link
-              href="/"
-              className="brand-logo mb-1 inline-flex h-9 items-center text-2xl tracking-tight"
-            >
-              Hire<span className="site-accent">Nova</span>
-            </Link>
+            <BrandLogo className="h-9 text-2xl" />
 
-            <nav className="hidden items-center gap-5 text-base font-semibold md:flex">
-              <Link
-                href="/features"
-                className="site-link inline-flex h-9 items-center transition hover:text-(--site-accent)"
-              >
-                Features
-              </Link>
-              <Link
-                href="/about"
-                className="site-link inline-flex h-9 items-center transition hover:text-(--site-accent)"
-              >
-                About
-              </Link>
-              <Link
-                href="/jobs"
-                className="site-link inline-flex h-9 items-center transition hover:text-(--site-accent)"
-              >
-                Jobs
-              </Link>
-            </nav>
           </div>
 
           <div className="flex items-center gap-3">

@@ -4,7 +4,7 @@ HireNova is an AI powered, production-style full-stack hiring platform with role
 workflows for jobseekers, employers, admins, and superadmins. It includes job
 posting, applications, AI-assisted job matching, AI applicant ranking, resume
 object storage, notifications, messaging, newsletters, account settings, and
-automated tests.
+deployment-ready infrastructure.
 
 This project is built as a full-stack portfolio application, but the structure
 is intentionally close to a real product codebase.
@@ -22,8 +22,6 @@ is intentionally close to a real product codebase.
 - S3-compatible resume storage through Docker MinIO locally.
 - MailHog email preview for confirmation, reset, and newsletter emails.
 - Realtime-ready notifications/messages with Socket.IO.
-- Backend tests, frontend utility tests, Playwright E2E, accessibility, and
-  visual regression coverage.
 - Docker Compose for local infrastructure.
 
 ## Tech Stack
@@ -38,7 +36,7 @@ is intentionally close to a real product codebase.
 | Email | Nodemailer, MailHog locally |
 | Realtime | Socket.IO |
 | AI | OpenRouter-compatible chat completions |
-| Testing | Node test runner, Playwright, ESLint |
+| Code quality | ESLint |
 
 ## Repository Structure
 
@@ -46,7 +44,6 @@ is intentionally close to a real product codebase.
 hirenova/
   client/              # Next.js frontend
   src/                 # Express backend
-  test/                # backend tests
   docs/                # production/readiness notes
   docker-compose.yml   # local infrastructure
   .env.example         # backend env template
@@ -164,8 +161,6 @@ Root/backend:
 ```bash
 npm run dev
 npm start
-npm test
-npm run check:backend
 npm run check
 npm run check:all
 ```
@@ -176,36 +171,15 @@ Client:
 npm --prefix client run dev
 npm --prefix client run lint
 npm --prefix client run build
-npm --prefix client run test
-npm --prefix client run check
-npm --prefix client run test:e2e:local
-```
-
-## Testing
-
-Backend tests:
-
-```bash
-npm test
-```
-
-Backend coverage gate:
-
-```bash
-npm run check:backend
-```
-
-Client lint/build/unit coverage:
-
-```bash
 npm --prefix client run check
 ```
 
-Playwright E2E:
+## Validation
+
+Client lint and production build:
 
 ```bash
-docker compose up -d mongodb redis mailhog minio minio-init
-npm --prefix client run test:e2e:local
+npm --prefix client run check
 ```
 
 Full available check:
@@ -272,7 +246,7 @@ Short description:
 > HireNova is a full-stack hiring platform with jobseeker, employer, and admin
 > workflows. It includes job posting, applications, AI smart matching, AI
 > applicant ranking, resume object storage, notifications, messaging, and
-> automated tests.
+> deployment-ready infrastructure.
 
 What it demonstrates:
 
@@ -282,7 +256,7 @@ What it demonstrates:
 - File/object storage integration
 - AI integration
 - Docker-based local infrastructure
-- Testing and production-readiness practices
+- Production-readiness practices
 
 ## Deployment Notes
 
@@ -301,8 +275,7 @@ Before deploying:
 2. Set `CLIENT_URL` and `CORS_ORIGINS` to the deployed frontend origin.
 3. Set production `BACKEND_API_URL` in the client.
 4. Use managed object storage instead of local MinIO.
-5. Disable or protect all test-only seed routes.
-6. Run backend tests, client checks, and E2E smoke tests.
+5. Run the client validation checks.
 
 ## License
 

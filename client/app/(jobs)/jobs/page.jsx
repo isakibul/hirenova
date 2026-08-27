@@ -93,20 +93,25 @@ export default async function JobsPage({ searchParams }) {
   const jobs = result.ok ? (result.body.data ?? []) : [];
   const pagination = result.body.pagination;
   return (
-    <section className="site-section py-8">
+    <section className="site-section py-6 pb-12 md:py-10">
       <div className="site-container">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="site-accent text-xs font-semibold uppercase tracking-widest">
-              Jobs
+        <div className="jobs-hero relative overflow-hidden rounded-2xl px-5 py-8 sm:px-8 md:px-10 md:py-10">
+          <div className="relative max-w-2xl">
+            <p className="jobs-eyebrow text-xs font-bold uppercase tracking-[0.18em]">
+              Opportunities, made simple
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Find Your Next Role
+            <h1 className="mt-3 max-w-xl text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
+              Find work that moves your career forward.
             </h1>
-            <p className="site-muted mt-2 max-w-2xl text-sm leading-6">
-              Search open roles by title, location, job type, skills, salary,
-              and experience level.
+            <p className="mt-4 max-w-xl text-sm leading-6 sm:text-base">
+              Search roles from growing teams, filter by what matters to you,
+              and take the next step with confidence.
             </p>
+          </div>
+
+          <div className="jobs-hero-note relative mt-7 inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold">
+            <span className="jobs-hero-dot h-2 w-2 rounded-full" />
+            New opportunities added regularly
           </div>
         </div>
 

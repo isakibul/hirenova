@@ -286,13 +286,6 @@ const buildAiMessages = ({ application, job, ranking }) => ({
 });
 
 const requestAiReason = async ({ application, job, ranking }) => {
-  if (
-    process.env.NODE_ENV === "test" &&
-    process.env.APPLICATION_RANKING_ENABLE_AI_IN_TEST !== "true"
-  ) {
-    return "";
-  }
-
   if (!process.env.OPENROUTER_API_KEY) {
     return "";
   }

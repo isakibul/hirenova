@@ -3,28 +3,26 @@ import AssistantChat from "./_components/AssistantChat";
 import Footer from "./_components/Footer";
 import Nav from "./_components/Nav";
 import ThemeProvider from "./_components/theme/ThemeProvider";
-import localFont from "next/font/local";
+import { DM_Sans, Sora, Space_Mono } from "next/font/google";
 import "./globals.css";
 
-const dmSans = localFont({
-  src: "./_fonts/dm-sans-latin.woff2",
+const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   display: "swap",
-  weight: "100 1000",
+  subsets: ["latin"],
 });
 
-const sora = localFont({
-  src: "./_fonts/sora-latin.woff2",
+const sora = Sora({
   variable: "--font-brand",
   display: "swap",
-  weight: "100 800",
+  subsets: ["latin"],
 });
 
-const spaceMono = localFont({
-  src: "./_fonts/space-mono-700-latin.woff2",
+const spaceMono = Space_Mono({
   weight: "700",
   variable: "--font-heading",
   display: "swap",
+  subsets: ["latin"],
 });
 
 const themeScript = `
