@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getApiMessage } from "./ui.js";
+import { getApiMessage } from "./ui";
 
 const defaultServerTimeoutMs = 10_000;
 

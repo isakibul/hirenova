@@ -151,7 +151,7 @@ export default function Nav() {
     };
   }, [closeProfileMenu, isProfileOpen]);
   return (
-    <header className="site-border site-nav sticky top-0 z-20 border-b py-3">
+    <header className="site-border site-nav sticky top-0 z-20 border-b py-4">
       <div className="site-section">
         <div className="site-container flex items-center justify-between">
           <div className="flex items-center gap-14">

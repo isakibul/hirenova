@@ -3,26 +3,19 @@ import AssistantChat from "./_components/AssistantChat";
 import Footer from "./_components/Footer";
 import Nav from "./_components/Nav";
 import ThemeProvider from "./_components/theme/ThemeProvider";
-import { DM_Sans, Sora, Space_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const poppins = localFont({
+  src: [
+    { path: "./_fonts/poppins-400.ttf", weight: "400", style: "normal" },
+    { path: "./_fonts/poppins-500.ttf", weight: "500", style: "normal" },
+    { path: "./_fonts/poppins-600.ttf", weight: "600", style: "normal" },
+    { path: "./_fonts/poppins-700.ttf", weight: "700", style: "normal" },
+    { path: "./_fonts/poppins-800.ttf", weight: "800", style: "normal" },
+  ],
+  variable: "--font-poppins",
   display: "swap",
-  subsets: ["latin"],
-});
-
-const sora = Sora({
-  variable: "--font-brand",
-  display: "swap",
-  subsets: ["latin"],
-});
-
-const spaceMono = Space_Mono({
-  weight: "700",
-  variable: "--font-heading",
-  display: "swap",
-  subsets: ["latin"],
 });
 
 const themeScript = `
@@ -53,7 +46,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${sora.variable} ${spaceMono.variable} h-full antialiased`}
+      className={`${poppins.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

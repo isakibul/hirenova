@@ -1,6 +1,6 @@
 import axios from "axios";
-import { getJsonStorageItem } from "./storage.js";
-import { getApiMessage } from "./ui.js";
+import { getJsonStorageItem } from "./storage";
+import { getApiMessage } from "./ui";
 
 let memoryAccessToken = "";
 let memoryCsrfToken = "";

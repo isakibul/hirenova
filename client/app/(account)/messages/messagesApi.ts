@@ -1,4 +1,4 @@
-import { requestJson } from "../../_lib/clientApi.js";
+import { requestJson } from "../../_lib/clientApi";
 
 export function listConversations(init = {}) {
   return requestJson(

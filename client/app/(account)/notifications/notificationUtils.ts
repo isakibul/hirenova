@@ -1,4 +1,4 @@
-import { getRecordId } from "../../_lib/ui.js";
+import { getRecordId } from "../../_lib/ui";
 
 export function countUnreadNotifications(notifications = []) {
   return notifications.filter((notification) => !notification.readAt).length;

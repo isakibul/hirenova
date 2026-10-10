@@ -2,16 +2,18 @@
   "name": "hirenova",
   "version": "1.0.0",
   "description": "Full-stack hiring platform with job search, applications, employer workflows, admin operations, realtime messaging, notifications, email, and production-readiness checks.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
     "dev:client": "npm --prefix client run dev",
-    "start": "node src/index.js",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint:client": "npm --prefix client run lint",
     "build:client": "npm --prefix client run build",
     "check:client": "npm --prefix client run check",
-    "check": "npm run check:client",
-    "check:all": "npm run check:client"
+    "check": "npm run typecheck && npm run check:client",
+    "check:all": "npm run check"
   },
   "keywords": [
     "hiring-platform",
@@ -52,6 +54,16 @@
     "word-extractor": "^1.0.4"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/multer": "^2.3.0",
+    "@types/node": "^26.6.5",
+    "@types/nodemailer": "^8.0.2",
+    "nodemon": "^3.1.10",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }
