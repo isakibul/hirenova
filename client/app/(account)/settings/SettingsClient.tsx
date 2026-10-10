@@ -85,9 +85,10 @@ export default function SettingsClient({ user: userProp }) {
                 if (ignore) {
                     return;
                 }
-                const nextSettings = { ...defaultSettings, ...body.data, theme: body.data?.theme ?? initialThemeRef.current };
+                // The navigation toggle is the active theme source. A stale server
+                // preference must not switch the whole app back to light on visit.
+                const nextSettings = { ...defaultSettings, ...body.data, theme: initialThemeRef.current };
                 setSettings(nextSettings);
-                setTheme(nextSettings.theme);
                 setJsonStorageItem(settingsStorageKey, nextSettings);
             }
             catch {

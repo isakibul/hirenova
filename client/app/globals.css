@@ -159,20 +159,75 @@ body {
 
 .jobs-filter {
   box-shadow: var(--site-soft-shadow);
+  border-top: 3px solid var(--site-accent);
 }
 
 .jobs-results {
   box-shadow: var(--site-soft-shadow);
 }
 
+.jobs-filter-heading {
+  border-bottom: 1px solid color-mix(in srgb, var(--site-border) 72%, transparent);
+  padding-bottom: 0.875rem;
+}
+
+.jobs-filter-count {
+  background: var(--site-subtle-bg);
+  border-radius: 9999px;
+  color: var(--site-subtle-fg);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.3rem 0.55rem;
+}
+
+.jobs-filter-label {
+  color: var(--site-title);
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.jobs-results-header {
+  position: relative;
+}
+
 .job-listing {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--site-accent) 5%, transparent), transparent 27%),
+    var(--site-panel);
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.job-listing::before {
+  background: var(--site-accent);
+  border-radius: 9999px;
+  content: "";
+  height: 2.75rem;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0.45);
+  transition: opacity 160ms ease, transform 160ms ease;
+  width: 3px;
 }
 
 .job-listing:hover {
   border-color: var(--site-accent);
   box-shadow: var(--site-soft-shadow);
   transform: translateY(-2px);
+}
+
+.job-listing:hover::before {
+  opacity: 1;
+  transform: translateY(-50%) scaleY(1);
+}
+
+.job-listing-icon {
+  background: color-mix(in srgb, var(--site-accent) 12%, var(--site-subtle-bg));
+  color: var(--site-accent);
 }
 
 .site-soft {

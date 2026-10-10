@@ -16,11 +16,6 @@ const sortOptions = [
   { value: "experienceMin:asc", label: "Entry Friendly" },
   { value: "title:asc", label: "Title A-Z" },
 ];
-const limitOptions = [
-  { value: "10", label: "10 Jobs" },
-  { value: "20", label: "20 Jobs" },
-  { value: "30", label: "30 Jobs" },
-];
 function getParam(params, key) {
   const value = params[key];
   if (Array.isArray(value)) {
@@ -60,7 +55,7 @@ export default async function JobsPage({ searchParams }) {
   const maxExperience = getParam(params, "max_experience").trim();
   const author = getParam(params, "author").trim();
   const selectedJobTypes = getParamList(params, "job_type");
-  const page = getPositiveNumber(getParam(params, "page"), 1);
+  const page = 1;
   const limit = Math.min(getPositiveNumber(getParam(params, "limit"), 10), 50);
   const smartMatch = ["1", "true", "on"].includes(
     getParam(params, "smart_match").toLowerCase(),
@@ -95,7 +90,7 @@ export default async function JobsPage({ searchParams }) {
   return (
     <section className="site-section pb-12 pt-0 md:pb-14">
       <div className="site-container">
-        <div className="jobs-hero relative overflow-hidden rounded-b-[1.75rem] px-5 py-10 sm:px-8 md:px-10 md:py-14">
+        <div className="jobs-hero relative overflow-hidden px-5 py-10 sm:px-8 md:px-10 md:py-14">
           <div className="relative max-w-3xl">
             <div className="flex items-center gap-3">
               <span className="jobs-hero-dot h-2 w-2 rounded-full" />
@@ -103,8 +98,9 @@ export default async function JobsPage({ searchParams }) {
                 Opportunities, made simple
               </p>
             </div>
-            <h1 className="mt-4 max-w-2xl text-3xl font-semibold leading-[1.12] tracking-tight sm:text-4xl md:text-5xl">
-              Find work that moves your career forward.
+            <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.08] tracking-[-0.035em] sm:text-5xl md:text-[3.5rem]">
+              Find work that moves
+              <span className="block">your career forward.</span>
             </h1>
             <p className="mt-5 max-w-xl text-sm leading-6 text-white/85 sm:text-base">
               Search roles from growing teams, filter by what matters to you,
@@ -124,12 +120,10 @@ export default async function JobsPage({ searchParams }) {
           initialBody={result.body}
           initialOk={result.ok}
           initialQuery={jobsQuery}
-          initialParams={params}
           initialSortValue={sortValue}
           initialSmartMatch={smartMatch}
           jobTypes={jobTypes}
           sortOptions={sortOptions}
-          limitOptions={limitOptions}
         />
       </div>
     </section>

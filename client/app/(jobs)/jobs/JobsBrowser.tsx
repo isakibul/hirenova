@@ -58,14 +58,13 @@ export default function JobsBrowser({
   initialBody,
   initialOk,
   initialQuery,
-  initialParams,
   initialSortValue,
   initialSmartMatch,
   jobTypes,
   sortOptions,
-  limitOptions,
 }) {
   const formRef = useRef(null);
+  const isLoadingMoreRef = useRef(false);
   const [resetKey, setResetKey] = useState(0);
   const [browserState, setBrowserState] = useState({
     jobs: initialJobs,
@@ -73,28 +72,21 @@ export default function JobsBrowser({
     body: initialBody,
     isOk: initialOk,
     query: initialQuery,
-    params: initialParams,
     sortValue: initialSortValue,
     smartMatch: initialSmartMatch,
     isLoading: false,
+    isLoadingMore: false,
   });
-  const page = Number(browserState.query.page) || 1;
-  const limit = Number(browserState.query.limit) || 10;
   const totalItems = browserState.pagination?.totalItems ?? browserState.jobs.length;
-  const totalPages = browserState.pagination?.totalPage ?? 1;
 
   async function applyQuery(nextQuery, nextSortValue, nextSmartMatch) {
     setBrowserState((current) => ({
       ...current,
       query: nextQuery,
-      params: compactObject({
-        ...nextQuery,
-        sort: nextSortValue === "createdAt:dsc" ? undefined : nextSortValue,
-        smart_match: nextSmartMatch ? "1" : undefined,
-      }),
       sortValue: nextSortValue,
       smartMatch: nextSmartMatch,
       isLoading: true,
+      isLoadingMore: false,
     }));
 
     window.history.replaceState(
@@ -112,6 +104,7 @@ export default function JobsBrowser({
         body: result.ok ? result.body : { message: result.message },
         isOk: result.ok,
         isLoading: false,
+        isLoadingMore: false,
       }));
     } catch (caughtError) {
       setBrowserState((current) => ({
@@ -126,6 +119,7 @@ export default function JobsBrowser({
         },
         isOk: false,
         isLoading: false,
+        isLoadingMore: false,
       }));
     }
   }
@@ -146,7 +140,7 @@ export default function JobsBrowser({
         max_salary: formData.get("max_salary") || undefined,
         min_experience: formData.get("min_experience") || undefined,
         max_experience: formData.get("max_experience") || undefined,
-        limit: Number(formData.get("limit")) || 10,
+        limit: 10,
         page: 1,
       }),
       sortValue,
@@ -192,15 +186,59 @@ export default function JobsBrowser({
     void applyQuery(query, sortValue, smartMatch);
   }
 
-  function changePage(nextPage) {
-    void applyQuery(
-      {
-        ...browserState.query,
-        page: nextPage,
-      },
-      browserState.sortValue,
-      browserState.smartMatch,
-    );
+  async function loadMoreJobs() {
+    const nextPage = browserState.pagination?.next;
+
+    if (!nextPage || browserState.isLoading || isLoadingMoreRef.current) {
+      return;
+    }
+
+    isLoadingMoreRef.current = true;
+    setBrowserState((current) => ({ ...current, isLoadingMore: true }));
+
+    try {
+      const result = await fetchJobs(
+        { ...browserState.query, page: nextPage },
+        browserState.sortValue,
+      );
+
+      setBrowserState((current) => {
+        if (!result.ok) {
+          return {
+            ...current,
+            body: { message: result.message },
+            isOk: false,
+            isLoadingMore: false,
+          };
+        }
+
+        const knownIds = new Set(current.jobs.map((job) => job.id));
+        const nextJobs = (result.body.data ?? []).filter((job) => !knownIds.has(job.id));
+
+        return {
+          ...current,
+          jobs: [...current.jobs, ...nextJobs],
+          pagination: result.body.pagination,
+          body: result.body,
+          isOk: true,
+          isLoadingMore: false,
+        };
+      });
+    } catch (caughtError) {
+      setBrowserState((current) => ({
+        ...current,
+        body: {
+          message:
+            caughtError instanceof Error
+              ? caughtError.message
+              : "Unable to load more jobs right now.",
+        },
+        isOk: false,
+        isLoadingMore: false,
+      }));
+    } finally {
+      isLoadingMoreRef.current = false;
+    }
   }
 
   return (
@@ -254,14 +292,17 @@ export default function JobsBrowser({
       </div>
 
       <div className="mt-4 grid items-start gap-4 lg:grid-cols-[260px_1fr]">
-        <aside className="jobs-filter site-border site-card space-y-5 rounded-xl border p-4 lg:sticky lg:top-24">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">Refine your search</p>
-            <span className="site-muted text-xs">Filters</span>
+        <aside className="jobs-filter site-border site-card space-y-4 border p-5 lg:sticky lg:top-16">
+          <div className="jobs-filter-heading flex items-center justify-between">
+            <div>
+              <span className="site-accent text-[10px] font-bold uppercase tracking-[0.16em]">Job search</span>
+              <p className="mt-0.5 text-base font-semibold">Refine your search</p>
+            </div>
+            <span className="jobs-filter-count">Filters</span>
           </div>
           <div>
-            <p className="text-sm font-semibold">Job Type</p>
-            <div className="mt-3 space-y-2">
+            <p className="jobs-filter-label">Job Type</p>
+            <div className="mt-2.5 space-y-2">
               {jobTypes.map((type) => (
                 <label key={type.value} className="flex items-center gap-2 text-sm">
                   <input
@@ -283,7 +324,7 @@ export default function JobsBrowser({
           <div className="site-divider h-px" />
 
           <div>
-            <p className="text-sm font-semibold">Salary Range</p>
+            <p className="jobs-filter-label">Salary Range</p>
             <SalaryRangeFilter
               key={`salary-${resetKey}`}
               minSalary={browserState.query.min_salary ?? ""}
@@ -294,7 +335,7 @@ export default function JobsBrowser({
           <div className="site-divider h-px" />
 
           <div>
-            <p className="text-sm font-semibold">Experience</p>
+            <p className="jobs-filter-label">Experience</p>
             <ExperienceRangeFilter
               key={`experience-${resetKey}`}
               minExperience={browserState.query.min_experience ?? ""}
@@ -302,33 +343,20 @@ export default function JobsBrowser({
             />
           </div>
 
-          <div className="site-divider h-px" />
-
           <label className="block">
-            <span className="text-sm font-semibold">Skills</span>
+            <span className="jobs-filter-label">Skills</span>
             <input
               key={`skills-${resetKey}`}
               name="skills"
               defaultValue={browserState.query.skills ?? ""}
-              className="site-field mt-3 h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+              className="site-field mt-2 h-9 w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
               placeholder="React, Node, Design"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-semibold">Per Page</span>
-            <SelectField
-              key={`limit-${resetKey}`}
-              name="limit"
-              defaultValue={String(browserState.query.limit ?? 10)}
-              options={limitOptions}
-              className="site-field mt-3 h-10 w-full rounded-md border px-3 text-sm focus:outline-none"
             />
           </label>
 
           <input type="hidden" name="page" value="1" />
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-1">
             <button className="site-button flex-1 rounded-md px-3 py-2 text-sm font-semibold transition">
               Apply
             </button>
@@ -347,16 +375,14 @@ export default function JobsBrowser({
           initialPagination={browserState.pagination}
           initialBody={browserState.isLoading ? {} : browserState.body}
           initialOk={browserState.isLoading ? true : browserState.isOk}
-          params={browserState.params}
           query={browserState.query}
-          page={page}
-          limit={limit}
           totalItems={totalItems}
-          totalPages={totalPages}
           search={browserState.query.search ?? ""}
           useSmartMatch={browserState.smartMatch}
           isRefreshing={browserState.isLoading}
-          onPageChange={changePage}
+          hasMore={Boolean(browserState.pagination?.next)}
+          isLoadingMore={browserState.isLoadingMore}
+          onLoadMore={loadMoreJobs}
         />
       </div>
     </form>

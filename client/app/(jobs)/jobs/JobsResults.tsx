@@ -8,39 +8,10 @@ import { formatDate, getApiMessage } from "@lib/ui";
 import { toSearchParams } from "@lib/url";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 function getErrorMessage(response) {
   return getApiMessage(response, "Unable to load jobs right now.");
-}
-
-function buildHref(params, overrides) {
-  const query = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (key in overrides) {
-      return;
-    }
-    if (Array.isArray(value)) {
-      value.forEach((item) => {
-        if (item) {
-          query.append(key, item);
-        }
-      });
-      return;
-    }
-    if (value) {
-      query.set(key, value);
-    }
-  });
-  Object.entries(overrides).forEach(([key, value]) => {
-    if (value) {
-      query.set(key, value);
-    } else {
-      query.delete(key);
-    }
-  });
-  const queryString = query.toString();
-  return queryString ? `/jobs?${queryString}` : "/jobs";
 }
 
 function buildRecommendedPath(query) {
@@ -53,22 +24,23 @@ export default function JobsResults({
   initialPagination,
   initialBody,
   initialOk,
-  params,
   query,
-  page,
-  limit,
   totalItems,
-  totalPages,
   search,
   useSmartMatch,
   isRefreshing = false,
-  onPageChange,
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMore,
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, status } = useAuth();
+  const loadMoreRef = useRef(null);
   const stableQuery = useMemo(() => JSON.stringify(query), [query]);
+  const requestPage = Number(query.page) || 1;
+  const requestLimit = Number(query.limit) || 10;
   const [smartMatchPreference, setSmartMatchPreference] = useState(null);
   const [recommendationState, setRecommendationState] = useState(null);
   const smartMatchEnabled =
@@ -93,12 +65,9 @@ export default function JobsResults({
         };
   const { body, isOk, jobs, pagination } = activeState;
   const activeTotalItems = pagination?.totalItems ?? totalItems;
-  const activeTotalPages = pagination?.totalPage ?? totalPages;
-  const activePage = pagination?.page ?? page;
-  const activeLimit = pagination?.limit ?? limit;
-  const activeFirstResult =
-    activeTotalItems === 0 ? 0 : (activePage - 1) * activeLimit + 1;
-  const activeLastResult = Math.min(activePage * activeLimit, activeTotalItems);
+  const activeFirstResult = jobs.length === 0 ? 0 : 1;
+  const activeLastResult = jobs.length;
+  const canLoadMore = !shouldUseSmartMatch && hasMore && isOk;
   const updateSmartMatch = (event) => {
     if (event.currentTarget.checked && status === "unauthenticated") {
       const queryString = searchParams.toString();
@@ -152,8 +121,8 @@ export default function JobsResults({
           key: stableQuery,
           jobs: [],
           pagination: {
-            page,
-            limit,
+            page: requestPage,
+            limit: requestLimit,
             totalItems: 0,
             totalPage: 0,
           },
@@ -174,14 +143,35 @@ export default function JobsResults({
     return () => {
       ignore = true;
     };
-  }, [initialJobs, initialPagination, limit, page, query, shouldUseSmartMatch, stableQuery]);
+  }, [initialJobs, initialPagination, query, requestLimit, requestPage, shouldUseSmartMatch, stableQuery]);
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+
+    if (!target || !canLoadMore || isLoading || isLoadingMore || !onLoadMore) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          onLoadMore();
+        }
+      },
+      { rootMargin: "240px" },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [canLoadMore, isLoading, isLoadingMore, onLoadMore]);
 
   return (
-    <div className="jobs-results site-border site-card min-w-0 rounded-xl border p-4 sm:p-5">
-      <div className="flex flex-col gap-2 border-b border-(--site-border)/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="jobs-results site-border site-card min-w-0 border p-5 sm:p-6">
+      <div className="jobs-results-header flex flex-col gap-3 border-b border-(--site-border)/60 pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
+          <p className="site-accent text-[10px] font-bold uppercase tracking-[0.16em]">Opportunities</p>
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-semibold">
+            <h2 className="mt-1 text-xl font-semibold tracking-tight">
               {activeTotalItems} {activeTotalItems === 1 ? "Job" : "Jobs"} Found
             </h2>
             {shouldUseSmartMatch ? (
@@ -191,7 +181,7 @@ export default function JobsResults({
               </span>
             ) : null}
           </div>
-          <p className="site-muted mt-1 text-xs">
+          <p className="site-muted mt-1.5 text-xs">
             Showing {activeFirstResult}-{activeLastResult} of {activeTotalItems}
             {search ? ` for "${search}"` : ""}
           </p>
@@ -212,16 +202,16 @@ export default function JobsResults({
             </span>
           </label>
           <p className="site-muted text-xs">
-          {isLoading
+            {isLoading
             ? shouldUseSmartMatch
               ? "Ranking relevant matches..."
               : "Updating jobs..."
-            : `Page ${activePage} of ${activeTotalPages}`}
+              : `${activeLastResult} loaded`}
           </p>
         </div>
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-5 space-y-3">
         {isLoading ? (
           <div className="site-border site-panel rounded-lg border p-6">
             <div className="flex items-start gap-3">
@@ -274,16 +264,16 @@ export default function JobsResults({
           return (
             <article
               key={job.id}
-              className="job-listing site-border site-panel rounded-xl border p-4"
+              className="job-listing site-border site-panel relative overflow-hidden border p-5"
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="flex min-w-0 gap-3">
-                  <span className="site-badge mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md">
+                  <span className="job-listing-icon site-badge mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
                     <Icon name="briefcase" />
                   </span>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-semibold">
+                      <h3 className="text-[17px] font-semibold tracking-tight">
                         <Link href={`/jobs/${job.id}`} className="transition">
                           {job.title}
                         </Link>
@@ -360,55 +350,18 @@ export default function JobsResults({
         })}
       </div>
 
-      {activeTotalPages > 1 ? (
-        <div className="site-panel mt-4 flex flex-col gap-3 rounded-lg border border-gray-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="site-muted text-xs">
-            Page {activePage} of {activeTotalPages}
-          </p>
-          <div className="flex gap-2">
-            <PaginationControl
-              href={buildHref(params, {
-                page: String(Math.max(activePage - 1, 1)),
-              })}
-              onClick={onPageChange ? () => onPageChange(Math.max(activePage - 1, 1)) : undefined}
-              aria-disabled={activePage <= 1}
-              disabled={activePage <= 1}
-            >
-              Previous
-            </PaginationControl>
-            <PaginationControl
-              href={buildHref(params, {
-                page: String(Math.min(activePage + 1, activeTotalPages)),
-              })}
-              onClick={onPageChange ? () => onPageChange(Math.min(activePage + 1, activeTotalPages)) : undefined}
-              aria-disabled={activePage >= activeTotalPages}
-              disabled={activePage >= activeTotalPages}
-            >
-              Next
-            </PaginationControl>
-          </div>
+      {!shouldUseSmartMatch && isOk && jobs.length > 0 ? (
+        <div
+          ref={loadMoreRef}
+          className="site-muted mt-5 flex min-h-12 items-center justify-center text-xs"
+        >
+          {isLoadingMore
+            ? "Loading more opportunities..."
+            : canLoadMore
+              ? "Scroll to load more jobs"
+              : "You've reached the end of the list."}
         </div>
       ) : null}
     </div>
-  );
-}
-
-function PaginationControl({ href, onClick, disabled, children }) {
-  const className = `site-border site-field rounded-md border px-3 py-1.5 text-xs font-semibold ${
-    disabled ? "pointer-events-none opacity-50" : ""
-  }`;
-
-  if (onClick) {
-    return (
-      <button type="button" onClick={onClick} disabled={disabled} className={className}>
-        {children}
-      </button>
-    );
-  }
-
-  return (
-    <Link href={href} aria-disabled={disabled} className={className}>
-      {children}
-    </Link>
   );
 }

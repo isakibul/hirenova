@@ -28,7 +28,7 @@ export default function ExperienceRangeFilter({
     setMax(Math.max(clamp(value, maxYears), min));
   }
   return (
-    <div className="mt-3">
+    <div className="mt-2">
       <input
         type="hidden"
         name="min_experience"
@@ -44,9 +44,9 @@ export default function ExperienceRangeFilter({
         disabled={!isActive}
       />
 
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-sm font-medium">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1.5 text-xs font-medium">
         <span>{min}</span>
-        <div className="relative h-6 flex-1">
+        <div className="relative h-4 flex-1">
           <div className="range-filter-track" />
           <div
             className="range-filter-selected"
@@ -77,7 +77,7 @@ export default function ExperienceRangeFilter({
         <span className="whitespace-nowrap text-right">{max} year</span>
       </div>
 
-      <div className="mt-2 grid grid-cols-2 gap-2">
+      <div className="mt-1 grid grid-cols-2 gap-2">
         <input
           aria-label="Minimum experience value"
           value={min}
@@ -85,7 +85,7 @@ export default function ExperienceRangeFilter({
           type="number"
           min={0}
           max={maxYears}
-          className="site-field h-9 rounded-md border px-3 py-2 text-sm focus:outline-none"
+          className="site-field h-8 rounded-md border px-2 py-1 text-xs focus:outline-none"
         />
         <input
           aria-label="Maximum experience value"
@@ -94,7 +94,7 @@ export default function ExperienceRangeFilter({
           type="number"
           min={0}
           max={maxYears}
-          className="site-field h-9 rounded-md border px-3 py-2 text-sm focus:outline-none"
+          className="site-field h-8 rounded-md border px-2 py-1 text-xs focus:outline-none"
         />
       </div>
     </div>

@@ -1,0 +1,482 @@
+[
+  {
+    "id": 1,
+    "title": "Senior React Designer",
+    "location": "Bogura",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 3,
+      "max": 5
+    },
+    "salary": 5000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-06-30",
+    "skills": ["React", "Next.js", "Figma"],
+    "description": "Build modern React interfaces and collaborate with product and backend teams."
+  },
+  {
+    "id": 2,
+    "title": "Frontend Developer",
+    "location": "Dhaka or Remote",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 1,
+      "max": 2
+    },
+    "salary": 40000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-01-30",
+    "skills": ["Next.js", "Tailwind CSS", "TypeScript"],
+    "description": "Develop responsive frontend applications using Next.js and Tailwind CSS."
+  },
+  {
+    "id": 3,
+    "title": "Backend Developer",
+    "location": "Dhaka",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 2,
+      "max": 4
+    },
+    "salary": 80000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-08-28",
+    "skills": ["Node.js", "Express.js", "PostgreSQL"],
+    "description": "Build secure APIs, database integrations and scalable backend services."
+  },
+  {
+    "id": 4,
+    "title": "System Designer",
+    "location": "Delhi",
+    "jobType": "Remote",
+    "experience": {
+      "min": 1,
+      "max": 3
+    },
+    "salary": 100000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-09-30",
+    "skills": ["System Design", "Microservices", "AWS"],
+    "description": "Design scalable software architecture and distributed systems."
+  },
+  {
+    "id": 5,
+    "title": "AI Engineer",
+    "location": "Chennai",
+    "jobType": "Remote",
+    "experience": {
+      "min": 2,
+      "max": 5
+    },
+    "salary": 40000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-10-30",
+    "skills": ["Python", "AI Engineering", "LLM"],
+    "description": "Develop AI-powered applications and integrate large language models."
+  },
+  {
+    "id": 6,
+    "title": "ML Engineer",
+    "location": "London",
+    "jobType": "Remote",
+    "experience": {
+      "min": 1,
+      "max": 4
+    },
+    "salary": 20000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-10-30",
+    "skills": ["Python", "Machine Learning", "PyTorch"],
+    "description": "Build and deploy machine learning models for production applications."
+  },
+  {
+    "id": 7,
+    "title": "Senior Product Designer",
+    "location": "Dhaka or Remote",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 3,
+      "max": 6
+    },
+    "salary": 90000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-12-31",
+    "skills": ["Figma", "UI/UX", "Product Design"],
+    "description": "Design product experiences, prototypes and reusable design systems."
+  },
+  {
+    "id": 8,
+    "title": "UI UX Designer",
+    "location": "Dhaka",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 1,
+      "max": 3
+    },
+    "salary": 45000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-07-15",
+    "skills": ["Figma", "Wireframing", "Prototyping"],
+    "description": "Create user flows, wireframes, prototypes and polished UI designs."
+  },
+  {
+    "id": 9,
+    "title": "Next.js Developer",
+    "location": "Remote",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 2,
+      "max": 4
+    },
+    "salary": 65000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-05-20",
+    "skills": ["Next.js", "React", "TypeScript"],
+    "description": "Build production-ready web applications using Next.js and TypeScript."
+  },
+  {
+    "id": 10,
+    "title": "React Developer",
+    "location": "Chattogram",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 1,
+      "max": 3
+    },
+    "salary": 50000,
+    "status": "Open",
+    "approval": "Pending",
+    "expiryDate": "2027-04-15",
+    "skills": ["React", "JavaScript", "Redux"],
+    "description": "Develop reusable React components and frontend application features."
+  },
+  {
+    "id": 11,
+    "title": "Node.js Developer",
+    "location": "Dhaka",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 2,
+      "max": 5
+    },
+    "salary": 70000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-06-25",
+    "skills": ["Node.js", "Express.js", "MongoDB"],
+    "description": "Develop backend APIs and maintain Node.js based server applications."
+  },
+  {
+    "id": 12,
+    "title": "Full Stack Developer",
+    "location": "Remote",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 2,
+      "max": 5
+    },
+    "salary": 85000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-09-10",
+    "skills": ["React", "Node.js", "PostgreSQL"],
+    "description": "Work across frontend and backend to build complete web applications."
+  },
+  {
+    "id": 13,
+    "title": "Software Engineer",
+    "location": "Sylhet",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 1,
+      "max": 4
+    },
+    "salary": 60000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-03-31",
+    "skills": ["JavaScript", "TypeScript", "Git"],
+    "description": "Develop and maintain reliable software applications and services."
+  },
+  {
+    "id": 14,
+    "title": "DevOps Engineer",
+    "location": "Remote",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 2,
+      "max": 5
+    },
+    "salary": 95000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-11-15",
+    "skills": ["Docker", "AWS", "CI/CD"],
+    "description": "Maintain deployment pipelines, cloud infrastructure and application environments."
+  },
+  {
+    "id": 15,
+    "title": "Cloud Engineer",
+    "location": "Dhaka",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 2,
+      "max": 5
+    },
+    "salary": 100000,
+    "status": "Open",
+    "approval": "Pending",
+    "expiryDate": "2027-10-20",
+    "skills": ["AWS", "Docker", "Linux"],
+    "description": "Design and maintain cloud infrastructure for scalable applications."
+  },
+  {
+    "id": 16,
+    "title": "Database Engineer",
+    "location": "Remote",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 2,
+      "max": 4
+    },
+    "salary": 75000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-08-18",
+    "skills": ["PostgreSQL", "SQL", "Database Design"],
+    "description": "Design efficient database schemas, queries and performance optimizations."
+  },
+  {
+    "id": 17,
+    "title": "Data Analyst",
+    "location": "Dhaka",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 1,
+      "max": 3
+    },
+    "salary": 55000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-07-01",
+    "skills": ["SQL", "Excel", "Power BI"],
+    "description": "Analyze business data and create reports and dashboards."
+  },
+  {
+    "id": 18,
+    "title": "Data Engineer",
+    "location": "Remote",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 2,
+      "max": 5
+    },
+    "salary": 90000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-09-05",
+    "skills": ["Python", "SQL", "ETL"],
+    "description": "Build data pipelines and scalable data processing infrastructure."
+  },
+  {
+    "id": 19,
+    "title": "Python Developer",
+    "location": "Rajshahi",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 1,
+      "max": 3
+    },
+    "salary": 50000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-05-05",
+    "skills": ["Python", "Django", "REST API"],
+    "description": "Build backend services and REST APIs using Python."
+  },
+  {
+    "id": 20,
+    "title": "Mobile App Developer",
+    "location": "Dhaka",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 1,
+      "max": 4
+    },
+    "salary": 65000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-06-12",
+    "skills": ["React Native", "JavaScript", "Firebase"],
+    "description": "Develop cross-platform mobile applications using React Native."
+  },
+  {
+    "id": 21,
+    "title": "Flutter Developer",
+    "location": "Remote",
+    "jobType": "Contract",
+    "experience": {
+      "min": 1,
+      "max": 3
+    },
+    "salary": 60000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-08-10",
+    "skills": ["Flutter", "Dart", "Firebase"],
+    "description": "Build cross-platform mobile applications using Flutter and Dart."
+  },
+  {
+    "id": 22,
+    "title": "QA Engineer",
+    "location": "Dhaka",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 1,
+      "max": 3
+    },
+    "salary": 45000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-04-28",
+    "skills": ["Testing", "Selenium", "Jest"],
+    "description": "Test web applications and ensure product quality through automation."
+  },
+  {
+    "id": 23,
+    "title": "Cyber Security Engineer",
+    "location": "Remote",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 3,
+      "max": 6
+    },
+    "salary": 120000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-11-30",
+    "skills": ["Cyber Security", "Linux", "Network Security"],
+    "description": "Monitor, identify and mitigate security threats across applications and infrastructure."
+  },
+  {
+    "id": 24,
+    "title": "Technical Project Manager",
+    "location": "Dhaka",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 4,
+      "max": 7
+    },
+    "salary": 130000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-12-15",
+    "skills": ["Project Management", "Agile", "Jira"],
+    "description": "Coordinate software teams, deadlines and project delivery."
+  },
+  {
+    "id": 25,
+    "title": "Business Analyst",
+    "location": "Dhaka",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 2,
+      "max": 4
+    },
+    "salary": 65000,
+    "status": "Open",
+    "approval": "Pending",
+    "expiryDate": "2027-07-25",
+    "skills": ["Requirement Analysis", "SQL", "Documentation"],
+    "description": "Gather requirements and translate business needs into technical solutions."
+  },
+  {
+    "id": 26,
+    "title": "Product Manager",
+    "location": "Remote",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 3,
+      "max": 6
+    },
+    "salary": 110000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-10-05",
+    "skills": ["Product Management", "Agile", "UX"],
+    "description": "Define product strategy, roadmap and feature requirements."
+  },
+  {
+    "id": 27,
+    "title": "Junior Frontend Developer",
+    "location": "Bogura",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 0,
+      "max": 1
+    },
+    "salary": 30000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-03-20",
+    "skills": ["HTML", "CSS", "JavaScript"],
+    "description": "Support frontend development and build responsive web interfaces."
+  },
+  {
+    "id": 28,
+    "title": "Junior Backend Developer",
+    "location": "Dhaka",
+    "jobType": "Full Time",
+    "experience": {
+      "min": 0,
+      "max": 1
+    },
+    "salary": 35000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-03-25",
+    "skills": ["Node.js", "Express.js", "MongoDB"],
+    "description": "Assist in backend API development and database operations."
+  },
+  {
+    "id": 29,
+    "title": "AI Intern",
+    "location": "Remote",
+    "jobType": "Internship",
+    "experience": {
+      "min": 0,
+      "max": 1
+    },
+    "salary": 15000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-02-28",
+    "skills": ["Python", "Machine Learning", "LLM"],
+    "description": "Assist with AI experiments, data preparation and LLM applications."
+  },
+  {
+    "id": 30,
+    "title": "Frontend Intern",
+    "location": "Dhaka or Remote",
+    "jobType": "Internship",
+    "experience": {
+      "min": 0,
+      "max": 1
+    },
+    "salary": 12000,
+    "status": "Open",
+    "approval": "Approved",
+    "expiryDate": "2027-02-20",
+    "skills": ["React", "Next.js", "Tailwind CSS"],
+    "description": "Learn and contribute to real-world frontend projects using React and Next.js."
+  }
+]
