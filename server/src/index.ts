@@ -2,6 +2,7 @@ const path = require("path");
 
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const http = require("http");
+const logger = require("./infrastructure/observability/logger");
 const app = require("./app");
 const { connectDatabase } = require("./db");
 const { connectRedis } = require("./config/redisClient");
@@ -24,6 +25,7 @@ const PORT = process.env.PORT || 4000;
  * Connects to MongoDB and starts the HTTP server
  */
 const main = async () => {
+  const startedAt = Date.now();
   try {
     const envErrors = validateRuntimeEnv();
     if (envErrors.length) {
@@ -32,14 +34,17 @@ const main = async () => {
 
     await connectDatabase();
     await connectRedis();
-    const timestamp = new Date().toLocaleTimeString();
 
     server.listen(PORT, () => {
-      console.log(`${timestamp} - Server is running on PORT ${PORT}`);
+      logger.info("Server ready", {
+        component: "server",
+        api: `http://localhost:${PORT}/api/v1`,
+        startup: `${Date.now() - startedAt}ms`,
+      });
     });
   } catch (e) {
-    console.error("Error connecting to the database");
-    console.log(e);
+    logger.error("Application startup failed", { error: e.message, stack: e.stack });
+    process.exit(1);
   }
 };
 

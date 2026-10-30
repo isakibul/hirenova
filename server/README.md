@@ -78,8 +78,8 @@ The root `docker-compose.yml` provides:
 
 | Service | Purpose | URL |
 | --- | --- | --- |
-| MongoDB | Database | `mongodb://localhost:27017` |
-| Mongo Express | Mongo UI | `http://localhost:8081` |
+| MongoDB | Database | `mongodb://127.0.0.1:27018` |
+| Mongo Express | Mongo UI | `http://localhost:8083` |
 | Redis | Cache/realtime support | `localhost:6379` |
 | Redis Commander | Redis UI | `http://localhost:8082` |
 | MailHog | Email capture | `http://localhost:8025` |

@@ -94,7 +94,7 @@ Useful local UIs:
 
 | Service | URL |
 | --- | --- |
-| Mongo Express | `http://localhost:8081` |
+| Mongo Express | `http://localhost:8083` |
 | Redis Commander | `http://localhost:8082` |
 | MailHog | `http://localhost:8025` |
 | MinIO Console | `http://localhost:9001` |
