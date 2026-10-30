@@ -27,9 +27,10 @@ admin operations.
 
 ## Setup
 
-Install dependencies from the repository root:
+Install dependencies in the backend directory:
 
 ```bash
+cd server
 npm install
 ```
 
@@ -42,7 +43,7 @@ cp .env.example .env
 Start local infrastructure:
 
 ```bash
-docker compose up -d mongodb redis mailhog minio minio-init
+docker compose --env-file .env -f ../docker-compose.yml up -d mongodb redis mailhog minio minio-init
 ```
 
 Run the API:
@@ -56,7 +57,7 @@ mounted under `/api/v1`.
 
 ## Required Environment
 
-Core local variables are documented in the root `.env.example`.
+Core local variables are documented in `server/.env.example`.
 
 Important groups:
 

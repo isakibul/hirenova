@@ -52,7 +52,7 @@ cookie behavior reliable.
 Start the backend first from the repository root:
 
 ```bash
-npm run dev
+npm --prefix server run dev
 ```
 
 Start the client:

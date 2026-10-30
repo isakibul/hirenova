@@ -7,14 +7,9 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "seed:jobs": "tsx scripts/seed-jobs.ts",
-    "dev:client": "npm --prefix client run dev",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "lint:client": "npm --prefix client run lint",
-    "build:client": "npm --prefix client run build",
-    "check:client": "npm --prefix client run check",
-    "check": "npm run typecheck && npm run check:client",
-    "check:all": "npm run check"
+    "check": "npm run typecheck"
   },
   "keywords": [
     "hiring-platform",

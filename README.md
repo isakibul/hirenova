@@ -43,16 +43,18 @@ is intentionally close to a real product codebase.
 ```txt
 hirenova/
   client/              # Next.js frontend
-  src/                 # Express backend
+  server/              # Express backend (src, scripts, env, package.json)
   docs/                # production/readiness notes
   docker-compose.yml   # local infrastructure
-  .env.example         # backend env template
-  package.json         # backend/root scripts
 ```
+
+The `client/` and `server/` applications have independent dependencies, scripts,
+and environment files. Install, build, and deploy each from its own directory;
+use `client/` as the frontend deployment root and `server/` as the backend deployment root.
 
 Read more:
 
-- Backend docs: [`src/README.md`](src/README.md)
+- Backend docs: [`server/README.md`](server/README.md)
 - Client docs: [`client/README.md`](client/README.md)
 - Architecture: [`docs/architecture.md`](docs/architecture.md)
 - Production notes: [`docs/production-readiness.md`](docs/production-readiness.md)
@@ -64,8 +66,8 @@ Read more:
 From the repository root:
 
 ```bash
-npm install
-npm --prefix client install
+npm --prefix server ci
+npm --prefix client ci
 ```
 
 ### 2. Create Environment Files
@@ -73,7 +75,7 @@ npm --prefix client install
 Backend:
 
 ```bash
-cp .env.example .env
+cp server/.env.example server/.env
 ```
 
 Client:
@@ -85,7 +87,7 @@ cp client/.env.example client/.env.local
 ### 3. Start Infrastructure
 
 ```bash
-docker compose up -d mongodb redis mailhog minio minio-init
+docker compose --env-file server/.env up -d mongodb redis mailhog minio minio-init
 ```
 
 Useful local UIs:
@@ -108,7 +110,7 @@ bucket: hirenova-resumes
 ### 4. Start Backend
 
 ```bash
-npm run dev
+npm --prefix server run dev
 ```
 
 Backend API:
@@ -122,7 +124,7 @@ http://localhost:4000/api/v1
 In another terminal:
 
 ```bash
-npm run dev:client
+npm --prefix client run dev
 ```
 
 Frontend:
@@ -133,7 +135,7 @@ http://localhost:3000
 
 ## Environment Overview
 
-Backend variables live in `.env`.
+Backend variables live in `server/.env`.
 
 Important backend groups:
 
@@ -156,13 +158,13 @@ BACKEND_API_URL=http://localhost:4000/api/v1
 
 ## Scripts
 
-Root/backend:
+Backend (from the repository root):
 
 ```bash
-npm run dev
-npm start
-npm run check
-npm run check:all
+npm --prefix server run dev
+npm --prefix server run build
+npm --prefix server start
+npm --prefix server run check
 ```
 
 Client:
@@ -182,10 +184,10 @@ Client lint and production build:
 npm --prefix client run check
 ```
 
-Full available check:
+Backend validation:
 
 ```bash
-npm run check:all
+npm --prefix server run check
 ```
 
 ## Main Product Flows
@@ -271,7 +273,7 @@ Recommended production services:
 
 Before deploying:
 
-1. Replace all secrets from `.env.example`.
+1. Replace all secrets from `server/.env.example`.
 2. Set `CLIENT_URL` and `CORS_ORIGINS` to the deployed frontend origin.
 3. Set production `BACKEND_API_URL` in the client.
 4. Use managed object storage instead of local MinIO.
